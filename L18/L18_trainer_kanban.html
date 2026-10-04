@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 18 · Тренажёр: канбан и backlog</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, .choice:focus-visible, .task-chip:focus-visible, .zone:focus-visible, .tm-progress__cell:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { position: relative; overflow: hidden; background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    .brief .tm-eyebrow { margin: 0 0 8px; }
+    .hide { display: none !important; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .layout-cases { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 900px) {
+      .layout-cases { grid-template-columns: minmax(0, 1.4fr) minmax(240px, .8fr); align-items: start; }
+    }
+    .tm-progress { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin: 0 0 14px; }
+    .tm-progress__cell { height: 12px; border: 0; border-radius: var(--tm-radius-pill); background: var(--tm-border); cursor: pointer; padding: 0; }
+    .tm-progress__cell.is-done { background: var(--tm-green); }
+    .tm-progress__cell.is-current { box-shadow: 0 0 0 2px var(--tm-green-dark); }
+    .case-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+    .case-nav__meta { color: var(--tm-muted); font-size: .95em; margin-right: auto; }
+    .choices { display: grid; gap: 8px; }
+    .choice { text-align: left; font: inherit; font-weight: 600; padding: 12px 14px; border: 2px solid var(--tm-border); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); color: var(--tm-text); cursor: pointer; }
+    .choice.is-on { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .why { margin: 12px 0 0; padding: 12px; background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); color: var(--tm-text); }
+    .panel { font-family: var(--tm-mono); font-size: 15px; line-height: 1.6; }
+    .panel__row { display: grid; grid-template-columns: 11.5em 1fr; gap: 8px; padding: 8px 10px; border-radius: var(--tm-radius-sm); }
+    .panel__row.is-hot { background: var(--tm-green-soft); outline: 2px solid var(--tm-green); }
+    .panel__k { color: var(--tm-muted); }
+    .panel__v { font-weight: 700; }
+    .panel__note { margin: 10px 0 0; color: var(--tm-muted); font-family: var(--tm-font); font-size: .92em; }
+    .board-wrap { display: grid; gap: 12px; }
+    @media (min-width: 860px) {
+      .board-wrap { grid-template-columns: 1fr 1fr; }
+    }
+    .pool { min-height: 72px; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); margin-bottom: 12px; }
+    .task-chip { appearance: none; border: 2px solid var(--tm-green-dark); background: var(--tm-bg); color: var(--tm-text); border-radius: var(--tm-radius-sm); padding: 10px 12px; font: 600 15px/1.35 var(--tm-font); text-align: left; cursor: grab;
+      box-shadow: var(--tm-shadow); max-width: 100%; }
+    .task-chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .task-chip:active { cursor: grabbing; }
+    .task-chip.is-picked { outline: 3px solid var(--tm-green-dark); outline-offset: 2px; background: var(--tm-green-soft); }
+    .zone { min-height: 180px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius); padding: 12px; background: var(--tm-bg-alt); }
+    .zone.is-over, .zone.is-target { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .zone.is-error { border-color: var(--tm-fail); }
+    .zone h3 { margin: 0 0 10px; font-size: 1.05rem; }
+    .zone .task-chip { width: 100%; margin-bottom: 8px; }
+    .memo { margin-top: 8px; }
+    .memo__body { margin-top: 10px; background: var(--tm-bg); color: var(--tm-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; }
+    .memo__body ul { margin: 0; padding-left: 1.2em; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-bg); color: var(--tm-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 15px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .review-item { margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--tm-border); }
+    .review-item h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .review-opt { margin: 6px 0; }
+    .review-opt--ok { color: var(--tm-ok); font-weight: 700; }
+    .review-table { width: 100%; border-collapse: collapse; font-size: .95em; }
+    .review-table th, .review-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--tm-border); vertical-align: top; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+    h2 { font-size: 1.15rem; margin: 0 0 10px; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 18 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Канбан и backlog</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 11</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Перед тобой чужой план проекта — трекера привычек. В нём восемь ситуаций, где что-то сделано неправильно. Разбери их. Потом разложи двенадцать задач по двум частям backlog: обязательное по ТЗ и «если останется время». Порог: 6 ситуаций из 8 и не меньше 10 верных задач из 12.</p>
+</section>
+
+<div class="tabs" role="tablist" aria-label="Части тренажёра">
+  <button class="tm-btn tm-btn--primary" id="tabCases" role="tab" aria-selected="true" type="button">Ситуации</button>
+  <button class="tm-btn tm-btn--ghost" id="tabBacklog" role="tab" aria-selected="false" type="button">Backlog</button>
+</div>
+
+<section id="paneCases" class="tm-card" role="tabpanel" aria-labelledby="tabCases">
+  <p class="tm-eyebrow">►► СИТУАЦИИ</p>
+  <div class="tm-progress" id="caseProgress" aria-label="Прогресс по ситуациям"></div>
+  <div class="layout-cases">
+    <div>
+      <h2 id="caseTitle"></h2>
+      <p id="caseText"></p>
+      <div class="choices" id="choices"></div>
+      <p class="why hide" id="caseWhy"></p>
+      <div class="case-nav">
+        <span class="case-nav__meta" id="caseMeta"></span>
+        <button class="tm-btn tm-btn--ghost" id="prevBtn" type="button">Назад</button>
+        <button class="tm-btn tm-btn--ghost" id="nextBtn" type="button">Дальше</button>
+      </div>
+    </div>
+    <aside class="panel" id="projectPanel" aria-label="Состояние проекта">
+      <p class="tm-eyebrow">►► СОСТОЯНИЕ ПРОЕКТА</p>
+      <div class="panel__row" data-field="lesson"><span class="panel__k">Занятие:</span><span class="panel__v" id="pLesson"></span></div>
+      <div class="panel__row" data-field="doing"><span class="panel__k">В работе задач:</span><span class="panel__v" id="pDoing"></span></div>
+      <div class="panel__row" data-field="link"><span class="panel__k">Публичная ссылка:</span><span class="panel__v" id="pLink"></span></div>
+      <div class="panel__row" data-field="must"><span class="panel__k">Обязательное:</span><span class="panel__v" id="pMust"></span></div>
+      <p class="panel__note" id="pNote"></p>
+    </aside>
+  </div>
+</section>
+
+<section id="paneBacklog" class="tm-card hide" role="tabpanel" aria-labelledby="tabBacklog">
+  <p class="tm-eyebrow">►► BACKLOG</p>
+  <h2>Разложи двенадцать задач</h2>
+  <p>Перетащи карточку в зону или кликни по карточке, затем по зоне. Памятка ТЗ рядом — подглядывать можно.</p>
+  <p class="status-line" id="poolLabel">Ещё не разложено</p>
+  <div class="pool" id="taskPool" aria-label="Неразложенные задачи"></div>
+  <div class="board-wrap">
+    <div class="zone" id="zoneMust" data-zone="must" tabindex="0">
+      <h3>Без этого проект не принимается</h3>
+    </div>
+    <div class="zone" id="zoneNice" data-zone="nice" tabindex="0">
+      <h3>Если останется время</h3>
+    </div>
+  </div>
+</section>
+
+<section class="tm-card memo">
+  <p class="tm-eyebrow">►► ПАМЯТКА ТЗ</p>
+  <button class="tm-btn tm-btn--ghost" id="memoBtn" type="button" aria-expanded="false" aria-controls="memoBody">Показать памятку ТЗ</button>
+  <div class="memo__body hide" id="memoBody">
+    <ul>
+      <li>адаптив Mobile First, Grid и Flexbox</li>
+      <li>тёмная тема на CSS-переменных</li>
+      <li>aria-атрибуты, label + for, осмысленные alt</li>
+      <li>работа с DOM</li>
+      <li>минимум одна форма с валидацией</li>
+      <li>минимум один запрос к публичному API — обязательно с фолбэком</li>
+      <li>localStorage</li>
+      <li>микроанимации: наведение, клик, загрузка</li>
+      <li>10+ осмысленных коммитов, ветки, Pull Request</li>
+      <li>публичная ссылка, автодеплой</li>
+      <li>README и иконки от ИИ — с пониманием результата</li>
+    </ul>
+  </div>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Показать разбор</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► РАЗБОР</p>
+  <div id="reviewCases"></div>
+  <h2>Задача → зона → строка ТЗ</h2>
+  <div id="reviewTable"></div>
+</section>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Канбан-доска</dt><dd>Таблица из трёх колонок, показывающая состояние каждой задачи проекта.</dd>
+    <dt>Backlog</dt><dd>Список всех задач проекта, ещё не взятых в работу. Делится на обязательное и «если останется время».</dd>
+    <dt>MVP</dt><dd>Минимальный работающий продукт: то, что уже можно показать и назвать готовым.</dd>
+    <dt>Спринт</dt><dd>Отрезок работы с заранее объявленным результатом; у нас — одно занятие.</dd>
+  </dl>
+</section>
+
+<details class="teacher">
+  <summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> три состояния задачи, формулировка на одно занятие, черта обязательное / желаемое по тексту ТЗ, правило работающего билда.</li>
+    <li><strong>Норматив:</strong> 10–15 мин. Общая «Проверить» смотрит обе вкладки; переключение их не сбрасывает.</li>
+    <li><strong>Типичные ошибки:</strong> пять колонок; «сделать трекер» как одна задача; четыре строки в «в работе»; статистика и звук наверху backlog; «сделано» без публикации.</li>
+    <li><strong>Зачёт:</strong> тесты 2–9 не меньше 6 из 8; тесты 10 и 11 обязательны. Задачи 9–12 не должны оказаться в обязательном — иначе «10 из 12» получается даром.</li>
+    <li><strong>Усложнение:</strong> тема P03–P06, сверка своего BOARD.md с тем же правилом черты.</li>
+    <li><strong>Упрощение:</strong> сначала только backlog с открытой памяткой, ситуации — вместе вслух.</li>
+    <li><strong>ИИ:</strong> модель проверяет полноту плана, а не составляет его. Добавили пункты — уберите столько же из второй части.</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  const DRAFT_KEY = "wdc-l18-kanban-v1";
+  const LETTERS = ["А", "Б", "В", "Г"];
+
+  const CASES = [
+    {
+      title: "Ситуация 1",
+      q: "Ты завёл доску. Сколько колонок делать?",
+      options: [
+        { t: "Пять: очередь, в работе, почти сделано, на проверке, сделано", ok: false, why: "«Почти сделано» на практике означает «не сделано»; лишние состояния размывают картину вместо того, чтобы её уточнять." },
+        { t: "Три: в очереди, в работе, сделано", ok: true, why: "Трёх достаточно, чтобы в любую минуту видеть, где ты находишься." },
+        { t: "Две: сделать и сделано", ok: false, why: "Пропадает главное — что именно взято в работу прямо сейчас." },
+        { t: "Одну: список задач", ok: false, why: "Это уже не доска, а перечень: состояние задач в нём не видно." }
+      ]
+    },
+    {
+      title: "Ситуация 2",
+      q: "Какая из формулировок годится как задача на доске?",
+      options: [
+        { t: "«Сделать трекер привычек»", ok: false, why: "Это весь проект: в конце занятия невозможно ответить «сделано или нет»." },
+        { t: "«Разобраться с localStorage»", ok: false, why: "Нет видимого результата: разобрался — а на экране ничего не изменилось." },
+        { t: "«Сохранять привычки в localStorage и восстанавливать при загрузке страницы»", ok: true, why: "Действие, предмет, проверяемый результат. Союз «и» здесь соединяет две стороны одного дела — сохранение без восстановления бессмысленно." },
+        { t: "«Форма и валидация и сохранение»", ok: false, why: "Три разных дела в одной строке; закрыть такую задачу целиком за раз не выйдет." }
+      ]
+    },
+    {
+      title: "Ситуация 3",
+      q: "Панель: В работе задач: 4. Занятие только началось. Что делаешь?",
+      options: [
+        { t: "Ничего, это нормально: работаю над всем сразу", ok: false, why: "Четыре начатых задачи к концу занятия дадут четыре наполовину готовых и ни одной законченной." },
+        { t: "Оставляю одну, три возвращаю в «в очередь»", ok: true, why: "Правило одной задачи в работе существует ровно против этого состояния." },
+        { t: "Переношу все четыре в «сделано», доделаю по ходу", ok: false, why: "«Сделано» означает результат, который можно открыть; авансом туда не переносят." },
+        { t: "Добавляю пятую, чтобы точно чем-то заняться", ok: false, why: "Неверно и ровно наоборот полезному действию." }
+      ]
+    },
+    {
+      title: "Ситуация 4",
+      q: "В какую часть backlog идёт задача «Добавить статистику по неделям»?",
+      options: [
+        { t: "В обязательную: без статистики панель выглядит бедно", ok: false, why: "Ощущение бедности не критерий; критерий — текст ТЗ." },
+        { t: "В «если останется время»: в требованиях статистики нет", ok: true, why: "Наверх попадает только то, на что можно показать пальцем в ТЗ." },
+        { t: "В обязательную, потому что это работа с данными", ok: false, why: "Работа с данными закрывается другими задачами, которые в ТЗ названы прямо." },
+        { t: "Не вносить вообще", ok: false, why: "Идея хорошая, ей место во второй части: если время останется, она пригодится." }
+      ]
+    },
+    {
+      title: "Ситуация 5",
+      q: "Что такое MVP?",
+      options: [
+        { t: "Черновик проекта, который потом переделают", ok: false, why: "MVP не черновик: он работает и его можно показать." },
+        { t: "Самая красивая версия проекта", ok: false, why: "Красота к определению отношения не имеет." },
+        { t: "Минимальная версия, которая уже решает задачу пользователя и которую можно показать как готовую", ok: true, why: "Велосипед без багажника едет; рама без колёс — нет." },
+        { t: "Половина запланированных задач", ok: false, why: "Половина случайных задач может не складываться в работающий продукт вообще." }
+      ]
+    },
+    {
+      title: "Ситуация 6",
+      q: "Панель: Занятие: 21 из 23, Обязательное: закрыто 3 из 11. Ты понимаешь, что не успеваешь. Что делаешь?",
+      options: [
+        { t: "Работаю быстрее и надеюсь успеть", ok: false, why: "Надежда не план; к занятию 22 обязательное закрыто не будет." },
+        { t: "Переношу часть обязательного на занятие 23", ok: false, why: "На занятии 23 тестирование, багфикс и README; там нет места для новой функциональности." },
+        { t: "Сокращаю проект: вычёркиваю всё из второй части и упрощаю обязательные задачи до минимума", ok: true, why: "Правило курса: если MVP под угрозой, объём сокращают, а не добавляют функции." },
+        { t: "Прошу перенести защиту", ok: false, why: "Дата защиты — контрольная точка программы, она не двигается." }
+      ]
+    },
+    {
+      title: "Ситуация 7",
+      q: "Панель: Публичная ссылка: версия занятия 20. Сейчас конец занятия 21, локально всё работает. Что не так?",
+      options: [
+        { t: "Ничего, код же написан", ok: false, why: "Написанный код и опубликованный проект — разные вещи." },
+        { t: "Нарушено правило работающего билда: в конце занятия проект должен быть опубликован и не сломан", ok: true, why: "Пока не опубликовано, единственная рабочая версия живёт на твоём экране." },
+        { t: "Надо было работать в main, а не в ветке", ok: false, why: "Работать в ветке правильно; не хватает слияния и публикации готового." },
+        { t: "Публичная ссылка вообще не нужна до занятия 23", ok: false, why: "Она нужна с занятия 20: это и страховка, и способ проверки." }
+      ]
+    },
+    {
+      title: "Ситуация 8",
+      q: "Задача доделана, работает локально, не закоммичена. Куда её на доске?",
+      options: [
+        { t: "В «сделано»: работа выполнена", ok: false, why: "Результат нельзя открыть: по ссылке его нет." },
+        { t: "Оставить в «в работе» до коммита и публикации", ok: true, why: "«Сделано» означает, что результат можно показать." },
+        { t: "В «в очередь», раз не закончена", ok: false, why: "Задача не возвращается назад: работа над ней идёт прямо сейчас." },
+        { t: "Завести колонку «почти сделано»", ok: false, why: "Четвёртая колонка — это тот самый способ спрятать «не сделано» за красивым словом." }
+      ]
+    }
+  ];
+
+  const PROJECT = [
+    { lesson: "18 из 23", doing: "0", link: "нет", must: "закрыто 0 из 11", note: "Доска только заведена. Панель — объект на этой странице, не репозиторий.", hot: [] },
+    { lesson: "18 из 23", doing: "0", link: "нет", must: "закрыто 0 из 11", note: "Формулируем задачи. Публичной ссылки ещё нет.", hot: [] },
+    { lesson: "21 из 23", doing: "4", link: "версия занятия 20", must: "закрыто 3 из 11", note: "Занятие только началось. Смотри строку «В работе задач».", hot: ["doing"] },
+    { lesson: "21 из 23", doing: "1", link: "версия занятия 20", must: "закрыто 3 из 11", note: "В работе снова одна задача. Черту в backlog проводим по тексту ТЗ.", hot: [] },
+    { lesson: "21 из 23", doing: "1", link: "версия занятия 20", must: "закрыто 3 из 11", note: "Обязательное ещё не закрыто. MVP — не черновик.", hot: [] },
+    { lesson: "21 из 23", doing: "1", link: "версия занятия 20", must: "закрыто 3 из 11", note: "До занятия 22 одно занятие. Смотри «Занятие» и «Обязательное».", hot: ["lesson", "must"] },
+    { lesson: "21 из 23", doing: "1", link: "версия занятия 20", must: "закрыто 3 из 11", note: "Конец занятия 21, локально всё работает. Смотри публичную ссылку.", hot: ["link"] },
+    { lesson: "21 из 23", doing: "1", link: "версия занятия 20", must: "закрыто 3 из 11", note: "Задача готова у тебя на экране. По ссылке её ещё нет.", hot: ["doing", "link"] }
+  ];
+
+  const TASKS = [
+    { id: "1", text: "Адаптив от 320 px, сетка на Grid", zone: "must", why: "ТЗ: адаптивная вёрстка Mobile First, Grid и Flexbox" },
+    { id: "2", text: "Тёмная тема через data-theme, выбор сохраняется", zone: "must", why: "ТЗ: поддержка тёмной темы на CSS-переменных" },
+    { id: "3", text: "Форма добавления с label и for", zone: "must", why: "ТЗ: работа с формами и доступность" },
+    { id: "4", text: "Валидация: пустое поле даёт сообщение", zone: "must", why: "ТЗ: валидация формы" },
+    { id: "5", text: "Запрос к сервису подсказок с FALLBACK и пометкой", zone: "must", why: "ТЗ: минимум один публичный API; фолбэк — правило курса" },
+    { id: "6", text: "Сохранение и восстановление в localStorage", zone: "must", why: "ТЗ: сохранение данных в localStorage" },
+    { id: "7", text: "Микроанимация наведения и нажатия", zone: "must", why: "ТЗ: микроанимации (наведение, клик, загрузка)" },
+    { id: "8", text: "README по шаблону и иконка от ИИ", zone: "must", why: "ТЗ: README и иконки/логотип с помощью ИИ" },
+    { id: "9", text: "Статистика по неделям с графиком", zone: "nice", why: "В ТЗ нет ни статистики, ни графиков" },
+    { id: "10", text: "Экспорт результатов в текстовый файл", zone: "nice", why: "В ТЗ нет экспорта" },
+    { id: "11", text: "Звук при отметке дня", zone: "nice", why: "В ТЗ нет звука; к микроанимациям он не относится" },
+    { id: "12", text: "Три темы оформления на выбор", zone: "nice", why: "ТЗ требует одну тёмную тему, а не набор оформлений" }
+  ];
+  const TASK_ORDER = ["9", "1", "10", "3", "2", "11", "5", "4", "12", "6", "7", "8"];
+
+  const HINTS = [
+    "Про каждую ситуацию спрашивай одно: что я смогу показать в конце занятия? Почти все правильные ответы — те, что увеличивают количество законченного, а не начатого.",
+    "Черта в backlog проводится не по ощущению, а по тексту. Возьми памятку требований и для каждой задачи найди строку, к которой она относится. Нашёл строку — задача наверх. Не нашёл — вниз, какой бы полезной она ни казалась. Спорных случаев тут нет: либо слово есть в требованиях, либо его нет.",
+    "Задача годится, если в ней есть все четыре:\n  действие  — начинается с глагола или существительного действия\n  предмет   — что именно меняется\n  результат — что станет видно на экране\n  одно дело — нет союза «и», соединяющего разные вещи\n\n«Сделать форму и валидацию»          → два дела, разделить\n«Разобраться с localStorage»         → нет видимого результата\n«Валидация: пустое поле даёт\n сообщение под полем»                → годится"
+  ];
+
+  const CORRECT = ["Б", "В", "Б", "Б", "В", "В", "Б", "Б"];
+
+  const score = document.getElementById("score");
+  const testsEl = document.getElementById("tests");
+  const hintsEl = document.getElementById("hints");
+  const honesty = document.getElementById("honesty");
+  const bar = document.getElementById("bar");
+  const etalonBtn = document.getElementById("etalonBtn");
+  const etalonBox = document.getElementById("etalonBox");
+  const paneCases = document.getElementById("paneCases");
+  const paneBacklog = document.getElementById("paneBacklog");
+  const tabCases = document.getElementById("tabCases");
+  const tabBacklog = document.getElementById("tabBacklog");
+  const checkBtn = document.getElementById("checkBtn");
+
+  let answers = [null, null, null, null, null, null, null, null];
+  let zones = {};
+  let tab = "cases";
+  let hintsOpened = 0;
+  let caseIndex = 0;
+  let pickedId = null;
+  let saveTimer = null;
+  let lastResults = null;
+  let reviewBuilt = false;
+
+  function taskById(id) {
+    return TASKS.find(function (t) { return t.id === id; });
+  }
+
+  function unanswered() {
+    const list = [];
+    answers.forEach(function (a, i) { if (!a) list.push(i + 1); });
+    return list;
+  }
+
+  function zoneStats() {
+    let correct = 0;
+    const niceWrong = [];
+    TASKS.forEach(function (t) {
+      if (zones[t.id] === t.zone) correct += 1;
+      if (Number(t.id) >= 9 && zones[t.id] === "must") niceWrong.push(t.id);
+    });
+    const niceOk = ["9", "10", "11", "12"].every(function (id) { return zones[id] === "nice"; });
+    return { correct: correct, niceOk: niceOk, niceWrong: niceWrong };
+  }
+
+  function TESTS() {
+    const miss = unanswered();
+    const z = zoneStats();
+    return [
+      {
+        name: "Отвечены все восемь ситуаций",
+        okText: "Все восемь ситуаций пройдены",
+        hint: "Без ответа: " + (miss.length ? miss.join(", ") : "—") + ". Серые деления в полосе прогресса — неотвеченные",
+        run: function () { return answers.filter(Boolean).length === 8; }
+      },
+      {
+        name: "Ситуация 1: три колонки",
+        okText: "Верно: трёх состояний достаточно",
+        hint: "Чем больше состояний, тем меньше доска сообщает. Что на практике означает «почти сделано»?",
+        run: function () { return answers[0] === "Б"; }
+      },
+      {
+        name: "Ситуация 2: формулировка задачи",
+        okText: "Верно: действие, предмет, проверяемый результат",
+        hint: "Проверь варианты по четырём признакам: есть ли действие, назван ли предмет, будет ли видимый результат, не соединяет ли «и» разные дела",
+        run: function () { return answers[1] === "В"; }
+      },
+      {
+        name: "Ситуация 3: одна задача в работе",
+        okText: "Верно: в работе одна задача",
+        hint: "Панель показывает четыре задачи в работе в начале занятия. Что из них будет закончено к концу?",
+        run: function () { return answers[2] === "Б"; }
+      },
+      {
+        name: "Ситуация 4: черта по ТЗ",
+        okText: "Верно: наверх — только то, что названо в требованиях",
+        hint: "Открой памятку ТЗ и найди в ней слово «статистика». Нашёл? Вот и ответ",
+        run: function () { return answers[3] === "Б"; }
+      },
+      {
+        name: "Ситуация 5: определение MVP",
+        okText: "Верно: минимальная версия, которая уже работает",
+        hint: "Два слова в определении: «минимальный» и «работающий». Какой из вариантов удерживает оба?",
+        run: function () { return answers[4] === "В"; }
+      },
+      {
+        name: "Ситуация 6: сокращать, а не добавлять",
+        okText: "Верно: под угрозой MVP объём сокращают",
+        hint: "Панель: занятие 21, закрыто 3 из 11. До занятия 22 осталось одно занятие. Что можно изменить — количество времени или количество задач?",
+        run: function () { return answers[5] === "В"; }
+      },
+      {
+        name: "Ситуация 7: правило работающего билда",
+        okText: "Верно: в конце занятия проект опубликован",
+        hint: "Панель говорит: по ссылке версия занятия 20, а сейчас конец 21-го. Где сейчас живёт единственная рабочая версия твоей новой работы?",
+        run: function () { return answers[6] === "Б"; }
+      },
+      {
+        name: "Ситуация 8: что значит «сделано»",
+        okText: "Верно: «сделано» — это когда можно открыть",
+        hint: "Определение «сделано» на курсе: не «написал код», а… что?",
+        run: function () { return answers[7] === "Б"; }
+      },
+      {
+        name: "Backlog: не меньше 10 задач из 12 в верной зоне",
+        okText: "Разложено верно: " + z.correct + " из 12",
+        hint: "Верно " + z.correct + " из 12. Возьми памятку ТЗ и пройди по задачам подряд: для каждой найди строку требования. Не нашёл строку — задача идёт вниз",
+        run: function () { return z.correct >= 10; }
+      },
+      {
+        name: "Ни одна из задач 9–12 не попала в обязательное",
+        okText: "Приятные, но не обязательные задачи на своём месте",
+        hint: "Наверх уехало то, чего в ТЗ нет: " + z.niceWrong.length + " задач. Проверь каждую вопросом «на какую строку требований я могу показать пальцем»",
+        run: function () { return z.niceOk; }
+      }
+    ];
+  }
+
+  function runOne(t) {
+    let ok = false;
+    try { ok = !!t.run(); } catch (e) { ok = false; }
+    return { name: t.name, hint: t.hint, okText: t.okText, ok: ok };
+  }
+
+  function passedThreshold(list) {
+    const sit = list.slice(1, 9);
+    const sitOk = sit.filter(function (r) { return r.ok; }).length >= 6;
+    return sitOk && list[9].ok && list[10].ok;
+  }
+
+  function saveDraft() {
+    const data = { answers: answers, zones: zones, tab: tab, hintsOpened: hintsOpened };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveDraft, 280);
+  }
+
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") return;
+    if (Array.isArray(data.answers) && data.answers.length === 8) answers = data.answers.slice();
+    if (data.zones && typeof data.zones === "object") zones = data.zones;
+    if (data.tab === "cases" || data.tab === "backlog") tab = data.tab;
+    const n = Number(data.hintsOpened);
+    hintsOpened = n >= 0 && n <= 3 ? n : 0;
+  }
+
+  function applyPanel(i) {
+    const p = PROJECT[i];
+    document.getElementById("pLesson").textContent = p.lesson;
+    document.getElementById("pDoing").textContent = p.doing;
+    document.getElementById("pLink").textContent = p.link;
+    document.getElementById("pMust").textContent = p.must;
+    document.getElementById("pNote").textContent = p.note;
+    document.querySelectorAll("#projectPanel .panel__row").forEach(function (row) {
+      row.classList.toggle("is-hot", p.hot.indexOf(row.getAttribute("data-field")) !== -1);
+    });
+  }
+
+  function renderProgress() {
+    const box = document.getElementById("caseProgress");
+    box.innerHTML = "";
+    for (let i = 0; i < 8; i += 1) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tm-progress__cell" + (answers[i] ? " is-done" : "") + (i === caseIndex ? " is-current" : "");
+      btn.title = "Ситуация " + (i + 1);
+      btn.setAttribute("aria-label", "Ситуация " + (i + 1) + (answers[i] ? ", есть ответ" : ", нет ответа"));
+      btn.addEventListener("click", function () { caseIndex = i; renderCase(); });
+      box.appendChild(btn);
+    }
+  }
+
+  function renderCase() {
+    const item = CASES[caseIndex];
+    document.getElementById("caseTitle").textContent = item.title;
+    document.getElementById("caseText").textContent = item.q;
+    document.getElementById("caseMeta").textContent = (caseIndex + 1) + " из 8";
+    document.getElementById("prevBtn").disabled = caseIndex === 0;
+    document.getElementById("nextBtn").disabled = caseIndex === 7;
+    applyPanel(caseIndex);
+    renderProgress();
+    const box = document.getElementById("choices");
+    box.innerHTML = "";
+    item.options.forEach(function (opt, i) {
+      const letter = LETTERS[i];
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice" + (answers[caseIndex] === letter ? " is-on" : "");
+      btn.textContent = letter + ") " + opt.t;
+      btn.addEventListener("click", function () {
+        answers[caseIndex] = letter;
+        scheduleSave();
+        renderCase();
+      });
+      box.appendChild(btn);
+    });
+    const why = document.getElementById("caseWhy");
+    const chosen = answers[caseIndex];
+    if (chosen) {
+      const opt = item.options[LETTERS.indexOf(chosen)];
+      why.classList.remove("hide");
+      why.textContent = (opt.ok ? "Верно. " : "Неверно. ") + opt.why;
+    } else {
+      why.classList.add("hide");
+      why.textContent = "";
+    }
+  }
+
+  function makeChip(task) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "task-chip" + (pickedId === task.id ? " is-picked" : "");
+    btn.draggable = true;
+    btn.dataset.id = task.id;
+    btn.textContent = task.text;
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (pickedId === task.id) pickedId = null;
+      else pickedId = task.id;
+      renderBoard();
+    });
+    btn.addEventListener("dragstart", function (e) {
+      pickedId = task.id;
+      try { e.dataTransfer.setData("text/plain", task.id); } catch (err) {}
+      e.dataTransfer.effectAllowed = "move";
+    });
+    return btn;
+  }
+
+  function placeTask(id, zone) {
+    if (!id || (zone !== "must" && zone !== "nice")) return;
+    zones[id] = zone;
+    pickedId = null;
+    scheduleSave();
+    renderBoard();
+  }
+
+  function renderBoard() {
+    const pool = document.getElementById("taskPool");
+    const must = document.getElementById("zoneMust");
+    const nice = document.getElementById("zoneNice");
+    pool.innerHTML = "";
+    must.innerHTML = "<h3>Без этого проект не принимается</h3>";
+    nice.innerHTML = "<h3>Если останется время</h3>";
+    let leftover = 0;
+    TASK_ORDER.forEach(function (id) {
+      const task = taskById(id);
+      const chip = makeChip(task);
+      if (zones[id] === "must") must.appendChild(chip);
+      else if (zones[id] === "nice") nice.appendChild(chip);
+      else {
+        pool.appendChild(chip);
+        leftover += 1;
+      }
+    });
+    document.getElementById("poolLabel").textContent = leftover
+      ? "Ещё не разложено: " + leftover
+      : "Все двенадцать задач разложены";
+    must.classList.toggle("is-target", !!pickedId);
+    nice.classList.toggle("is-target", !!pickedId);
+  }
+
+  function bindZone(el, zone) {
+    el.addEventListener("click", function () {
+      if (pickedId) placeTask(pickedId, zone);
+    });
+    el.addEventListener("keydown", function (e) {
+      if ((e.key === "Enter" || e.key === " ") && pickedId) {
+        e.preventDefault();
+        placeTask(pickedId, zone);
+      }
+    });
+    el.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      el.classList.add("is-over");
+    });
+    el.addEventListener("dragleave", function () { el.classList.remove("is-over"); });
+    el.addEventListener("drop", function (e) {
+      e.preventDefault();
+      el.classList.remove("is-over");
+      let id = pickedId;
+      try { id = e.dataTransfer.getData("text/plain") || pickedId; } catch (err) {}
+      placeTask(id, zone);
+    });
+  }
+
+  function setTab(next) {
+    tab = next === "backlog" ? "backlog" : "cases";
+    const isBack = tab === "backlog";
+    paneCases.classList.toggle("hide", isBack);
+    paneBacklog.classList.toggle("hide", !isBack);
+    tabCases.setAttribute("aria-selected", String(!isBack));
+    tabBacklog.setAttribute("aria-selected", String(isBack));
+    tabCases.className = "tm-btn " + (isBack ? "tm-btn--ghost" : "tm-btn--primary");
+    tabBacklog.className = "tm-btn " + (isBack ? "tm-btn--primary" : "tm-btn--ghost");
+    scheduleSave();
+  }
+
+  function replayHints() {
+    hintsEl.innerHTML = "";
+    for (let i = 0; i < hintsOpened; i += 1) {
+      appendHint(i);
+    }
+    if (hintsOpened >= 3) unlockReview("подсказки");
+  }
+
+  function appendHint(i) {
+    if (i === 2) {
+      const wrap = document.createElement("div");
+      wrap.className = "hint";
+      const p = document.createElement("p");
+      p.textContent = "Подсказка 3.";
+      const pre = document.createElement("pre");
+      pre.className = "tm-code";
+      pre.textContent = HINTS[2];
+      wrap.appendChild(p);
+      wrap.appendChild(pre);
+      hintsEl.appendChild(wrap);
+      return;
+    }
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "Подсказка " + (i + 1) + ". " + HINTS[i];
+    hintsEl.appendChild(p);
+  }
+
+  function buildReview() {
+    if (reviewBuilt) return;
+    reviewBuilt = true;
+    const box = document.getElementById("reviewCases");
+    CASES.forEach(function (item, idx) {
+      const block = document.createElement("article");
+      block.className = "review-item";
+      const h = document.createElement("h3");
+      h.textContent = item.title + ". " + item.q;
+      block.appendChild(h);
+      item.options.forEach(function (opt, i) {
+        const p = document.createElement("p");
+        p.className = "review-opt" + (opt.ok ? " review-opt--ok" : "");
+        p.textContent = LETTERS[i] + ") " + opt.t + " — " + (opt.ok ? "верно. " : "неверно. ") + opt.why;
+        block.appendChild(p);
+      });
+      box.appendChild(block);
+    });
+    const table = document.createElement("table");
+    table.className = "review-table";
+    table.innerHTML = "<thead><tr><th>Задача</th><th>Зона</th><th>Строка ТЗ</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    TASKS.forEach(function (t) {
+      const tr = document.createElement("tr");
+      const a = document.createElement("td");
+      a.textContent = t.text;
+      const b = document.createElement("td");
+      b.textContent = t.zone === "must" ? "без этого не принимается" : "если останется время";
+      const c = document.createElement("td");
+      c.textContent = t.why;
+      tr.appendChild(a); tr.appendChild(b); tr.appendChild(c);
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    document.getElementById("reviewTable").appendChild(table);
+  }
+
+  function unlockReview(reason) {
+    etalonBtn.disabled = false;
+    buildReview();
+    if (reason === "подсказки") etalonBox.classList.remove("hide");
+  }
+
+  function renderResults(list) {
+    lastResults = list;
+    const passed = list.filter(function (r) { return r.ok; }).length;
+    testsEl.innerHTML = list.map(function (r) {
+      return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+        '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + '</span>' +
+        "<div><div>" + r.name + "</div>" +
+        (r.ok
+          ? '<div class="tm-test__hint">' + r.okText + "</div>"
+          : '<div class="tm-test__hint">' + r.hint + "</div>") +
+        "</div></div>";
+    }).join("");
+    score.textContent = passed + " / " + list.length;
+    bar.style.width = Math.round(passed / list.length * 100) + "%";
+    const ok = passedThreshold(list);
+    const hintNote = "Подсказок открыто: " + hintsOpened + ".";
+    if (ok) {
+      honesty.textContent = "Задача сдана. " + hintNote + " Честность важнее очков.";
+      unlockReview();
+    } else {
+      honesty.textContent = hintNote + (hintsOpened ? " Честность важнее очков." : "");
+      if (hintsOpened >= 3) unlockReview();
+    }
+  }
+
+  function runChecks() {
+    clearTimeout(saveTimer);
+    saveDraft();
+    renderResults(TESTS().map(runOne));
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+  });
+
+  tabCases.addEventListener("click", function () { setTab("cases"); });
+  tabBacklog.addEventListener("click", function () { setTab("backlog"); });
+
+  document.getElementById("prevBtn").addEventListener("click", function () {
+    if (caseIndex > 0) { caseIndex -= 1; renderCase(); }
+  });
+  document.getElementById("nextBtn").addEventListener("click", function () {
+    if (caseIndex < 7) { caseIndex += 1; renderCase(); }
+  });
+
+  document.getElementById("memoBtn").addEventListener("click", function () {
+    const body = document.getElementById("memoBody");
+    const open = body.classList.contains("hide");
+    body.classList.toggle("hide", !open);
+    this.setAttribute("aria-expanded", String(open));
+    this.textContent = open ? "Скрыть памятку ТЗ" : "Показать памятку ТЗ";
+  });
+
+  bindZone(document.getElementById("zoneMust"), "must");
+  bindZone(document.getElementById("zoneNice"), "nice");
+  document.getElementById("taskPool").addEventListener("click", function () {
+    if (pickedId && zones[pickedId]) {
+      delete zones[pickedId];
+      pickedId = null;
+      scheduleSave();
+      renderBoard();
+    }
+  });
+
+  checkBtn.addEventListener("click", runChecks);
+
+  document.getElementById("hintBtn").addEventListener("click", function () {
+    if (hintsOpened >= HINTS.length) return;
+    appendHint(hintsOpened);
+    hintsOpened += 1;
+    honesty.textContent = "Подсказок открыто: " + hintsOpened + ". Честность важнее очков.";
+    if (hintsOpened === HINTS.length) unlockReview("подсказки");
+    scheduleSave();
+  });
+
+  etalonBtn.addEventListener("click", function () {
+    if (etalonBtn.disabled) return;
+    buildReview();
+    etalonBox.classList.toggle("hide");
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Сбросить ответы и раскладку? Черновик очистится.")) return;
+    answers = [null, null, null, null, null, null, null, null];
+    zones = {};
+    tab = "cases";
+    hintsOpened = 0;
+    caseIndex = 0;
+    pickedId = null;
+    lastResults = null;
+    reviewBuilt = false;
+    hintsEl.innerHTML = "";
+    testsEl.innerHTML = "";
+    score.textContent = "0 / 11";
+    bar.style.width = "0";
+    honesty.textContent = "";
+    etalonBtn.disabled = true;
+    etalonBox.classList.add("hide");
+    document.getElementById("reviewCases").innerHTML = "";
+    document.getElementById("reviewTable").innerHTML = "";
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    setTab("cases");
+    renderCase();
+    renderBoard();
+  });
+
+  loadDraft();
+  setTab(tab);
+  renderCase();
+  renderBoard();
+  replayHints();
+})();
+</script>
+</body>
+</html>

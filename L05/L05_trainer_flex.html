@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тренажёр · Занятие 5 · Flexbox</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+    header.top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 34px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    header.top p { margin: 0; color: var(--tm-muted); font-size: 15px; }
+    .course-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+    .course-links a {
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .brief, .ref, .status, .tests, .hints, .solution, .gloss, .teacher, .spec {
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    html[data-theme="dark"] .brief,
+    html[data-theme="dark"] .ref,
+    html[data-theme="dark"] .status,
+    html[data-theme="dark"] .tests,
+    html[data-theme="dark"] .hints,
+    html[data-theme="dark"] .solution,
+    html[data-theme="dark"] .gloss,
+    html[data-theme="dark"] .spec {
+      background: var(--tm-bg-alt);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    p, li { line-height: 1.55; font-size: 17px; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+    .spec h3 { font-size: 16px; margin: 16px 0 8px; }
+    .spec h3:first-child { margin-top: 0; }
+    .spec ol, .tm-list { margin: 0; padding-left: 0; list-style: none; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: 0.6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      color: var(--tm-green);
+      font-size: 0.78em;
+      letter-spacing: -0.08em;
+    }
+    .ref-page {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .ref-page .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .ref-page .mid { padding: 16px 14px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1fr 1fr; }
+    }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks { grid-template-columns: 1fr 1fr; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .blocks-src, .blocks-dst {
+      min-width: 0;
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 16px;
+    }
+    .blocks-src h2, .blocks-dst h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .layout.is-blocks .pool {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .layout.is-blocks .chip { max-width: none; width: 100%; }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+      caret-color: var(--tm-text);
+    }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      box-shadow: var(--tm-shadow);
+    }
+    .meter {
+      height: 8px;
+      background: var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width 0.22s ease;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      font: inherit;
+      font-weight: 650;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      cursor: pointer;
+    }
+    button.ghost {
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border: 2px solid var(--tm-border);
+    }
+    html[data-theme="dark"] button.ghost { background: var(--tm-bg-alt); }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    html[data-theme="dark"] .pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .pill.ok {
+      background: var(--tm-green-soft);
+      color: var(--tm-ok);
+      border-color: var(--tm-ok);
+    }
+    .test {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--tm-border);
+      font-size: 15px;
+    }
+    .test .hint { color: var(--tm-fail); display: block; margin-top: 4px; }
+    .hintbox {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--tm-green-soft);
+      border-radius: 12px;
+    }
+    .hintbox.open { display: block; }
+    .locked #solBody { display: none; }
+    code, pre { font-family: var(--tm-mono); font-size: 0.92em; }
+    pre.tm-code {
+      white-space: pre-wrap;
+      font-size: 15px;
+      margin: 0;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+    }
+    #solCode {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      padding: 14px;
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      overflow: auto;
+    }
+    .gloss dt { font-weight: 650; margin-top: 12px; font-size: 15px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; box-shadow: none; background: transparent; padding: 8px 0; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); }
+    .hide { display: none !important; }
+    .modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 20px;
+    }
+    .modes button {
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .modes button[aria-pressed="true"] {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 52px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .chip.is-picked, .chip.chip-flash {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .chip.chip-flash { outline-color: var(--tm-fail); }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .page-frame {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .page-frame .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 12px;
+      font-weight: 650;
+    }
+    .page-frame .mid { padding: 12px; }
+    .slot-lab {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 6px;
+      color: var(--tm-muted);
+    }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--tm-bg);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Раскладка на Flexbox</h1>
+        <p>Занятие 5 · буфет «Северный пирог»</p>
+      </div>
+      <p id="scoreline">0 из 11 проверок</p>
+    </header>
+    <nav class="course-links" aria-label="Курс">
+      <a href="../index.html">►► Все занятия</a>
+      <a href="L05_presentation.html">►► Презентация</a>
+      <a href="../L04/L04_presentation.html">►► Занятие 4</a>
+      <a href="../L06/L06_presentation.html">►► Занятие 6</a>
+      <button type="button" class="ghost" id="themeBtn">Тема</button>
+    </nav>
+
+    <div class="modes" role="tablist" aria-label="Как решать">
+      <button type="button" id="modeCodeBtn" aria-pressed="true">1. Писать код</button>
+      <button type="button" id="modeBlocksBtn" aria-pressed="false">2. Собрать блоками</button>
+    </div>
+
+    <section class="brief spec">
+      <h2>ТЗ</h2>
+      <p>Заказ буфета «Северный пирог».<br>Собери раскладку страницы так, чтобы она не разъезжалась на телефоне.</p>
+      <ul class="tm-list">
+        <li>Шапка: название слева, кнопка справа, выровнены по центру высоты</li>
+        <li>Меню: карточки в ряд, с равными промежутками, с переносом на узком экране</li>
+        <li>Карточки делят ширину между собой, фиксированных пикселей нет</li>
+        <li>Подвал прижат к низу окна</li>
+        <li><code>box-sizing: border-box</code> первой строкой</li>
+      </ul>
+      <p>Без <code>float</code> и без <code>position: absolute</code>.</p>
+      <div id="specCode">
+        <h3>Как сделать кодом</h3>
+        <ol>
+          <li>Первой строкой — <code>*, *::before, *::after { box-sizing: border-box; }</code>.</li>
+          <li>Шапке <code>.top</code> — ряд, <code>space-between</code>, <code>align-items: center</code>.</li>
+          <li>Меню <code>.menu</code> — флекс, перенос, <code>gap</code>. Карточке — <code>flex: 1 1 220px</code>.</li>
+          <li>Каркас: <code>body</code> колонкой на <code>min-height: 100vh</code>, <code>main { flex: 1; }</code>.</li>
+        </ol>
+      </div>
+      <div id="specBlocks" class="hide">
+        <h3>Как сделать блоками</h3>
+        <p>Слева блоки CSS, справа поля. Чип ставится кликом, перетаскиванием или клавишей Enter.</p>
+      </div>
+    </section>
+
+    <section class="ref">
+      <h2>Эталон-цель</h2>
+      <p class="lead">Название слева, кнопка справа; карточки в ряд с переносом; подвал внизу окна.</p>
+      <div class="ref-page">
+        <div class="bar">header.top · Северный пирог · кнопка</div>
+        <div class="mid">
+          <p>Меню: калитка, рыбник, брусничный, ватрушка — ряд с gap и wrap.</p>
+        </div>
+        <div class="bar">footer.bottom · первый этаж</div>
+      </div>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <strong>Прогресс:</strong>
+      <span id="score">0 / 0</span>
+      · подсказок открыто: <span id="hintCount">0</span>/3
+      · <span id="badge" class="pill">ещё собираем</span>
+      <div class="meter"><span id="bar"></span></div>
+      <div class="row">
+        <button type="button" id="checkBtn">Проверить</button>
+        <button type="button" class="ghost" id="resetBtn">Сбросить</button>
+        <button type="button" class="ghost" id="saveBtn">Скачать страницу</button>
+      </div>
+      <p id="honesty" class="lead" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="layout">
+      <div id="paneCode">
+        <h2>Редактор</h2>
+        <textarea id="editor" spellcheck="false" aria-label="Код страницы"></textarea>
+      </div>
+      <div id="paneBlocks" class="blocks-board hide">
+        <div class="blocks-src">
+          <h2>Блоки кода</h2>
+          <p class="lead">Слева блоки, справа поля.</p>
+          <div class="pool" id="blockPool" aria-label="Готовые фрагменты"></div>
+        </div>
+        <div class="blocks-dst">
+          <h2>Поля</h2>
+          <div class="page-frame">
+            <div class="bar">CSS страницы</div>
+            <div class="mid">
+              <span class="slot-lab">Блочная модель</span>
+              <div class="slot" data-accept="boxsizing"></div>
+              <span class="slot-lab">Каркас страницы</span>
+              <div class="slot" data-accept="body"></div>
+              <span class="slot-lab">Шапка</span>
+              <div class="slot" data-accept="top"></div>
+              <span class="slot-lab">Ряд карточек</span>
+              <div class="slot" data-accept="menu"></div>
+              <span class="slot-lab">Карточка</span>
+              <div class="slot" data-accept="card"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panePreview">
+        <h2>Результат</h2>
+        <iframe id="preview" title="Превью страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <section class="tests">
+      <h2>Самопроверка</h2>
+      <p class="lead">Проверки смотрят getComputedStyle в окне iframe и способ записи в исходнике.</p>
+      <div id="testList"></div>
+    </section>
+
+    <section class="hints">
+      <h2>Подсказки</h2>
+      <p class="lead">Три подсказки. На демо — своими словами.</p>
+      <div class="row">
+        <button type="button" class="ghost" data-hint="0">1 — вопрос</button>
+        <button type="button" class="ghost" data-hint="1">2 — приём</button>
+        <button type="button" class="ghost" data-hint="2">3 — фрагмент</button>
+      </div>
+      <div class="hintbox" id="h0">Кого ты расставляешь в ряд — и кто их общий родитель? Свойство display: flex пишется родителю. И второй вопрос: что произойдёт с твоими карточками, если сузить окно до ширины телефона?</div>
+      <div class="hintbox" id="h1">Контейнеру ряда: display: flex, flex-wrap: wrap, gap. Карточке: flex: 1 1 220px вместо width. Шапке: justify-content: space-between вдоль ряда и align-items: center поперёк. Каркасу: body { min-height: 100vh; display: flex; flex-direction: column } и main { flex: 1 }.</div>
+      <div class="hintbox" id="h2"><pre class="tm-code">*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card { flex: 1 1 220px; }</pre></div>
+    </section>
+
+    <section class="solution locked" id="solutionBox">
+      <h2>Эталонное решение</h2>
+      <p id="solGate">Откроется, когда все проверки зелёные или открыты три подсказки.</p>
+      <div id="solBody" hidden>
+        <p><strong>Почему так:</strong> display: flex пишется родителю. gap не оставляет крайний отступ. flex: 1 1 220px делит ширину без фиксированных пикселей. Подвал прижимает main { flex: 1 } на колонке body, а не position: absolute.</p>
+        <pre id="solCode"></pre>
+      </div>
+    </section>
+
+    <section class="gloss" id="glossary">
+      <h2>Глоссарий занятия</h2>
+      <dl>
+        <dt>Flexbox</dt>
+        <dd>Ряд или колонка: display: flex на родителе.</dd>
+        <dt>Основная ось</dt>
+        <dd>Вдоль неё работает justify-content.</dd>
+        <dt>gap</dt>
+        <dd>Промежуток у контейнера, не margin у детей.</dd>
+        <dt>flex-wrap</dt>
+        <dd>wrap — перенос, если ряд не влезает.</dd>
+        <dt>flex: 1 1 220px</dt>
+        <dd>Базовый размер 220 px с правом растянуться и сжаться.</dd>
+        <dt>box-sizing</dt>
+        <dd>border-box включает padding и рамку в ширину.</dd>
+      </dl>
+    </section>
+
+    <details class="teacher">
+      <summary>Карточка педагога</summary>
+      <ul>
+        <li><strong>Навык:</strong> Flexbox: ряд карточек, оси, gap, wrap, каркас страницы.</li>
+        <li><strong>Норматив:</strong> 25–40 мин. Код или блоки. Scaffolding — образец.</li>
+        <li><strong>Типичные ошибки:</strong> flex на карточке; нет wrap; margin вместо gap; width: 220px; подвал абсолютом; float.</li>
+        <li><strong>Готово, когда:</strong> 11 зелёных и вслух: кому пишут display: flex и зачем wrap.</li>
+        <li><strong>Усложнение:</strong> max-width и центрирование main — только после базы, тестами не ловим.</li>
+        <li><strong>Поддержка:</strong> режим блоков; сначала меню, потом шапка, потом каркас.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type="text/plain" id="starter"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный пирог</title>
+  <style>
+    /* твой код здесь: box-sizing для всех элементов */
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      background: #f4f6f3;
+      /* твой код здесь: высота во весь экран, вертикальный флекс */
+    }
+
+    main {
+      padding: 24px;
+      /* твой код здесь: забрать всё свободное место */
+    }
+
+    .top {
+      padding: 16px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid #e3e7e1;
+      /* твой код здесь: ряд, края врозь, по центру высоты */
+    }
+
+    .top h1 { margin: 0; font-size: 26px; }
+
+    .menu {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      /* твой код здесь: ряд, перенос, промежутки */
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e3e7e1;
+      border-radius: 14px;
+      padding: 16px;
+      /* твой код здесь: базовый размер с правом растянуться и сжаться */
+    }
+
+    .bottom {
+      padding: 16px 24px;
+      background: #ffffff;
+      border-top: 1px solid #e3e7e1;
+    }
+    .bottom p { margin: 0; }
+  </style>
+</head>
+<body>
+
+  <header class="top">
+    <h1>Северный пирог</h1>
+    <button type="button">Тёмная тема</button>
+  </header>
+
+  <main>
+    <h2>Меню на сегодня</h2>
+    <ul class="menu">
+      <li class="card">Калитка с картошкой<br>45 ₽</li>
+      <li class="card">Рыбник<br>90 ₽</li>
+      <li class="card">Брусничный пирог<br>70 ₽</li>
+      <li class="card">Черничная ватрушка<br>60 ₽</li>
+    </ul>
+  </main>
+
+  <footer class="bottom">
+    <p>Первый этаж, у актового зала.</p>
+  </footer>
+
+</body>
+</html>
+</script>
+
+  <script type="text/plain" id="etalon"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный пирог</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      background: #f4f6f3;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      padding: 24px;
+      flex: 1;
+    }
+
+    .top {
+      padding: 16px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid #e3e7e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .top h1 { margin: 0; font-size: 26px; }
+
+    .menu {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e3e7e1;
+      border-radius: 14px;
+      padding: 16px;
+      flex: 1 1 220px;
+    }
+
+    .bottom {
+      padding: 16px 24px;
+      background: #ffffff;
+      border-top: 1px solid #e3e7e1;
+    }
+    .bottom p { margin: 0; }
+  </style>
+</head>
+<body>
+
+  <header class="top">
+    <h1>Северный пирог</h1>
+    <button type="button">Тёмная тема</button>
+  </header>
+
+  <main>
+    <h2>Меню на сегодня</h2>
+    <ul class="menu">
+      <li class="card">Калитка с картошкой<br>45 ₽</li>
+      <li class="card">Рыбник<br>90 ₽</li>
+      <li class="card">Брусничный пирог<br>70 ₽</li>
+      <li class="card">Черничная ватрушка<br>60 ₽</li>
+    </ul>
+  </main>
+
+  <footer class="bottom">
+    <p>Первый этаж, у актового зала.</p>
+  </footer>
+
+</body>
+</html>
+</script>
+
+  <script>
+    (function () {
+      const KEY = "wdc-l05-flex-v1";
+      const MODE_KEY = "wdc-l05-mode-v1";
+      const TOTAL = 11;
+      const DOWNLOAD = "l05-flex.html";
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      function fromPlain(id) {
+        return document.getElementById(id).textContent.replace(/^\n/, "").replace(/<\\\/script>/gi, "<" + "/script>");
+      }
+      const starter = fromPlain("starter");
+      const etalon = fromPlain("etalon");
+      const testList = document.getElementById("testList");
+      const scoreEl = document.getElementById("score");
+      const scoreline = document.getElementById("scoreline");
+      const bar = document.getElementById("bar");
+      const badge = document.getElementById("badge");
+      const honesty = document.getElementById("honesty");
+      const hintCountEl = document.getElementById("hintCount");
+      const solBody = document.getElementById("solBody");
+      const solGate = document.getElementById("solGate");
+      const solCode = document.getElementById("solCode");
+      const solutionBox = document.getElementById("solutionBox");
+      solCode.textContent = etalon;
+
+      const openedHints = new Set();
+      let debounceId = 0;
+      let lastPassed = 0;
+      let mode = "code";
+      let picked = null;
+      const BLOCKS = [
+        { id: "bs-ok", accept: "boxsizing", label: "border-box для всех", show: "* { box-sizing }",
+          html: '*, *::before, *::after { box-sizing: border-box; }' },
+        { id: "bs-bad", accept: "none", label: "border-box только карточке", show: ".card { box-sizing }",
+          html: '.card { box-sizing: border-box; }' },
+        { id: "body-ok", accept: "body", label: "Каркас: колонка во весь экран", show: "min-height + column",
+          html: 'body {\n      font-family: Arial, Helvetica, sans-serif;\n      margin: 0;\n      background: #f4f6f3;\n      min-height: 100vh;\n      display: flex;\n      flex-direction: column;\n    }\n\n    main { padding: 24px; flex: 1; }' },
+        { id: "body-bad", accept: "none", label: "Каркас: подвал абсолютом", show: "position: absolute",
+          html: 'body {\n      font-family: Arial, Helvetica, sans-serif;\n      margin: 0;\n      background: #f4f6f3;\n      position: relative;\n    }\n\n    main { padding: 24px; }\n\n    .bottom { position: absolute; bottom: 0; width: 100%; }' },
+        { id: "top-ok", accept: "top", label: "Шапка: края врозь, по центру", show: "space-between + center",
+          html: '.top {\n      padding: 16px 24px;\n      background: #ffffff;\n      border-bottom: 1px solid #e3e7e1;\n      display: flex;\n      justify-content: space-between;\n      align-items: center;\n      gap: 16px;\n    }\n\n    .top h1 { margin: 0; font-size: 26px; }' },
+        { id: "top-bad", accept: "none", label: "Шапка на float", show: "float: left / right",
+          html: '.top {\n      padding: 16px 24px;\n      background: #ffffff;\n    }\n\n    .top h1 { float: left; margin: 0; }\n    .top button { float: right; margin-top: 12px; }' },
+        { id: "menu-ok", accept: "menu", label: "Меню: ряд с переносом и gap", show: "flex-wrap + gap",
+          html: '.menu {\n      list-style: none;\n      padding-left: 0;\n      margin: 0;\n      display: flex;\n      flex-wrap: wrap;\n      gap: 20px;\n    }' },
+        { id: "menu-bad1", accept: "none", label: "Меню: ряд без переноса", show: "flex, нет wrap",
+          html: '.menu {\n      list-style: none;\n      padding-left: 0;\n      margin: 0;\n      display: flex;\n      gap: 20px;\n    }' },
+        { id: "menu-bad2", accept: "none", label: "Меню: флекс написан карточке", show: ".card { display: flex }",
+          html: '.menu { list-style: none; padding-left: 0; margin: 0; }\n\n    .card { display: flex; }' },
+        { id: "card-ok", accept: "card", label: "Карточка: делит ширину", show: "flex: 1 1 220px",
+          html: '.card {\n      background: #ffffff;\n      border: 1px solid #e3e7e1;\n      border-radius: 14px;\n      padding: 16px;\n      flex: 1 1 220px;\n    }' },
+        { id: "card-bad", accept: "none", label: "Карточка: жёсткая ширина", show: "width: 220px",
+          html: '.card {\n      background: #ffffff;\n      border: 1px solid #e3e7e1;\n      border-radius: 14px;\n      padding: 16px;\n      width: 220px;\n      margin-right: 20px;\n    }' }
+      ];
+      
+      const PAGE_HEAD = "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"utf-8\">\n" +
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" +
+        "  <title>Северный пирог</title>\n  <style>\n    ";
+      const PAGE_TAIL = "\n    .bottom {\n      padding: 16px 24px;\n      background: #ffffff;\n      border-top: 1px solid #e3e7e1;\n    }\n" +
+        "    .bottom p { margin: 0; }\n  </style>\n</head>\n<body>\n\n" +
+        "  <header class=\"top\">\n    <h1>Северный пирог</h1>\n    <button type=\"button\">Тёмная тема</button>\n  </header>\n\n" +
+        "  <main>\n    <h2>Меню на сегодня</h2>\n    <ul class=\"menu\">\n" +
+        "      <li class=\"card\">Калитка с картошкой<br>45 ₽</li>\n" +
+        "      <li class=\"card\">Рыбник<br>90 ₽</li>\n" +
+        "      <li class=\"card\">Брусничный пирог<br>70 ₽</li>\n" +
+        "      <li class=\"card\">Черничная ватрушка<br>60 ₽</li>\n" +
+        "    </ul>\n  </main>\n\n" +
+        "  <footer class=\"bottom\">\n    <p>Первый этаж, у актового зала.</p>\n  </footer>\n\n</body>\n</html>";
+
+
+      function stripComments(src) {
+        return String(src).replace(/\/\*[\s\S]*?\*\//g, "").replace(/<!--[\s\S]*?-->/g, "");
+      }
+      function gapPx(cs) {
+        const raw = ((cs.gap && cs.gap !== "normal") ? cs.gap : (cs.rowGap || cs.columnGap || ""));
+        if (!raw || raw === "normal") return 0;
+        const nums = String(raw).match(/[\d.]+/g);
+        if (!nums) return 0;
+        return Math.max.apply(null, nums.map(Number));
+      }
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+      function slotHtml(accept) {
+        const chip = document.querySelector('#paneBlocks .slot[data-accept="' + accept + '"] .chip');
+        if (!chip) return "";
+        const item = findBlock(chip.dataset.id);
+        return item ? item.html : "";
+      }
+      function htmlFromBlocks() {
+        return PAGE_HEAD +
+          slotHtml("boxsizing") + "\n\n    " +
+          slotHtml("body") + "\n\n    " +
+          slotHtml("top") + "\n\n    " +
+          slotHtml("menu") + "\n\n    " +
+          slotHtml("card") +
+          PAGE_TAIL;
+      }
+      function makeChip(item, uid) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.dataset.id = item.id;
+        b.dataset.uid = uid;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (picked === b) {
+            b.classList.remove("is-picked");
+            picked = null;
+            return;
+          }
+          document.querySelectorAll(".chip.is-picked").forEach(function (c) { c.classList.remove("is-picked"); });
+          picked = b;
+          b.classList.add("is-picked");
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          e.preventDefault();
+          const slot = Array.prototype.find.call(
+            document.querySelectorAll("#paneBlocks .slot"),
+            function (s) {
+              return s.getAttribute("data-accept") === item.accept && !s.querySelector(".chip");
+            }
+          );
+          if (slot) {
+            placeChip(slot, b);
+          } else {
+            b.classList.add("chip-flash");
+            setTimeout(function () { b.classList.remove("chip-flash"); }, 400);
+          }
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", uid);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        b.addEventListener("dragover", function (e) { e.preventDefault(); });
+        b.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slot = b.closest(".slot");
+          if (picked && slot) {
+            placeChip(slot, picked);
+            return;
+          }
+          if (picked && picked.parentElement !== document.getElementById("blockPool")) {
+            document.getElementById("blockPool").appendChild(picked);
+            picked.classList.remove("is-picked");
+            picked = null;
+            editor.value = htmlFromBlocks();
+            previewDoc();
+          }
+        });
+        return b;
+      }
+      function fillBlocks() {
+        const pool = document.getElementById("blockPool");
+        pool.innerHTML = "";
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.innerHTML = "";
+        });
+        shuffle(BLOCKS).forEach(function (item, i) {
+          pool.appendChild(makeChip(item, "b" + i + item.id));
+        });
+      }
+      function placeChip(slot, chip) {
+        const old = slot.querySelector(".chip");
+        if (old) document.getElementById("blockPool").appendChild(old);
+        slot.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        editor.value = htmlFromBlocks();
+        previewDoc();
+      }
+      function bindBlocks() {
+        const pool = document.getElementById("blockPool");
+        const pane = document.getElementById("paneBlocks");
+        function returnToPool() {
+          if (!picked || picked.parentElement === pool) return;
+          pool.appendChild(picked);
+          picked.classList.remove("is-picked");
+          picked = null;
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+        pool.addEventListener("click", returnToPool);
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          returnToPool();
+        });
+        pane.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (picked) placeChip(slot, picked);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(slot, picked);
+          });
+        });
+      }
+      function setMode(next) {
+        mode = next;
+        const isCode = next === "code";
+        document.getElementById("modeCodeBtn").setAttribute("aria-pressed", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-pressed", String(!isCode));
+        document.getElementById("paneCode").classList.toggle("hide", !isCode);
+        document.getElementById("paneBlocks").classList.toggle("hide", isCode);
+        document.querySelector(".layout").classList.toggle("is-blocks", !isCode);
+        document.getElementById("specCode").classList.toggle("hide", !isCode);
+        document.getElementById("specBlocks").classList.toggle("hide", isCode);
+        try { localStorage.setItem(MODE_KEY, next); } catch (e) {}
+        if (isCode) {
+          const hasChip = !!document.querySelector("#paneBlocks .slot .chip");
+          if (hasChip) {
+            editor.value = htmlFromBlocks();
+          } else {
+            try { editor.value = localStorage.getItem(KEY) || starter; } catch (e) { editor.value = starter; }
+          }
+          previewDoc();
+        } else {
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+      }
+      function previewDoc() {
+        const baseHref = new URL("./", window.location.href).href;
+        let html = editor.value;
+        if (/<head[^>]*>/i.test(html)) {
+          html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + baseHref + '">');
+        }
+        preview.srcdoc = html;
+        if (mode === "code") {
+          try { localStorage.setItem(KEY, editor.value); } catch (e) {}
+        }
+      }
+      function schedulePreview() {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(previewDoc, 280);
+      }
+      editor.addEventListener("input", schedulePreview);
+
+      
+      function testsFor(doc, src, win) {
+        const clean = stripComments(src);
+        const card = doc.querySelector(".card");
+        const menu = doc.querySelector(".menu");
+        const top = doc.querySelector(".top");
+        const body = doc.body;
+        const main = doc.querySelector("main");
+        const cardCs = card && win ? win.getComputedStyle(card) : null;
+        const menuCs = menu && win ? win.getComputedStyle(menu) : null;
+        const topCs = top && win ? win.getComputedStyle(top) : null;
+        const bodyCs = body && win ? win.getComputedStyle(body) : null;
+        const mainCs = main && win ? win.getComputedStyle(main) : null;
+        const cardRule = (clean.match(/\.card\s*\{([^}]*)\}/) || [])[1] || "";
+        const hasWidthPx = /width\s*:\s*\d+(\.\d+)?px/.test(cardRule);
+        const grow = cardCs ? parseFloat(cardCs.flexGrow) : 0;
+        const basis = cardCs ? cardCs.flexBasis : "auto";
+        const minH = bodyCs ? parseFloat(bodyCs.minHeight) : 0;
+        const frameH = win ? win.innerHeight : 0;
+        const marginsZero = !!(cardCs &&
+          parseFloat(cardCs.marginTop) === 0 &&
+          parseFloat(cardCs.marginRight) === 0 &&
+          parseFloat(cardCs.marginBottom) === 0 &&
+          parseFloat(cardCs.marginLeft) === 0);
+        return [
+          {
+            ok: !!(cardCs && cardCs.boxSizing === "border-box"),
+            title: "Блочная модель настроена",
+            hint: "Без box-sizing: border-box заданная ширина не включает отступы и рамку, и блоки не помещаются в строку. Поставь *, *::before, *::after { box-sizing: border-box; } первой строкой стилей"
+          },
+          {
+            ok: !!(menuCs && menuCs.display === "flex"),
+            title: "Меню стало рядом",
+            hint: "Карточки не встали в ряд. Проверь, какому элементу ты написал display: flex: свойство получает их общий родитель — список .menu, а не сама карточка"
+          },
+          {
+            ok: !!(menuCs && menuCs.flexWrap === "wrap"),
+            title: "Перенос разрешён",
+            hint: "Без flex-wrap: wrap карточки не переносятся, а сжимаются: на узком экране они превратятся в вертикальные полоски по два символа"
+          },
+          {
+            ok: !!(menuCs && gapPx(menuCs) > 0),
+            title: "Промежутки заданы",
+            hint: "Карточки слиплись. Промежуток внутри флекс-контейнера задаётся свойством gap у самого контейнера"
+          },
+          {
+            ok: marginsZero,
+            title: "Отступы у карточек не используются",
+            hint: "Промежутки заданы margin у карточек. Так у крайней остаётся лишний отступ, а при переносе строки пропадает вертикальный промежуток. Убери margin и задай gap контейнеру"
+          },
+          {
+            ok: !!(cardCs && grow > 0 && basis !== "auto" && !hasWidthPx),
+            title: "Карточки делят ширину",
+            hint: "width: 220px не даст карточке ни растянуться, ни сжаться: справа останется пустота, а на узком экране появится прокрутка. Используй flex: 1 1 220px"
+          },
+          {
+            ok: !!(topCs && topCs.display === "flex" && topCs.justifyContent === "space-between"),
+            title: "Края шапки разнесены",
+            hint: "Название должно уйти влево, кнопка вправо. Это justify-content: space-between — распределение вдоль основной оси"
+          },
+          {
+            ok: !!(topCs && topCs.alignItems === "center"),
+            title: "Шапка выровнена по высоте",
+            hint: "Заголовок и кнопка разной высоты и стоят кривовато. Выравнивание поперёк ряда — это align-items: center"
+          },
+          {
+            ok: !!(bodyCs && bodyCs.display === "flex" && bodyCs.flexDirection === "column" && minH >= frameH),
+            title: "Каркас страницы собран",
+            hint: "Чтобы прижать подвал, body делают вертикальным флекс-контейнером высотой не меньше экрана: min-height: 100vh; display: flex; flex-direction: column"
+          },
+          {
+            ok: !!(mainCs && parseFloat(mainCs.flexGrow) >= 1),
+            title: "Подвал прижат вниз",
+            hint: "Подвал прижимается не сам: свободное место должна забрать основная часть. Добавь main { flex: 1; }"
+          },
+          {
+            ok: !/float\s*:\s*(left|right)/.test(clean) && !/position\s*:\s*absolute/.test(clean),
+            title: "Раскладка без устаревших приёмов",
+            hint: "float для раскладки — приём двадцатилетней давности, position: absolute вынимает элемент из потока, и подвал наедет на текст. Основная раскладка на курсе строится Flexbox"
+          }
+        ];
+      }
+
+
+      function maybeUnlock(done) {
+        const unlocked = done || openedHints.size >= 3;
+        if (!unlocked) return;
+        solBody.hidden = false;
+        solutionBox.classList.remove("locked");
+        solGate.textContent = done
+          ? "Эталон открыт: все проверки пройдены."
+          : "Эталон открыт: использованы три подсказки.";
+      }
+      function renderTests(results) {
+        testList.innerHTML = "";
+        let passed = 0;
+        results.forEach(function (t) {
+          if (t.ok) passed += 1;
+          const div = document.createElement("div");
+          div.className = "test";
+          div.textContent = (t.ok ? "✅ " : "❌ ") + t.title;
+          if (!t.ok) {
+            const hint = document.createElement("span");
+            hint.className = "hint";
+            hint.textContent = t.hint;
+            div.appendChild(hint);
+          }
+          testList.appendChild(div);
+        });
+        lastPassed = passed;
+        const total = results.length;
+        scoreEl.textContent = passed + " / " + total;
+        scoreline.textContent = passed + " из " + total + " проверок";
+        bar.style.width = (passed / total * 100) + "%";
+        const done = passed === total;
+        badge.textContent = done ? "Раскладка собрана" : "ещё собираем";
+        badge.className = "pill" + (done ? " ok" : "");
+        maybeUnlock(done);
+        return done;
+      }
+      function run() {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        clearTimeout(debounceId);
+        const source = editor.value;
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const doc = preview.contentDocument;
+          if (!doc || !doc.body) {
+            renderTests([{ ok: false, title: "Документ не разобрался", hint: "Проверьте незакрытые теги и фигурные скобки в CSS." }]);
+            return;
+          }
+          renderTests(testsFor(doc, source, doc.defaultView));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(finish, 60);
+        });
+        previewDoc();
+        setTimeout(function () { if (!finished) finish(); }, 1500);
+      }
+      document.getElementById("checkBtn").addEventListener("click", run);
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!window.confirm("Вернуть заготовку?")) return;
+        if (mode === "blocks") {
+          fillBlocks();
+          editor.value = htmlFromBlocks();
+        } else {
+          editor.value = starter;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+        }
+        previewDoc();
+        testList.innerHTML = "";
+        scoreEl.textContent = "0 / 0";
+        scoreline.textContent = "0 из " + TOTAL + " проверок";
+        bar.style.width = "0";
+        badge.textContent = "ещё собираем";
+        badge.className = "pill";
+      });
+      document.getElementById("saveBtn").addEventListener("click", function () {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = DOWNLOAD;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+      });
+      document.querySelectorAll("[data-hint]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const n = btn.getAttribute("data-hint");
+          openedHints.add(n);
+          document.getElementById("h" + n).classList.add("open");
+          hintCountEl.textContent = String(openedHints.size);
+          honesty.textContent = openedHints.size
+            ? "Открыты подсказки: " + Array.from(openedHints).map(function (x) { return Number(x) + 1; }).join(", ") + "."
+            : "";
+          maybeUnlock(lastPassed === TOTAL);
+        });
+      });
+      fillBlocks();
+      bindBlocks();
+      document.getElementById("modeCodeBtn").addEventListener("click", function () { setMode("code"); });
+      document.getElementById("modeBlocksBtn").addEventListener("click", function () { setMode("blocks"); });
+      try {
+        editor.value = localStorage.getItem(KEY) || starter;
+      } catch (e) {
+        editor.value = starter;
+      }
+      try {
+        const savedMode = localStorage.getItem(MODE_KEY);
+        if (savedMode === "blocks" || savedMode === "code") mode = savedMode;
+      } catch (e) {}
+      setMode(mode);
+    })();
+
+  </script>
+</body>
+</html>

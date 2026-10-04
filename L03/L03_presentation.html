@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 3. Формы, таблицы, медиа-элементы</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 3</strong>
+      <span>Формы, таблицы, медиа-элементы</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 15</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Вчера страница рассказывала. Сегодня она начнёт слушать» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 2 · ЗАНЯТИЕ 3</p>
+        <h1>Формы, таблицы, медиа-элементы</h1>
+        <p class="lead">Занятие 3 из 24. Сегодня страница начинает принимать данные, а не только показывать.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L03_trainer_form.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L02/L02_presentation.html">►► Занятие 2</a>
+          <a class="tm-btn tm-btn--ghost" href="../L04/L04_presentation.html">►► Занятие 4</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Заказчик посмотрел вашу работу и вернулся с уточнением. Так это и работает в реальной разработке» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>Очередь никуда не делась</h2>
+        <p>Марина Петровна: «Стало понятнее, но люди всё равно стоят. Одни выбирают на месте, другие приходят к 11:30 и узнают, что рыбник кончился». Нужны: запись заранее и часы работы</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Спросите себя про каждое поле: зачем оно Марине Петровне? Не можете ответить — поле лишнее» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Форма — единственное место, где данные идут к тебе</h2>
+        <ul class="tm-list">
+          <li>Всё остальное на странице — витрина</li>
+          <li>Формой пользуются в спешке, с телефона, иногда без мыши</li>
+          <li><strong>У пользователя нельзя просить лишние данные</strong> — каждое поле надо уметь обосновать</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «`for` и `id` должны совпадать. Сейчас покажу, что будет, если поменять одну букву» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Устройство формы</h2>
+        <p>Форма оборачивает всё. Внутри — пары «подпись + поле» и кнопка в конце</p>
+        <pre class="tm-code">&lt;form&gt;
+<span class="hl">  &lt;label for="name"&gt;Имя&lt;/label&gt;</span>
+<span class="hl">  &lt;input type="text" id="name"&gt;</span>
+  &lt;button type="submit"&gt;Записаться&lt;/button&gt;
+&lt;/form&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «На компьютере разницы почти не видно. На телефоне — огромная. Проверьте дома» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Тип поля выбирают по смыслу данных</h2>
+        <ul class="tm-list">
+          <li><code>text</code> — строка</li>
+          <li><code>tel</code> — телефон, на мобильном откроет цифры</li>
+          <li><code>time</code> — время, покажет удобный выбор</li>
+          <li><code>number</code> с <code>min</code> и <code>max</code> — число в границах</li>
+        </ul>
+        <pre class="tm-code">&lt;input type="time" id="time"&gt;
+&lt;input type="number" min="1" max="5"&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Красиво — да. Пользоваться нельзя. `label` обязателен всегда, `placeholder` — только для формата» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>placeholder</code> вместо подписи</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Подсказка исчезает при первом же символе. Через два поля человек уже не помнит, что было в первом. Программа чтения её может не прочитать вовсе</p>
+          <pre class="tm-code">&lt;input type="text" placeholder="Имя"&gt;
+&lt;input type="text" placeholder="Класс"&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Подсказка: это можно проверить мышкой, ничего не открывая» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Как за одну секунду проверить, что подпись связана с полем?</h2>
+        <p>Обсуждаем вслух. Ответ не показываем</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Одинаковый `name` — это и есть группа. Разные `name` — и включатся оба, а вы будете искать ошибку полчаса» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Выбор из вариантов</h2>
+        <ul class="tm-list">
+          <li><code>&lt;select&gt;</code> — один из многих, вариантов больше пяти</li>
+          <li>Переключатели — один из двух-четырёх, все видны</li>
+          <li>Флажки — сколько угодно или ни одного</li>
+          <li><strong>У переключателей одной группы одинаковый <code>name</code></strong></li>
+        </ul>
+        <pre class="tm-code">&lt;input type="radio" name="slot" value="bigbreak"&gt;
+&lt;input type="radio" name="slot" value="after"&gt;</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза, затем переход к демонстрации Tab) -->
+        <h2>Кнопка, до которой <span class="hl">нельзя дойти</span>, — это не кнопка</h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Плюс `onclick` прямо в разметке — так на курсе не пишем. Обработчики вешаются из JavaScript, дойдём на занятии 10» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Кнопка из <code>&lt;div&gt;</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Не получает фокус клавишей Tab. Не нажимается Enter и пробелом. Программа чтения не объявит её кнопкой</p>
+          <pre class="tm-code">&lt;div class="btn" onclick="send()"&gt;
+  Записаться
+&lt;/div&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Незрячий пользователь слышит не „9:00“, а „Суббота, открыт, 9:00“. Это и делает `scope`» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Таблица — для данных, не для раскладки</h2>
+        <ul class="tm-list">
+          <li><code>&lt;caption&gt;</code> — подпись, что за данные</li>
+          <li><code>&lt;th scope="col"&gt;</code> — заголовок столбца</li>
+          <li><code>&lt;th scope="row"&gt;</code> — заголовок строки</li>
+          <li><code>&lt;td&gt;</code> — обычная ячейка</li>
+        </ul>
+        <pre class="tm-code">&lt;table&gt;
+  &lt;caption&gt;Часы работы&lt;/caption&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+<span class="hl">      &lt;th scope="col"&gt;День&lt;/th&gt;</span>
+      &lt;th scope="col"&gt;Открыт&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Суббота&lt;/th&gt;
+      &lt;td&gt;9:00 — 13:00&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Хотите увидеть свой `alt` глазами — испортите путь к файлу и обновите. На месте картинки появится ваш текст» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2><code>alt</code> — не подпись, а замена картинки</h2>
+        <ul class="tm-list">
+          <li>Картинка что-то сообщает → описываем содержимое</li>
+          <li>Картинка декоративная → пустой <code>alt=""</code></li>
+          <li>Слово «картинка» в <code>alt</code> не пишем никогда</li>
+        </ul>
+        <pre class="tm-code">&lt;img src="pie.svg"
+<span class="hl">     alt="Брусничный пирог с решётчатой корочкой"&gt;</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Здесь нет одного правильного ответа. Важно, чтобы вы обосновали свой» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Меню из шести пирогов с ценами — список или таблица?</h2>
+        <p>Обсуждаем вслух. Оба ответа можно обосновать — это и интересно</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Две проверки перед сдачей: нажать по всем подписям и пройти Tab от начала до конца» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Добавляешь в свою страницу форму предзаказа и таблицу часов работы</li>
+          <li>Вставляешь картинку с осмысленным описанием</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> нажатие по каждой подписи ставит курсор в поле, кнопка настоящая, в таблице есть <code>caption</code> и <code>th</code>, вся форма проходится клавишей Tab</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L03_trainer_form.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L02/L02_presentation.html">►► Занятие 2</a>
+          <a class="tm-btn tm-btn--ghost" href="../L04/L04_presentation.html">►► Занятие 4</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И отдельное задание: спросите модель, зачем в форме буфета поле „домашний адрес“. Правильный ответ — незачем. Посмотрим, кто поймает галлюцинацию» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: проверка формы на доступность</h2>
+        <pre class="tm-code">Ты проверяешь HTML-форму начинающего верстальщика на доступность.
+Контекст: форма предзаказа для школьного буфета. Только HTML, без CSS и JavaScript. Данные никуда не отправляются: это учебная страница. Уровень автора — третье занятие курса.
+Задача: проверь мою форму и найди места, где человеку с программой чтения вслух или без мыши будет неудобно или невозможно ей пользоваться.
+Ограничения: не переписывай форму целиком; не предлагай CSS, JavaScript, библиотеки и aria-атрибуты — их мы ещё не проходили; не предлагай добавлять новые поля; пиши по-русски.
+Формат ответа: нумерованный список, не больше шести пунктов. В каждом: что не так → кому именно это мешает → как исправить одной строкой кода.
+Критерии проверки: каждый пункт относится к строке, которая есть в моей форме; исправление — валидный HTML; ничего не выдумано сверх моего кода.
+
+Вот моя форма:
+[вставь сюда свой код]</pre>
+        <p><strong>Проверить руками:</strong> замечание про реальную строку · атрибут существует · не подменяет <code>label</code> на <code>aria-label</code> · исправление работает · не предлагает лишних полей · ты можешь объяснить каждую правку</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 3</h3>
+      <dl>
+        <dt>Форма</dt>
+        <dd>Блок для передачи данных от человека: поля, выбор вариантов, кнопка отправки.</dd>
+        <dt>&lt;form&gt;</dt>
+        <dd>Тег, оборачивающий форму целиком. Всё, что внутри, отправляется вместе.</dd>
+        <dt>&lt;input&gt;</dt>
+        <dd>Поле ввода одного значения. Вид зависит от атрибута <code>type</code>.</dd>
+        <dt>type</dt>
+        <dd>Атрибут, задающий вид поля: <code>text</code>, <code>tel</code>, <code>email</code>, <code>date</code>, <code>time</code>, <code>number</code>, <code>radio</code>, <code>checkbox</code>.</dd>
+        <dt>&lt;label&gt;</dt>
+        <dd>Подпись к полю. Связывается с ним через <code>for</code> и <code>id</code>. Обязательна всегда.</dd>
+        <dt>for и id</dt>
+        <dd>Пара атрибутов, связывающая подпись с полем. Должны совпадать полностью.</dd>
+        <dt>placeholder</dt>
+        <dd>Серая подсказка внутри пустого поля. Исчезает при вводе. Подписью не является.</dd>
+        <dt>required</dt>
+        <dd>Атрибут «поле обязательно». Браузер не даст отправить форму, пока оно пустое.</dd>
+        <dt>&lt;select&gt; и &lt;option&gt;</dt>
+        <dd>Выпадающий список и его вариант. <code>value</code> уходит с формой, текст видит человек.</dd>
+        <dt>Переключатели (type="radio")</dt>
+        <dd>Выбор одного варианта из нескольких. Группу задаёт одинаковый <code>name</code>.</dd>
+        <dt>Флажок (type="checkbox")</dt>
+        <dd>Самостоятельная отметка: включена или нет.</dd>
+        <dt>&lt;textarea&gt;</dt>
+        <dd>Большое поле для длинного текста.</dd>
+        <dt>&lt;button&gt;</dt>
+        <dd>Настоящая кнопка: получает фокус клавишей Tab, нажимается Enter и пробелом.</dd>
+        <dt>type="submit"</dt>
+        <dd>Тип кнопки, отправляющей форму. Поведение по умолчанию внутри <code>&lt;form&gt;</code>.</dd>
+        <dt>name</dt>
+        <dd>Имя поля при отправке данных. У переключателей одной группы — общее.</dd>
+        <dt>&lt;table&gt;</dt>
+        <dd>Таблица. Для данных со строками и столбцами, не для раскладки страницы.</dd>
+        <dt>&lt;caption&gt;</dt>
+        <dd>Подпись таблицы. Первая строка внутри <code>&lt;table&gt;</code>.</dd>
+        <dt>&lt;thead&gt; и &lt;tbody&gt;</dt>
+        <dd>Шапка таблицы с заголовками и её тело с данными.</dd>
+        <dt>&lt;tr&gt;</dt>
+        <dd>Одна строка таблицы.</dd>
+        <dt>&lt;th&gt;</dt>
+        <dd>Ячейка-заголовок. <code>scope="col"</code> — заголовок столбца, <code>scope="row"</code> — заголовок строки.</dd>
+        <dt>&lt;td&gt;</dt>
+        <dd>Обычная ячейка с данными.</dd>
+        <dt>&lt;figure&gt; и &lt;figcaption&gt;</dt>
+        <dd>Картинка вместе с видимой подписью.</dd>
+        <dt>Относительный путь</dt>
+        <dd>Путь к файлу от текущего файла: <code>pie.svg</code>, <code>../L02/index.html</code>. На курсе используем только его.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

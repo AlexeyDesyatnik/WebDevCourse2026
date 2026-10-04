@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 11. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L11_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L11_trainer_validate.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 11 · техкарта</p>
+    <h1>Занятие 11. Компоненты и валидация форм</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L11</td></tr><tr><td>Тема</td><td>Компоненты и валидация форм</td></tr><tr><td>Модуль</td><td>Модуль 4. JavaScript: Интерактивность и работа с API (10 ч)</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>В каждой из шести тем Dashboard есть форма: добавить привычку, создать задачу, найти фильм, записаться на дело. Валидация из сегодняшнего занятия переносится туда почти без изменений</td></tr><tr><td>Артефакт на выходе</td><td>Форма предзаказа с проверкой: понятные сообщения об ошибках, доступность, отправка не проходит с плохими данными</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима)</td></tr><tr><td>Файл тренажёра</td><td><code>L11_trainer_validate.html</code> — <strong>эталон движка для всего курса</strong></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l11-validate-v1</code>, <code>wdc-l11-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td>Нет</td></tr><tr><td>Опора</td><td>L10: схема «найти → назначить обработчик → изменить», <code>textContent</code>, <code>classList</code>. L08: функции, <code>return</code>, <code>===</code>. L03: разметка формы, <code>label</code> + <code>for</code>, <code>&lt;button type="submit"&gt;</code></td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на исправные заявки. <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+<blockquote><p><strong>Замечание для того, кто собирает тренажёр.</strong> <code>L11_trainer_validate.html</code> — эталонный файл движка, на который ссылаются все остальные занятия. Здесь же живёт главная техническая ловушка курса: программная отправка формы через <code>dispatchEvent</code>. Раздел 11 описывает её подробно; при сборке читать обязательно.</p></blockquote>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход и разбор прошлого</td><td>Слайды 1–2. Открывает форму с занятия 3 и отправляет её пустой</td><td>Смотрят</td><td>Видно, что форма принимает что угодно</td></tr><tr><td>4–9</td><td>Теория 5.1</td><td>Слайд 3. Две проверки, две задачи. Показывает браузерную подсказку и её ограничения</td><td>Слушают</td><td>Двое объясняют, зачем нужна проверка, которую можно обойти</td></tr><tr><td>9–16</td><td>Теория 5.2</td><td>Слайды 4–5. <code>submit</code> и <code>preventDefault</code>. <strong>Демонстрация шагов 2–3</strong></td><td>Смотрят, повторяют у себя</td><td><strong>Точка контроля:</strong> каждый отправил свою форму клавишей Enter из поля и увидел разницу</td></tr><tr><td>16–22</td><td>Теория 5.3</td><td>Слайды 6–7. Правила проверки, <code>.trim()</code>. <strong>Демонстрация шагов 6–7 с тремя пробелами</strong></td><td>Смотрят, пишут первую проверку</td><td>У всех работает проверка имени</td></tr><tr><td>22–24</td><td>Пауза в теории</td><td>Слайд 8, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>24–31</td><td><strong>Теория 5.4</strong></td><td>Слайд 9. Хорошие и плохие сообщения. <strong>Разбирает таблицу вслух, просит переформулировать три плохих</strong></td><td>Переформулируют вслух</td><td><strong>Точка контроля:</strong> группа переписала три сообщения из плохих в понятные</td></tr><tr><td>31–35</td><td>Теория 5.5</td><td>Слайд 10. <code>aria-invalid</code>, <code>aria-describedby</code>, фокус. <strong>Демонстрация шага 8</strong></td><td>Смотрят</td><td>Группа увидела атрибут в DevTools</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–47</td><td><strong>Вопрос классу</strong></td><td>Слайд 11. «Когда проверять?» Пауза 10 секунд</td><td>Думают, отвечают трое</td><td>Прозвучали последствия каждого варианта</td></tr><tr><td>47–53</td><td>Теория 5.6</td><td>Слайды 12–13. Момент проверки, флаг, все ошибки сразу. <strong>Демонстрация шага 9</strong></td><td>Слушают, повторяют</td><td>—</td></tr><tr><td>53–58</td><td>Теория 5.7</td><td>Слайды 14–15. Массив описаний, цикл, что такое рефакторинг. <strong>Демонстрация шага 10</strong></td><td>Смотрят</td><td>Группа формулирует, что рефакторинг не меняет поведения</td></tr><tr><td>58–72</td><td>Практика: тренажёр</td><td>Открывает <code>L11_trainer_validate.html</code>. Помогает точечно</td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 69-й минуте у большинства 10/13 и выше. Кто застрял на тестах 2 или 4 — разобрать на весь класс</td></tr><tr><td>72–88</td><td>Практика: свой файл</td><td>Обходит ряды. <strong>Проверка одна: отправить форму клавишей Enter из поля и ввести три пробела в имя</strong></td><td>Пишут валидацию в <code>index.html</code></td><td><strong>Точка контроля:</strong> у каждого оба сценария отработаны верно</td></tr><tr><td>88–95</td><td>Работа с ИИ</td><td>Слайд 17. Разбирает ответ модели на проекторе: что она выбросила при «улучшении»</td><td>Запускают промпт на своём коде, проверяют по шести пунктам</td><td>Хотя бы двое нашли, что модель выбросила или подменила</td></tr><tr><td>95–100</td><td><strong>Мини-демо и фиксация</strong></td><td>Спрашивает троих: покажи форму с ошибками и прочитай своё сообщение вслух. Сохранение</td><td>Показывают, объясняют, сохраняют</td><td>Файл сохранён. Правило «форма — <code>submit</code>» произнесено вслух</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li>Проверить, что у всех сохранился <code>index.html</code> с занятия 10 с формой и работающим меню. Кому не хватает — выдать готовый.</li><li><strong>Подготовить разметку блоков под сообщения и атрибуты <code>aria-describedby</code> отдельным файлом для копирования.</strong> Сегодняшняя тема — скрипт; набирать шесть блоков вручную нельзя.</li><li>Подготовить два регулярных выражения на карточке: <code>/^\d{1,2}[А-Яа-я]$/</code> и <code>/\D/g</code>. Ученики их не выводят, а применяют.</li><li>Подготовить таблицу «плохое сообщение → хорошее» из подтемы 5.4 в раздаточном виде. Она понадобится на минуте 24, и это самая содержательная часть занятия.</li><li>Заранее проверить, как в вашем браузере видно атрибут <code>aria-invalid</code> в DevTools: демонстрация на минуте 31 должна пройти гладко.</li><li>Подготовить файл поддержки: проверки, <code>showError</code>, <code>clearError</code> и <code>FIELDS</code> написаны, три пропуска в обработчике отправки. Плюс карточку: <code>preventDefault</code>, <code>.focus()</code>, <code>form.reset()</code>.</li><li>Подготовить задание «плюс» заранее: счётчик символов, седьмое поле со своим правилом, полный проход клавиатурой.</li><li>Пройти тренажёр самому. Норматив — 16–20 минут. <strong>Отдельно проверить тест 2:</strong> он должен отправлять форму через <code>dispatchEvent</code>, минуя кнопку, — иначе код с обработчиком на кнопке пройдёт все тесты незаслуженно.</li><li>Проверить доступ к ИИ-сервису. При недоступности — сохранить два ответа заранее: один с подменой на браузерную валидацию, один с выброшенным <code>.trim()</code>.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L11_presentation.html</code> — слайды 1–17.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 9.</li><li>Браузер с формой рядом и <strong>открытыми DevTools</strong>: атрибут <code>aria-invalid</code> показывается на минуте 31.</li><li>Таблица «плохое сообщение → хорошее» — на минуте 24.</li><li>Тренажёр <code>L11_trainer_validate.html</code> — открыть на минуте 58.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. «Проверка не работает» — а обработчик висит на кнопке.</strong><br>Действие педагога: не смотреть в код. Сказать: «нажми Enter прямо в поле имени». Если страница перезагрузилась — причина найдена. Этот приём стоит показать всему классу после первого же обращения: дальше половина группы проверит себя сама.</p>
+<p><strong>2. Сообщения написаны как «Ошибка» и «Неверно».</strong><br>Действие педагога: попросить ученика дать свою форму соседу и молча посмотреть, поймёт ли тот, что исправлять. Обычно не понимает. Это работает лучше любого объяснения про хорошие тексты.</p>
+<p><strong>3. Показывается только первая ошибка, и ученик считает, что так и надо.</strong><br>Действие педагога: попросить заполнить форму с тремя ошибками и посчитать, сколько раз пришлось нажать «Записаться». Три раза — три отправки. После этого вопрос снимается сам.</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Проверь семь сценариев</strong> и запиши результат каждого: пустая форма; три пробела в имени; класс «девятый»; количество 0; количество 6; отправка Enter из поля; правильное заполнение. Если хоть один ведёт себя не так, как задумано, — почини и запиши, что было не так.</li><li><strong>Перепиши свои сообщения.</strong> Прочитай каждое вслух и спроси себя: понятно ли из него, что вписать? Переписывай, пока все шесть не пройдут проверку. Дай форму кому-нибудь дома и посмотри, справится ли человек без подсказок.</li><li><strong>Найди форму с плохой валидацией.</strong> Открой любой сайт с регистрацией и попробуй отправить её неверно заполненной. Запиши три наблюдения: когда появляется сообщение, где оно стоит, понятно ли из него, что делать. Сравни со своей формой.</li></ol>
+<p>Второй пункт — главный. Технически проверка у всех получится похожей; отличать хорошую форму от плохой будут именно тексты.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «JavaScript: … работа с формами (валидация)» и «HTML/CSS: … доступность (aria-атрибуты)».</p>
+<p>Оба закрыты сегодня. Валидация — прямо; <code>aria</code>-атрибуты — на том месте, где они действительно работают: <code>aria-invalid</code> и <code>aria-describedby</code> в форме дают больше, чем <code>aria-label</code>, расставленные наугад.</p>
+<p>Практически: <strong>в каждой из шести тем Dashboard есть форма</strong>, и валидация переносится туда почти без изменений. Меняются правила и тексты, каркас остаётся:</p>
+<div class="table-wrap"><table><thead><tr><th>Тема</th><th>Форма</th><th>Что проверять</th></tr></thead><tbody><tr><td>P01 Ритм 21</td><td>добавить привычку</td><td>название не пустое, цвет выбран</td></tr><tr><td>P02 Дедлайн-доска</td><td>создать задачу</td><td>название не пустое, срок не в прошлом</td></tr><tr><td>P03 Диванный зал</td><td>поиск фильма</td><td>запрос не пустой</td></tr><tr><td>P04 Пиксельный штаб</td><td>записаться на тренировку</td><td>ник не пустой, слот выбран</td></tr><tr><td>P05 Классный штаб</td><td>добавить домашку</td><td>предмет выбран, срок указан</td></tr><tr><td>P06 Банк добрых дел</td><td>записаться на дело</td><td>имя и класс, есть ли свободные места</td></tr></tbody></table></div>
+<p>Обрати внимание на P02 и P06: там правила сложнее, чем сегодня, — сравнение дат и проверка остатка мест. Каркас при этом тот же: функция возвращает текст ошибки, обработчик показывает все сразу.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Соответствие ТЗ» (10 баллов)</strong> — часть про работу с формами, прямо. Плюс <strong>«Адаптивность и качество UI/UX» (5 баллов)</strong>: понятные сообщения и доступность формы — это качество интерфейса, и на защите их видно сразу.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L11_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L11_trainer_validate.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

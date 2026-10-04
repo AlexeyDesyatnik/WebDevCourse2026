@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 13. Git: контроль версий</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 13</strong>
+      <span>Git: контроль версий</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Сегодня без нового языка и без вёрстки. Сегодня — про страховку. К концу занятия вернуть сломанный проект к рабочему состоянию будет занимать у вас десять секунд.» -->
+        <p class="tm-eyebrow">►► Модуль 5 · Занятие 13</p>
+        <h1>Git: контроль версий</h1>
+        <p class="lead">Как перестать бояться сломать проект</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L13_trainer_git.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L12/L12_presentation.html">►► Занятие 12</a>
+          <a class="tm-btn tm-btn--ghost" href="../L14/L14_presentation.html">►► Занятие 14</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «У всех такое было. Поднимите руку, у кого в папке лежит "финал 2". А теперь представьте, что файлов не один, а десять и они друг от друга зависят.» -->
+        <p class="tm-eyebrow">►► Знакомая ситуация</p>
+        <h2>Три часа работы исчезли</h2>
+        <ul class="tm-list">
+          <li><code>реферат.docx</code></li>
+          <li><code>реферат2.docx</code></li>
+          <li><code>реферат_испр.docx</code></li>
+          <li><code>реферат_испр_ФИНАЛ.docx</code></li>
+          <li><code>реферат_испр_ФИНАЛ(1).docx</code></li>
+        </ul>
+        <p>Какой из них сдавали?</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Третий пункт технический: публикация идёт из репозитория. Нет репозитория — нет публичной ссылки. Это не пожелание, это как работает платформа.» -->
+        <p class="tm-eyebrow">►► Зачем это в проекте</p>
+        <h2>Три вещи, которые даёт история</h2>
+        <ul class="tm-list">
+          <li>вернуться к рабочей версии за десять секунд</li>
+          <li>видеть, что и когда изменилось</li>
+          <li>опубликовать сайт по ссылке (занятие 15)</li>
+          <li>5 баллов из 30 за культуру работы с Git</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Одна команда — и у папки появляется прошлое. Выполняется один раз на проект. Не на занятие, не на файл — на проект.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Репозиторий — папка с памятью</h2>
+        <p>Обычная папка: удалил — исчезло навсегда. Репозиторий: всё зафиксированное можно вернуть. Внутри — скрытая папка <code>.git</code>, руками не трогаем</p>
+        <pre class="tm-code">git init</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Эту команду вы будете набирать чаще всех остальных вместе взятых. Перед каждым коммитом и каждый раз, когда непонятно, что происходит.» -->
+        <p class="tm-eyebrow">►► Что видит Git</p>
+        <h2><code>git status</code> — главная команда</h2>
+        <p>Три состояния файла: не отслеживается · изменён · зафиксирован. <code>git status</code> отвечает человеческим текстом, что происходит прямо сейчас</p>
+        <pre class="tm-code">git status
+Untracked files: index.html</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Двухшаговость — единственное место, где Git кажется занудой. Зато потом вы сможете зафиксировать стили, не таща за собой недописанный скрипт.» -->
+        <p class="tm-eyebrow">►► Понятие 2</p>
+        <h2>Коммит — снимок с подписью</h2>
+        <p>Два шага: <code>git add</code> — положить в коробку. <code>git commit</code> — заклеить и подписать. Зачем два: чтобы разные правки шли разными коммитами</p>
+        <pre class="tm-code">git add style.css
+git commit -m "Стили буфета: карточка и кнопка"</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Вот главная ошибка этого занятия. Ошибка не в том, что мало букв. В том, что откатываться некуда — такого состояния проект никогда не фиксировал.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2><code>a71f0c3 работа</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Один коммит за занятие · сообщение «работа» · вернуться некуда: состояния «стили уже есть, модалки ещё нет» в истории просто нет</p>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Сообщение вы пишете не для меня. Вы пишете его для себя через полтора месяца, когда будете искать, где сломалась тёмная тема.» -->
+        <p class="tm-eyebrow">►► Правило</p>
+        <h2>Что <span class="hl">изменилось</span>, а не что делал</h2>
+        <ul class="tm-list">
+          <li>предмет изменения</li>
+          <li>глагол</li>
+          <li>5–72 символа</li>
+          <li>без «фикс», «работа», «правки»</li>
+          <li>без союза «и» дважды</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Посмотрите: по этим пяти строкам видно, как собирался проект. Ни одного пояснения от автора не нужно.» -->
+        <p class="tm-eyebrow">►► Живой пример</p>
+        <h2>История за полтора часа</h2>
+        <p>Пять строк, каждая понятна без пояснений. Читается снизу вверх: каркас → стили → данные → поведение → README</p>
+        <pre class="tm-code">git log --oneline
+9f2c1a7 README: описание проекта
+4b71e08 Модалка состава пирога
+d3a0f52 Карточки из массива PIES
+81ce4d9 Стили буфета
+2ad60b1 Каркас страницы буфета</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Засеките время. Вот я сломал. Вот консоль. Вот команда. Вот работает. Ради этой минуты всё занятие и затевалось.» -->
+        <p class="tm-eyebrow">►► Смотрим</p>
+        <h2>Ломаю и чиню за десять секунд</h2>
+        <p>Удаляю скобку в <code>script.js</code> → страница белая, в консоли <code>SyntaxError</code> → одна команда → всё на месте</p>
+        <pre class="tm-code">git restore script.js</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Даже если вы работаете одни. Ветка — это не про команду, это про право попробовать и не бояться.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>Ветка — черновик рядом с чистовиком</h2>
+        <p>В <code>main</code> не экспериментируют. Рискованное — в ветку <code>feature/имя</code>. Не вышло — переключился обратно, проект цел</p>
+        <pre class="tm-code">git switch -c feature/menu</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Кабинет информатики. Компьютер переустановили. Вопрос: где ваш проект?» -->
+        <p class="tm-eyebrow">►► Дальше</p>
+        <h2>Проект должен <span class="hl">пережить</span> компьютер</h2>
+        <p>Локальный репозиторий защищает от ваших ошибок. От пропажи компьютера — не защищает</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Занятие заканчивается командой push. Без исключений, даже если коммит один и он маленький.» -->
+        <p class="tm-eyebrow">►► Понятие 4</p>
+        <h2>Удалённый репозиторий</h2>
+        <p>Полная копия истории на сервере. Один раз — <code>remote add</code>. Каждое занятие — <code>push</code>. Публикация на занятии 15 идёт отсюда</p>
+        <pre class="tm-code">git push -u origin main</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Работаем по десяти шагам из карточки. После каждой команды смотрим, что ответил Git, — он всегда пишет по делу.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 50 минут</h2>
+        <ul class="tm-list">
+          <li>репозиторий из папки буфета</li>
+          <li>пять осмысленных коммитов</li>
+          <li>показать откат</li>
+          <li>ветка <code>feature/menu</code></li>
+          <li><code>push</code> обеих веток</li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L13_trainer_git.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Последний пункт — короткая проверка. Если Git пишет "clean", вы ничего не забыли зафиксировать.» -->
+        <p class="tm-eyebrow">►► Сделано, если</p>
+        <h2>Шесть пунктов приёмки</h2>
+        <ul class="tm-list">
+          <li>не меньше пяти коммитов</li>
+          <li>ни одного «фикс» и «работа»</li>
+          <li>откат показан</li>
+          <li>ветка <code>feature/menu</code> с коммитом</li>
+          <li>обе ветки на сервере</li>
+          <li><code>git status</code> → <code>working tree clean</code></li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «И правило курса, которое не меняется: сдаётся только то, что ты можешь объяснить. Сообщение коммита, которое вы не можете объяснить, — это чужая подпись под вашей работой.» -->
+        <p class="tm-eyebrow">►► ИИ в работе</p>
+        <h2>Модель пишет сообщение — вы отвечаете за смысл</h2>
+        <p>Дай модели список изменений и рамку: 5–72 символа, без «рефакторинг» и «оптимизация», что изменилось, а не что делал.</p>
+        <pre class="tm-code">Контекст: я школьник, делаю учебный сайт школьного буфета на HTML, CSS
+и JavaScript без фреймворков. Веду проект в Git. Пишу сообщения коммитов
+по-русски.
+
+Задача: сформулируй сообщение коммита для изменений, перечисленных ниже.
+
+Изменения:
+- в script.js добавлена функция sortByPrice, она сортирует массив PIES
+  по возрастанию цены и возвращает новый массив
+- в index.html добавлена кнопка с текстом «Сначала дешёвые»
+- в style.css добавлено правило для этой кнопки
+
+Ограничения:
+- одно предложение, от 5 до 72 символов;
+- описать, ЧТО изменилось в проекте, а не что делал разработчик;
+- запрещены слова: работа, правки, фикс, рефакторинг, оптимизация,
+  улучшение, архитектура;
+- без точки в конце, без эмодзи, без английских слов кроме имён
+  функций и файлов.
+
+Формат ответа: три варианта сообщения, каждый на отдельной строке,
+без нумерации и без пояснений.
+
+Критерии проверки: я должен по сообщению понять, что появилось
+в проекте, не открывая код.</pre>
+        <p><strong>Проверить руками:</strong> описано ли то, что ты правда сделал</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 13</h3>
+      <dl>
+        <dt>Репозиторий</dt>
+        <dd>Папка проекта, которая хранит все зафиксированные состояния своих файлов. Внутри неё лежит скрытая папка .git — это и есть память проекта.</dd>
+        <dt>Коммит</dt>
+        <dd>Зафиксированное состояние проекта с сообщением, датой и автором. К любому коммиту можно вернуться, даже если файлы с тех пор много раз менялись.</dd>
+        <dt>Сообщение коммита</dt>
+        <dd>Короткая строка, объясняющая, что изменилось в проекте. Пишется по правилу «что изменилось, а не что делал», длиной 5–72 символа.</dd>
+        <dt>Индекс</dt>
+        <dd>Промежуточная зона, куда командой git add кладут изменения перед коммитом. Позволяет зафиксировать не всё сразу, а только выбранные файлы.</dd>
+        <dt>Ветка</dt>
+        <dd>Отдельная линия истории, где можно менять файлы, не трогая основную версию. Основная ветка называется main.</dd>
+        <dt>main</dt>
+        <dd>Основная ветка проекта. В ней хранится рабочее состояние; эксперименты в неё не попадают напрямую.</dd>
+        <dt>Удалённый репозиторий</dt>
+        <dd>Полная копия репозитория на сервере платформы. Защищает проект от пропажи компьютера и служит источником для публикации сайта.</dd>
+        <dt>origin</dt>
+        <dd>Короткое имя адреса удалённого репозитория. Назначается один раз командой git remote add и дальше используется вместо длинной ссылки.</dd>
+        <dt>git status</dt>
+        <dd>Команда, которая человеческим текстом показывает, что сейчас происходит в проекте: какие файлы изменены, какие подготовлены, на какой ты ветке.</dd>
+        <dt>git restore</dt>
+        <dd>Команда, возвращающая файл к состоянию последнего коммита. Используется, когда правки ещё не зафиксированы, а проект уже сломан.</dd>
+        <dt>git revert</dt>
+        <dd>Команда, создающая новый коммит, который отменяет изменения указанного. Используется, когда плохое изменение уже попало в историю.</dd>
+        <dt>История проекта</dt>
+        <dd>Последовательность коммитов, по которой видно, из каких шагов собрался проект. Показывается командой git log --oneline.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

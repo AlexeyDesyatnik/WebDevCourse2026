@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 9. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L09_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L09_trainer_data.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 09 · техкарта</p>
+    <h1>Занятие 9. Объекты, массивы, методы</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L09</td></tr><tr><td>Тема</td><td>Объекты, массивы, методы</td></tr><tr><td>Модуль</td><td>Модуль 4. JavaScript: Интерактивность и работа с API (10 ч)</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Данные твоего Dashboard хранятся именно так — массивом объектов. Привычки в P01, задачи в P02, фильмы в P03, матчи в P04 — всё это массив однотипных объектов, который фильтруют и сортируют</td></tr><tr><td>Артефакт на выходе</td><td>Массив <code>PIES</code> на странице буфета, фильтр «сладкое / солёное / всё» и сортировка по цене. Результат пока выводится в консоль</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима)</td></tr><tr><td>Файл тренажёра</td><td><code>L09_trainer_data.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l09-data-v1</code>, <code>wdc-l09-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td>Нет</td></tr><tr><td>Опора</td><td>L08: переменные, типы, функции, <code>return</code>, условие, консоль</td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на выбор по вкусу. <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+<blockquote><p><strong>Почему сегодня нельзя торопиться.</strong> Методические рекомендации к программе говорят об этом прямо: занятия 8–9 не проходят ускоренно, даже если часть группы скучает. Массивы и объекты — фундамент модуля 9: данные Dashboard хранятся именно так, и пробел здесь всплывёт на занятии 21 в худший момент. Отрисовкой на страницу займёмся на занятии 10, сегодня работаем с данными и консолью.</p></blockquote>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход и разбор прошлого</td><td>Слайды 1–2. Разбирает две вчерашние ошибки без фамилий: склейка вместо сложения и <code>console.log</code> вместо <code>return</code></td><td>Смотрят, называют причины</td><td>Группа объяснила обе ошибки</td></tr><tr><td>4–10</td><td>Теория 5.1</td><td>Слайд 3. Массив, индексы, <code>length</code>. <strong>Демонстрация шагов 1–3</strong></td><td>Слушают, повторяют у себя</td><td>У всех в консоли массив и его длина</td></tr><tr><td>10–16</td><td>Теория 5.3</td><td>Слайд 4. Объект, точка и скобки</td><td>Слушают, повторяют</td><td>Двое объясняют, когда нужны скобки вместо точки</td></tr><tr><td>16–18</td><td>Пауза в теории</td><td>Слайд 5, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>18–25</td><td><strong>Теория 5.4 — ядро занятия</strong></td><td>Слайды 6–7. Массив объектов, таблица «тема проекта → что в массиве», параллельные массивы</td><td>Слушают, собирают <code>PIES</code> у себя</td><td><strong>Точка контроля:</strong> у каждого в консоли развёрнут массив из шести объектов</td></tr><tr><td>25–32</td><td>Теория 5.5</td><td>Слайд 8. <code>filter</code>, новый массив, пустой результат. <strong>Демонстрация шагов 6–7</strong></td><td>Смотрят, пишут свой <code>filter</code></td><td>У всех работает отбор сладкого</td></tr><tr><td>32–34</td><td><strong>Вопрос классу</strong></td><td>Слайд 10. «Чем <code>filter</code> отличается от <code>find</code>?» Пауза 10 секунд</td><td>Думают, отвечают трое</td><td>Прозвучало «возвращает один, а не массив» и «<code>undefined</code> вместо пустого массива»</td></tr><tr><td>34–35</td><td>Теория 5.6, заход</td><td>Слайд 9. <code>map</code> и <code>join</code></td><td>Слушают</td><td>—</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–51</td><td>Теория 5.6</td><td>Слайд 9. <code>map</code>, цепочка методов. <strong>Демонстрация шага 8</strong></td><td>Смотрят, повторяют</td><td>Группа читает цепочку вслух своими словами</td></tr><tr><td>51–58</td><td><strong>Теория 5.7</strong></td><td>Слайды 11–13. <code>find</code>, две ловушки <code>sort</code>. <strong>Демонстрация шагов 9–10</strong></td><td>Смотрят</td><td><strong>Точка контроля:</strong> каждый воспроизвёл <code>sort()</code> без сравнения и увидел неверный порядок</td></tr><tr><td>58–62</td><td>Обобщение</td><td>Слайд 15. Четыре метода — четыре вопроса</td><td>Записывают таблицу</td><td>Таблица записана у каждого</td></tr><tr><td>62–76</td><td>Практика: тренажёр</td><td>Открывает <code>L09_trainer_data.html</code>. Помогает точечно</td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 72-й минуте у большинства 9/12 и выше. Кто застрял на тестах 7 или 5 — разобрать на весь класс</td></tr><tr><td>76–90</td><td>Практика: свой файл</td><td>Обходит ряды. <strong>Проверка одна: просит вызвать <code>sortByPrice</code>, а потом вывести исходный <code>PIES</code></strong></td><td>Пишут четыре функции в <code>index.html</code></td><td><strong>Точка контроля:</strong> у каждого после сортировки исходный массив цел</td></tr><tr><td>90–95</td><td>Работа с ИИ</td><td>Слайд 16. Разбирает ответ модели, обязательно — контрольная проверка с сортировкой</td><td>Запускают промпт, проверяют по шести пунктам</td><td>Хотя бы двое проверили ответ модели про <code>sort</code> в консоли</td></tr><tr><td>95–100</td><td><strong>Мини-демо и фиксация</strong></td><td>Спрашивает троих: покажи консоль и объясни, почему перед <code>sort</code> стоит копия. Сохранение</td><td>Показывают, объясняют, сохраняют</td><td>Файл сохранён. Правило «сортируешь — сначала копируй» произнесено вслух</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li>Проверить, что у всех сохранился <code>index.html</code> с занятия 8 с работающим счётчиком. Кому не хватает — выдать готовый.</li><li><strong>Подготовить массив <code>PIES</code> в текстовом файле для копирования.</strong> Набирать шесть объектов вручную на занятии — потеря десяти минут у половины группы. Данные должны совпадать с <code>00_STORY_BANK.md</code> дословно: они используются во всех занятиях сюжета, и расхождение сломает эталоны соседних занятий.</li><li>Подготовить пример с параллельными массивами и намеренной порчей после сортировки — для слайда 7. Он убеждает сильнее объяснения.</li><li>Заранее проверить, как в вашем браузере разворачивается массив объектов в консоли: приём используется четыре раза за занятие.</li><li>Подготовить файл поддержки: массив описан, три функции с одним пропуском каждая. Плюс карточку на парту: четыре метода — четыре вопроса, формула <code>(a, b) =&gt; a - b</code>, копия <code>[...arr]</code>.</li><li>Подготовить задание «плюс» заранее: комбинированный отбор, статистика с <code>Math.round</code>, сортировка по названию через <code>localeCompare</code>.</li><li>Пройти тренажёр самому. Норматив — 15–20 минут. Отдельно проверить, что тест 6 гоняет функцию на подставном массиве <code>[8, 100, 45, 90]</code>, а не только на ценах буфета: на двузначных ценах строковая сортировка почти совпадает с числовой, и ошибка пройдёт незамеченной.</li><li>Проверить доступ к ИИ-сервису. При недоступности — сохранить два ответа заранее, один с <code>.sort()</code> без функции сравнения.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L09_presentation.html</code> — слайды 1–16.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 4.</li><li>Браузер с открытой консолью — она нужна с четвёртой минуты и до конца занятия.</li><li>Файл с готовым массивом <code>PIES</code> для копирования — раздать на минуте 18.</li><li>Тренажёр <code>L09_trainer_data.html</code> — открыть на минуте 62.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. «Метод не работает» — а результат просто никуда не записан.</strong><br>Действие педагога: один вопрос — «а куда ты положил результат?» Обычно этого достаточно. Ошибка настолько частая, что имеет смысл разобрать её на весь класс после первых двух обращений.</p>
+<p><strong>2. <code>sort</code> испортил массив, и дальше «всё сломалось».</strong><br>Действие педагога: не искать причину в том месте, где проявилось. Спросить: «ты сегодня что-нибудь сортировал?» — и вести к копии. Это первый в курсе случай, когда ошибка проявляется не там, где сделана, и на нём стоит проговорить сам принцип.</p>
+<p><strong>3. Сильные заканчивают за двадцать минут, слабые не начали.</strong><br>Действие педагога: расслоение здесь достигает пика — методические рекомендации предупреждают об этом прямо. Задание «плюс» выдавать молча и сразу. Отстающим — файл поддержки с тремя пропусками, и <strong>обязательно проверить, что у них скопирован массив</strong>: без данных всё занятие проходит мимо. Темп не ускорять даже при явной скуке сильных: пробел в массивах всплывёт на занятии 21.</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Опиши свой список.</strong> Возьми что угодно из своей жизни — любимые фильмы, игры, книги, тренировки — и опиши массивом из пяти-шести объектов. Придумай четыре свойства, из них минимум одно число и одно логическое. Затем отфильтруй по логическому свойству и отсортируй по числовому. Выведи в консоль.</li><li><strong>Проверь граничные случаи.</strong> У своих функций с занятия проверь три вещи: что вернёт фильтр, если ничего не подходит; что вернёт поиск несуществующего; что вернёт <code>describe</code> от пустого массива. Запиши три ответа. Если где-то программа упала — почини.</li><li><strong>Найди у себя ловушку <code>sort</code>.</strong> Отсортируй массив чисел <code>[7, 100, 25, 9]</code> двумя способами: с функцией сравнения и без. Запиши оба результата и объясни разницу одной строкой.</li></ol>
+<p>Первый пункт важнее остальных: он готовит к занятию 20, где придётся спроектировать структуру данных своего проекта самому.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «JavaScript: манипуляции с DOM, работа с формами (валидация), использование <code>fetch</code>… сохранение данных в <code>localStorage</code>».</p>
+<p>Сегодня закрыто основание под всё перечисленное: <strong>данные, с которыми будут работать DOM, форма, <code>fetch</code> и <code>localStorage</code>, хранятся именно так — массивом объектов.</strong></p>
+<p>Практически: на занятии 20 первым делом надо будет согласовать с педагогом схему данных своего Dashboard — какие объекты и с какими полями. В <code>00_STORY_BANK.md</code> эти схемы уже описаны для всех шести тем. Открой свою и посмотри: это ровно то, что ты делал сегодня, только про привычки, задачи или фильмы вместо пирогов.</p>
+<p>Три метода из сегодняшних будут в проекте обязательно: <code>filter</code> — любой фильтр интерфейса; <code>map</code> — отрисовка карточек из данных (занятие 10); <code>find</code> — поиск записи по <code>id</code>, когда пользователь на неё нажал.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Соответствие ТЗ» (10 баллов)</strong> — основание для всей части про работу с данными.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L09_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L09_trainer_data.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тренажёр · Занятие 7 · UI-кит</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+    header.top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 34px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    header.top p { margin: 0; color: var(--tm-muted); font-size: 15px; }
+    .course-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+    .course-links a {
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .brief, .ref, .status, .tests, .hints, .solution, .gloss, .teacher, .spec {
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    html[data-theme="dark"] .brief,
+    html[data-theme="dark"] .ref,
+    html[data-theme="dark"] .status,
+    html[data-theme="dark"] .tests,
+    html[data-theme="dark"] .hints,
+    html[data-theme="dark"] .solution,
+    html[data-theme="dark"] .gloss,
+    html[data-theme="dark"] .spec {
+      background: var(--tm-bg-alt);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    p, li { line-height: 1.55; font-size: 17px; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+    .spec h3 { font-size: 16px; margin: 16px 0 8px; }
+    .spec h3:first-child { margin-top: 0; }
+    .spec ol, .tm-list { margin: 0; padding-left: 0; list-style: none; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: 0.6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      color: var(--tm-green);
+      font-size: 0.78em;
+      letter-spacing: -0.08em;
+    }
+    .ref-page {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .ref-page .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .ref-page .mid { padding: 16px 14px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1fr 1fr; }
+    }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks { grid-template-columns: 1fr 1fr; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .blocks-src, .blocks-dst {
+      min-width: 0;
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 16px;
+    }
+    .blocks-src h2, .blocks-dst h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .layout.is-blocks .pool {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .layout.is-blocks .chip { max-width: none; width: 100%; }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+      caret-color: var(--tm-text);
+    }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      box-shadow: var(--tm-shadow);
+    }
+    .meter {
+      height: 8px;
+      background: var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width 0.22s ease;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      font: inherit;
+      font-weight: 650;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      cursor: pointer;
+    }
+    button.ghost {
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border: 2px solid var(--tm-border);
+    }
+    html[data-theme="dark"] button.ghost { background: var(--tm-bg-alt); }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    html[data-theme="dark"] .pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .pill.ok {
+      background: var(--tm-green-soft);
+      color: var(--tm-ok);
+      border-color: var(--tm-ok);
+    }
+    .test {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--tm-border);
+      font-size: 15px;
+    }
+    .test .hint { color: var(--tm-fail); display: block; margin-top: 4px; }
+    .hintbox {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--tm-green-soft);
+      border-radius: 12px;
+    }
+    .hintbox.open { display: block; }
+    .locked #solBody { display: none; }
+    code, pre { font-family: var(--tm-mono); font-size: 0.92em; }
+    pre.tm-code {
+      white-space: pre-wrap;
+      font-size: 15px;
+      margin: 0;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+    }
+    #solCode {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      padding: 14px;
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      overflow: auto;
+    }
+    .gloss dt { font-weight: 650; margin-top: 12px; font-size: 15px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; box-shadow: none; background: transparent; padding: 8px 0; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); }
+    .hide { display: none !important; }
+    .modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 20px;
+    }
+    .modes button {
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .modes button[aria-pressed="true"] {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 52px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .chip.is-picked, .chip.chip-flash {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .chip.chip-flash { outline-color: var(--tm-fail); }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .page-frame {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .page-frame .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 12px;
+      font-weight: 650;
+    }
+    .page-frame .mid { padding: 12px; }
+    .slot-lab {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 6px;
+      color: var(--tm-muted);
+    }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--tm-bg);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>UI-кит буфета</h1>
+        <p>Занятие 7 · кнопки, карточка, пилюля</p>
+      </div>
+      <p id="scoreline">0 из 12 проверок</p>
+    </header>
+    <nav class="course-links" aria-label="Курс">
+      <a href="../index.html">►► Все занятия</a>
+      <a href="L07_presentation.html">►► Презентация</a>
+      <a href="../L06/L06_presentation.html">►► Занятие 6</a>
+      <a href="../L08/L08_presentation.html">►► Занятие 8</a>
+      <button type="button" class="ghost" id="themeBtn">Тема</button>
+    </nav>
+
+    <div class="modes" role="tablist" aria-label="Как решать">
+      <button type="button" id="modeCodeBtn" aria-pressed="true">1. Писать код</button>
+      <button type="button" id="modeBlocksBtn" aria-pressed="false">2. Собрать блоками</button>
+    </div>
+
+    <section class="brief spec">
+      <h2>ТЗ</h2>
+      <p>Заказ буфета «Северный пирог».<br>Собери UI-кит: кнопку, карточку, пилюлю. Так, чтобы ими мог пользоваться любой человек.</p>
+      <ul class="tm-list">
+        <li>Кнопка: базовый класс <code>.btn</code> плюс модификаторы, три состояния</li>
+        <li>Фокус виден: <code>:focus-visible</code> со своей обводкой. <code>outline: none</code> без замены запрещён</li>
+        <li>Переходы плавные: <code>transition</code> в базовом правиле, не в <code>:hover</code></li>
+        <li>Карточка: базовая и «хит», у хита есть пилюля со словом</li>
+        <li>Ровно одна анимация появления</li>
+        <li>Блок <code>prefers-reduced-motion</code> в конце файла</li>
+      </ul>
+      <div id="specCode">
+        <h3>Как сделать кодом</h3>
+        <ol>
+          <li><code>.btn</code> — форма, <code>font-family: inherit</code>, <code>transition</code>.</li>
+          <li>Модификаторы <code>.btn--primary</code> и <code>.btn--ghost</code> — только цвет.</li>
+          <li>Состояния: <code>:hover</code>, <code>:focus-visible</code> с outline, <code>:active</code>.</li>
+          <li><code>.card</code> + <code>.card--hit</code>, пилюля со словом, <code>@keyframes</code> и reduced-motion.</li>
+        </ol>
+      </div>
+      <div id="specBlocks" class="hide">
+        <h3>Как сделать блоками</h3>
+        <p>Слева блоки CSS, справа поля. Чип ставится кликом, перетаскиванием или клавишей Enter.</p>
+      </div>
+    </section>
+
+    <section class="ref">
+      <h2>Эталон-цель</h2>
+      <p class="lead">Две кнопки с состояниями. Хит — пилюлей, не только цветом. Одна анимация появления.</p>
+      <div class="ref-page">
+        <div class="bar">UI-кит · Северный пирог</div>
+        <div class="mid">
+          <p>Записаться / Тёмная тема. Карточка и хит с пилюлей «Хит недели».</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <strong>Прогресс:</strong>
+      <span id="score">0 / 0</span>
+      · подсказок открыто: <span id="hintCount">0</span>/3
+      · <span id="badge" class="pill">ещё собираем</span>
+      <div class="meter"><span id="bar"></span></div>
+      <div class="row">
+        <button type="button" id="checkBtn">Проверить</button>
+        <button type="button" class="ghost" id="resetBtn">Сбросить</button>
+        <button type="button" class="ghost" id="saveBtn">Скачать страницу</button>
+      </div>
+      <p id="honesty" class="lead" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="layout">
+      <div id="paneCode">
+        <h2>Редактор</h2>
+        <textarea id="editor" spellcheck="false" aria-label="Код страницы"></textarea>
+      </div>
+      <div id="paneBlocks" class="blocks-board hide">
+        <div class="blocks-src">
+          <h2>Блоки кода</h2>
+          <p class="lead">Слева блоки, справа поля.</p>
+          <div class="pool" id="blockPool" aria-label="Готовые фрагменты"></div>
+        </div>
+        <div class="blocks-dst">
+          <h2>Поля</h2>
+          <div class="page-frame">
+            <div class="bar">CSS кита</div>
+            <div class="mid">
+              <span class="slot-lab">Кнопка: база и модификаторы</span>
+              <div class="slot" data-accept="btn"></div>
+              <span class="slot-lab">Состояние: наведение</span>
+              <div class="slot" data-accept="hover"></div>
+              <span class="slot-lab">Состояние: фокус и нажатие</span>
+              <div class="slot" data-accept="focus"></div>
+              <span class="slot-lab">Карточка</span>
+              <div class="slot" data-accept="card"></div>
+              <span class="slot-lab">Пилюля</span>
+              <div class="slot" data-accept="pill"></div>
+              <span class="slot-lab">Анимация и движение</span>
+              <div class="slot" data-accept="anim"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panePreview">
+        <h2>Результат</h2>
+        <iframe id="preview" title="Превью страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <section class="tests">
+      <h2>Самопроверка</h2>
+      <p class="lead">Состояния :hover / :focus-visible / :active — по исходному CSS. Остальное — getComputedStyle в iframe.</p>
+      <div id="testList"></div>
+    </section>
+
+    <section class="hints">
+      <h2>Подсказки</h2>
+      <p class="lead">Три подсказки. На демо — своими словами.</p>
+      <div class="row">
+        <button type="button" class="ghost" data-hint="0">1 — вопрос</button>
+        <button type="button" class="ghost" data-hint="1">2 — приём</button>
+        <button type="button" class="ghost" data-hint="2">3 — фрагмент</button>
+      </div>
+      <div class="hintbox" id="h0">Пройди свою кнопку тремя способами: наведи мышь, нажми Tab, нажми и подержи. Все три раза что-то изменилось? Тот способ, где ничего не произошло, и есть недостающее состояние.</div>
+      <div class="hintbox" id="h1">Кнопка: .btn — форма, размер, font-family: inherit, transition. .btn--primary и .btn--ghost — только цвет. Ниже три состояния: :hover меняет фон, :focus-visible даёт outline с outline-offset, :active сдвигает на пиксель. Карточка: .card плюс .card--hit, и у хита пилюля со словом. В конце — @keyframes и блок prefers-reduced-motion.</div>
+      <div class="hintbox" id="h2"><pre class="tm-code">.btn {
+  font-family: inherit;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+.btn:hover { background: var(--pie-accent-dark); color: #fff; }
+.btn:focus-visible {
+  outline: 3px solid var(--pie-accent-dark);
+  outline-offset: 3px;
+}
+.btn:active { transform: translateY(1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}</pre></div>
+    </section>
+
+    <section class="solution locked" id="solutionBox">
+      <h2>Эталонное решение</h2>
+      <p id="solGate">Откроется, когда все проверки зелёные или открыты три подсказки.</p>
+      <div id="solBody" hidden>
+        <p><strong>Почему так:</strong> База .btn держит форму и transition — иначе увод мыши будет рывком. Модификаторы меняют только цвет. :focus-visible заменяет, а не убирает обводку. Хит дублируется словом на пилюле. prefers-reduced-motion уважает настройку системы.</p>
+        <pre id="solCode"></pre>
+      </div>
+    </section>
+
+    <section class="gloss" id="glossary">
+      <h2>Глоссарий занятия</h2>
+      <dl>
+        <dt>transition</dt>
+        <dd>Плавная смена свойства. Пишется в базовом правиле, не в :hover.</dd>
+        <dt>@keyframes</dt>
+        <dd>Сценарий кадров. Имя потом в animation.</dd>
+        <dt>:focus-visible</dt>
+        <dd>Обводка при навигации с клавиатуры.</dd>
+        <dt>.btn--primary / .btn--ghost</dt>
+        <dd>Модификаторы: одно отличие поверх базы.</dd>
+        <dt>prefers-reduced-motion</dt>
+        <dd>Укоротить анимации, если система просит меньше движения.</dd>
+      </dl>
+    </section>
+
+    <details class="teacher">
+      <summary>Карточка педагога</summary>
+      <ul>
+        <li><strong>Навык:</strong> UI-кит: модификаторы кнопки, три состояния, transition, одна анимация, reduced-motion.</li>
+        <li><strong>Норматив:</strong> 25–40 мин. Код или блоки.</li>
+        <li><strong>Типичные ошибки:</strong> outline: none без замены; transition в :hover; хит только цветом; много infinite; нет reduced-motion.</li>
+        <li><strong>Готово, когда:</strong> 12 зелёных и вслух: зачем :focus-visible и почему transition не в :hover.</li>
+        <li><strong>Усложнение:</strong> свой компонент с анимацией под Dashboard.</li>
+        <li><strong>Поддержка:</strong> режим блоков; SVG в тренажёре нет — она в практике и ИИ-блоке.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type="text/plain" id="starter"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>UI-кит</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --pie-card:        #ffffff;
+      --pie-text:        #111312;
+      --pie-muted:       #6b706b;
+      --pie-accent:      #7cc142;
+      --pie-accent-dark: #5fa22e;
+      --pie-border:      #e3e7e1;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f3;
+      color: var(--pie-text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    /* твой код здесь: .btn — форма, размер, шрифт, плавный переход */
+
+    /* твой код здесь: .btn--primary и .btn--ghost — только цвет */
+
+    /* твой код здесь: три состояния кнопки */
+
+    /* твой код здесь: .card, .card--hit */
+
+    /* твой код здесь: .pill */
+
+    /* твой код здесь: @keyframes и анимация появления карточек */
+
+    /* твой код здесь: prefers-reduced-motion — в самый конец */
+  </style>
+</head>
+<body>
+
+  <h2>Кнопки</h2>
+  <button class="btn btn--primary" type="button">Записаться</button>
+  <button class="btn btn--ghost" type="button">Тёмная тема</button>
+
+  <h2>Карточки</h2>
+  <article class="card">
+    <h3>Шаньга со сметаной</h3>
+    <p>50 ₽</p>
+  </article>
+
+  <article class="card card--hit">
+    <span class="pill">Хит недели</span>
+    <h3>Рыбник</h3>
+    <p>90 ₽</p>
+  </article>
+
+</body>
+</html>
+</script>
+
+  <script type="text/plain" id="etalon"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>UI-кит</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --pie-card:        #ffffff;
+      --pie-text:        #111312;
+      --pie-muted:       #6b706b;
+      --pie-accent:      #7cc142;
+      --pie-accent-dark: #5fa22e;
+      --pie-border:      #e3e7e1;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f3;
+      color: var(--pie-text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1;
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .btn--primary { background: var(--pie-accent); color: var(--pie-text); }
+    .btn--ghost   { background: transparent; color: var(--pie-text); border-color: var(--pie-border); }
+
+    .btn:hover {
+      background: var(--pie-accent-dark);
+      color: #ffffff;
+      border-color: var(--pie-accent-dark);
+    }
+
+    .btn:focus-visible {
+      outline: 3px solid var(--pie-accent-dark);
+      outline-offset: 3px;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .card {
+      background: var(--pie-card);
+      border: 1px solid var(--pie-border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: transform 160ms ease;
+      animation: fade-up 320ms ease both;
+    }
+
+    .card:hover { transform: translateY(-2px); }
+
+    .card--hit { border-color: var(--pie-accent); }
+
+    .pill {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 2px solid var(--pie-accent);
+      color: var(--pie-accent-dark);
+      margin-bottom: 8px;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Кнопки</h2>
+  <button class="btn btn--primary" type="button">Записаться</button>
+  <button class="btn btn--ghost" type="button">Тёмная тема</button>
+
+  <h2>Карточки</h2>
+  <article class="card">
+    <h3>Шаньга со сметаной</h3>
+    <p>50 ₽</p>
+  </article>
+
+  <article class="card card--hit">
+    <span class="pill">Хит недели</span>
+    <h3>Рыбник</h3>
+    <p>90 ₽</p>
+  </article>
+
+</body>
+</html>
+</script>
+
+  <script>
+    (function () {
+      const KEY = "wdc-l07-uikit-v1";
+      const MODE_KEY = "wdc-l07-mode-v1";
+      const TOTAL = 12;
+      const DOWNLOAD = "l07-uikit.html";
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      function fromPlain(id) {
+        return document.getElementById(id).textContent.replace(/^\n/, "").replace(/<\\\/script>/gi, "<" + "/script>");
+      }
+      const starter = fromPlain("starter");
+      const etalon = fromPlain("etalon");
+      const testList = document.getElementById("testList");
+      const scoreEl = document.getElementById("score");
+      const scoreline = document.getElementById("scoreline");
+      const bar = document.getElementById("bar");
+      const badge = document.getElementById("badge");
+      const honesty = document.getElementById("honesty");
+      const hintCountEl = document.getElementById("hintCount");
+      const solBody = document.getElementById("solBody");
+      const solGate = document.getElementById("solGate");
+      const solCode = document.getElementById("solCode");
+      const solutionBox = document.getElementById("solutionBox");
+      solCode.textContent = etalon;
+
+      const openedHints = new Set();
+      let debounceId = 0;
+      let lastPassed = 0;
+      let mode = "code";
+      let picked = null;
+      const BLOCKS = [
+        { id: "btn-ok", accept: "btn", label: "Кнопка: база + переход", show: ".btn { transition }",
+          html: '.btn {\n      font-family: inherit;\n      font-size: 17px;\n      font-weight: 600;\n      line-height: 1;\n      padding: 12px 24px;\n      border-radius: 999px;\n      border: 2px solid transparent;\n      cursor: pointer;\n      transition: background 160ms ease, color 160ms ease, transform 160ms ease;\n    }\n\n    .btn--primary { background: var(--pie-accent); color: var(--pie-text); }\n    .btn--ghost   { background: transparent; color: var(--pie-text); border-color: var(--pie-border); }' },
+        { id: "btn-bad1", accept: "none", label: "Кнопка: три независимых класса", show: ".button-green / .button-white",
+          html: '.button-green { background: #7cc142; padding: 12px 24px; border-radius: 999px; cursor: pointer; }\n    .button-white { background: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer; }' },
+        { id: "hover-ok", accept: "hover", label: "Ховер: смена цвета", show: ".btn:hover",
+          html: '.btn:hover {\n      background: var(--pie-accent-dark);\n      color: #ffffff;\n      border-color: var(--pie-accent-dark);\n    }' },
+        { id: "hover-bad", accept: "none", label: "Ховер с transition внутри", show: ":hover { transition }",
+          html: '.btn:hover {\n      background: var(--pie-accent-dark);\n      color: #ffffff;\n      transition: background 160ms ease;\n    }' },
+        { id: "focus-ok", accept: "focus", label: "Фокус: своя обводка", show: ":focus-visible { outline }",
+          html: '.btn:focus-visible {\n      outline: 3px solid var(--pie-accent-dark);\n      outline-offset: 3px;\n    }\n\n    .btn:active { transform: translateY(1px); }' },
+        { id: "focus-bad", accept: "none", label: "Фокус: убрать обводку", show: ":focus { outline: none }",
+          html: '.btn:focus { outline: none; }' },
+        { id: "card-ok", accept: "card", label: "Карточка + модификатор хита", show: ".card / .card--hit",
+          html: '.card {\n      background: var(--pie-card);\n      border: 1px solid var(--pie-border);\n      border-radius: 14px;\n      padding: 16px;\n      margin-bottom: 12px;\n      transition: transform 160ms ease;\n      animation: fade-up 320ms ease both;\n    }\n\n    .card:hover { transform: translateY(-2px); }\n\n    .card--hit { border-color: var(--pie-accent); }' },
+        { id: "card-bad", accept: "none", label: "Карточка: хит только цветом фона", show: ".card--hit { background }",
+          html: '.card {\n      background: var(--pie-card);\n      border: 1px solid var(--pie-border);\n      border-radius: 14px;\n      padding: 16px;\n      margin-bottom: 12px;\n    }\n\n    .card--hit { background: #edf7e4; }' },
+        { id: "pill-ok", accept: "pill", label: "Пилюля со словом", show: ".pill",
+          html: '.pill {\n      display: inline-block;\n      font-size: 14px;\n      font-weight: 600;\n      padding: 4px 12px;\n      border-radius: 999px;\n      border: 2px solid var(--pie-accent);\n      color: var(--pie-accent-dark);\n      margin-bottom: 8px;\n    }' },
+        { id: "pill-bad", accept: "none", label: "Пилюля мелким шрифтом", show: ".pill { font-size: 9px }",
+          html: '.pill {\n      display: inline-block;\n      font-size: 9px;\n      padding: 2px 6px;\n      border-radius: 999px;\n      color: var(--pie-accent);\n    }' },
+        { id: "anim-ok", accept: "anim", label: "Одна анимация + reduced-motion", show: "@keyframes + @media",
+          html: '@keyframes fade-up {\n      from { opacity: 0; transform: translateY(12px); }\n      to   { opacity: 1; transform: translateY(0); }\n    }\n\n    @media (prefers-reduced-motion: reduce) {\n      *, *::before, *::after {\n        animation-duration: .01ms !important;\n        animation-iteration-count: 1 !important;\n        transition-duration: .01ms !important;\n        scroll-behavior: auto !important;\n      }\n    }' },
+        { id: "anim-bad", accept: "none", label: "Четыре бесконечные анимации", show: "infinite × 4",
+          html: '@keyframes fade-up {\n      from { opacity: 0; transform: translateY(12px); }\n      to   { opacity: 1; transform: translateY(0); }\n    }\n\n    @keyframes shake { 0%,100% { transform: translateX(0); } 50% { transform: translateX(3px); } }\n    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }\n\n    .card { animation: fade-up 320ms ease both; }\n    .btn { animation: shake 500ms ease infinite; }\n    .pill { animation: pulse 700ms ease infinite; }\n    h2 { animation: pulse 900ms ease infinite; }' }
+      ];
+      
+      const PAGE_HEAD = "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"utf-8\">\n" +
+        "  <title>UI-кит</title>\n  <style>\n" +
+        "    *, *::before, *::after { box-sizing: border-box; }\n\n" +
+        "    :root {\n      --pie-card: #ffffff;\n      --pie-text: #111312;\n      --pie-muted: #6b706b;\n" +
+        "      --pie-accent: #7cc142;\n      --pie-accent-dark: #5fa22e;\n      --pie-border: #e3e7e1;\n    }\n\n" +
+        "    body {\n      font-family: Arial, Helvetica, sans-serif;\n      background: #f4f6f3;\n" +
+        "      color: var(--pie-text);\n      padding: 24px;\n      line-height: 1.5;\n    }\n\n    ";
+      const PAGE_TAIL = "\n  </style>\n</head>\n<body>\n\n" +
+        "  <h2>Кнопки</h2>\n" +
+        "  <button class=\"btn btn--primary\" type=\"button\">Записаться</button>\n" +
+        "  <button class=\"btn btn--ghost\" type=\"button\">Тёмная тема</button>\n\n" +
+        "  <h2>Карточки</h2>\n  <article class=\"card\">\n    <h3>Шаньга со сметаной</h3>\n    <p>50 ₽</p>\n  </article>\n\n" +
+        "  <article class=\"card card--hit\">\n    <span class=\"pill\">Хит недели</span>\n    <h3>Рыбник</h3>\n    <p>90 ₽</p>\n  </article>\n\n</body>\n</html>";
+
+
+      function stripComments(src) {
+        return String(src).replace(/\/\*[\s\S]*?\*\//g, "").replace(/<!--[\s\S]*?-->/g, "");
+      }
+      function gapPx(cs) {
+        const raw = ((cs.gap && cs.gap !== "normal") ? cs.gap : (cs.rowGap || cs.columnGap || ""));
+        if (!raw || raw === "normal") return 0;
+        const nums = String(raw).match(/[\d.]+/g);
+        if (!nums) return 0;
+        return Math.max.apply(null, nums.map(Number));
+      }
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+      function slotHtml(accept) {
+        const chip = document.querySelector('#paneBlocks .slot[data-accept="' + accept + '"] .chip');
+        if (!chip) return "";
+        const item = findBlock(chip.dataset.id);
+        return item ? item.html : "";
+      }
+      function htmlFromBlocks() {
+        return PAGE_HEAD +
+          slotHtml("btn") + "\n\n    " +
+          slotHtml("hover") + "\n\n    " +
+          slotHtml("focus") + "\n\n    " +
+          slotHtml("card") + "\n\n    " +
+          slotHtml("pill") + "\n\n    " +
+          slotHtml("anim") +
+          PAGE_TAIL;
+      }
+      function makeChip(item, uid) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.dataset.id = item.id;
+        b.dataset.uid = uid;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (picked === b) {
+            b.classList.remove("is-picked");
+            picked = null;
+            return;
+          }
+          document.querySelectorAll(".chip.is-picked").forEach(function (c) { c.classList.remove("is-picked"); });
+          picked = b;
+          b.classList.add("is-picked");
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          e.preventDefault();
+          const slot = Array.prototype.find.call(
+            document.querySelectorAll("#paneBlocks .slot"),
+            function (s) {
+              return s.getAttribute("data-accept") === item.accept && !s.querySelector(".chip");
+            }
+          );
+          if (slot) {
+            placeChip(slot, b);
+          } else {
+            b.classList.add("chip-flash");
+            setTimeout(function () { b.classList.remove("chip-flash"); }, 400);
+          }
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", uid);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        b.addEventListener("dragover", function (e) { e.preventDefault(); });
+        b.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slot = b.closest(".slot");
+          if (picked && slot) {
+            placeChip(slot, picked);
+            return;
+          }
+          if (picked && picked.parentElement !== document.getElementById("blockPool")) {
+            document.getElementById("blockPool").appendChild(picked);
+            picked.classList.remove("is-picked");
+            picked = null;
+            editor.value = htmlFromBlocks();
+            previewDoc();
+          }
+        });
+        return b;
+      }
+      function fillBlocks() {
+        const pool = document.getElementById("blockPool");
+        pool.innerHTML = "";
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.innerHTML = "";
+        });
+        shuffle(BLOCKS).forEach(function (item, i) {
+          pool.appendChild(makeChip(item, "b" + i + item.id));
+        });
+      }
+      function placeChip(slot, chip) {
+        const old = slot.querySelector(".chip");
+        if (old) document.getElementById("blockPool").appendChild(old);
+        slot.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        editor.value = htmlFromBlocks();
+        previewDoc();
+      }
+      function bindBlocks() {
+        const pool = document.getElementById("blockPool");
+        const pane = document.getElementById("paneBlocks");
+        function returnToPool() {
+          if (!picked || picked.parentElement === pool) return;
+          pool.appendChild(picked);
+          picked.classList.remove("is-picked");
+          picked = null;
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+        pool.addEventListener("click", returnToPool);
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          returnToPool();
+        });
+        pane.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (picked) placeChip(slot, picked);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(slot, picked);
+          });
+        });
+      }
+      function setMode(next) {
+        mode = next;
+        const isCode = next === "code";
+        document.getElementById("modeCodeBtn").setAttribute("aria-pressed", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-pressed", String(!isCode));
+        document.getElementById("paneCode").classList.toggle("hide", !isCode);
+        document.getElementById("paneBlocks").classList.toggle("hide", isCode);
+        document.querySelector(".layout").classList.toggle("is-blocks", !isCode);
+        document.getElementById("specCode").classList.toggle("hide", !isCode);
+        document.getElementById("specBlocks").classList.toggle("hide", isCode);
+        try { localStorage.setItem(MODE_KEY, next); } catch (e) {}
+        if (isCode) {
+          const hasChip = !!document.querySelector("#paneBlocks .slot .chip");
+          if (hasChip) {
+            editor.value = htmlFromBlocks();
+          } else {
+            try { editor.value = localStorage.getItem(KEY) || starter; } catch (e) { editor.value = starter; }
+          }
+          previewDoc();
+        } else {
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+      }
+      function previewDoc() {
+        const baseHref = new URL("./", window.location.href).href;
+        let html = editor.value;
+        if (/<head[^>]*>/i.test(html)) {
+          html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + baseHref + '">');
+        }
+        preview.srcdoc = html;
+        if (mode === "code") {
+          try { localStorage.setItem(KEY, editor.value); } catch (e) {}
+        }
+      }
+      function schedulePreview() {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(previewDoc, 280);
+      }
+      editor.addEventListener("input", schedulePreview);
+
+      
+      function outlineNoneWithoutReplace(src) {
+        var clean = stripComments(src);
+        var re = /outline\s*:\s*(none|0)(?:\s*!important)?/gi;
+        var m;
+        while ((m = re.exec(clean))) {
+          var after = clean.slice(m.index + m[0].length);
+          if (!/outline\s*:\s*(?!none\b)(?!0\b)[^;]+/.test(after)) return true;
+        }
+        return false;
+      }
+      function transitionPositive(cs) {
+        var d = String(cs.transitionDuration || "").split(",");
+        return d.some(function (x) {
+          var n = parseFloat(x);
+          return !isNaN(n) && n > 0;
+        });
+      }
+      function testsFor(doc, src, win) {
+        const clean = stripComments(src);
+        const btn = doc.querySelector(".btn");
+        const card = doc.querySelector(".card");
+        const pill = doc.querySelector(".pill");
+        const hit = doc.querySelector(".card--hit");
+        const btnCs = btn && win ? win.getComputedStyle(btn) : null;
+        const cardCs = card && win ? win.getComputedStyle(card) : null;
+        const pillCs = pill && win ? win.getComputedStyle(pill) : null;
+        const bodyCs = win ? win.getComputedStyle(doc.body) : null;
+        const btnRule = (clean.match(/\.btn\s*\{([^}]*)\}/) || [])[1] || "";
+        const mods = clean.match(/\.btn--[a-zA-Z0-9-]+/g) || [];
+        const uniqueMods = [];
+        mods.forEach(function (m) { if (uniqueMods.indexOf(m) === -1) uniqueMods.push(m); });
+        const bg = cardCs ? cardCs.backgroundColor : "";
+        const transparent = !bg || bg === "transparent" || bg === "rgba(0, 0, 0, 0)";
+        const borderW = cardCs ? parseFloat(cardCs.borderTopWidth) : 0;
+        const hitPill = hit && hit.querySelector(".pill");
+        const kf = (clean.match(/@keyframes/g) || []).length;
+        const inf = (clean.match(/infinite/g) || []).length;
+        const fontOk = !!(btnCs && bodyCs && btnCs.fontFamily === bodyCs.fontFamily);
+        return [
+          {
+            ok: !!(btnCs && parseFloat(btnCs.borderRadius) > 0 && (parseFloat(btnCs.paddingTop) > 0 || parseFloat(btnCs.paddingLeft) > 0) && /border-radius/.test(btnRule) && /padding/.test(btnRule)),
+            title: "Базовый класс кнопки есть",
+            hint: "Форма, размер и отступы описываются один раз в .btn. Отдельные классы на каждую кнопку дублируют общее и расходятся со временем"
+          },
+          {
+            ok: uniqueMods.length >= 2,
+            title: "Модификаторы на месте",
+            hint: "Модификатор меняет одну характеристику поверх базового класса: .btn--primary и .btn--ghost. В разметке они пишутся вторым классом через пробел"
+          },
+          {
+            ok: fontOk,
+            title: "Шрифт кнопки как у страницы",
+            hint: "Кнопки не наследуют шрифт — у них свой, системный. Добавь font-family: inherit, иначе кнопка будет выглядеть чужеродно"
+          },
+          {
+            ok: /\.btn[^{]*:hover/.test(clean),
+            title: "Наведение описано",
+            hint: "Без реакции на наведение пользователь не уверен, что это кнопка. Добавь .btn:hover со сменой фона"
+          },
+          {
+            ok: /:focus-visible[\s\S]{0,160}\{[^}]*outline\s*:\s*(?!none\b)(?!0\b)/.test(clean),
+            title: "Фокус виден",
+            hint: "Человек, который ходит по странице клавишей Tab, должен видеть, где находится. Добавь .btn:focus-visible { outline: 3px solid …; outline-offset: 3px; }"
+          },
+          {
+            ok: !outlineNoneWithoutReplace(src),
+            title: "Подсветка фокуса не убрана",
+            hint: "outline: none делает страницу непригодной для навигации с клавиатуры. Не нравится стандартная обводка — замени её своей через :focus-visible, но не убирай"
+          },
+          {
+            ok: /\.btn[^{]*:active/.test(clean),
+            title: "Отклик на нажатие есть",
+            hint: "Сдвиг на один пиксель при нажатии даёт ощущение, что кнопка нажалась: .btn:active { transform: translateY(1px); }"
+          },
+          {
+            ok: !!(btnCs && transitionPositive(btnCs) && /transition\s*:/.test(btnRule)),
+            title: "Переход плавный в обе стороны",
+            hint: "Если transition написан внутри :hover, наведение будет плавным, а увод мыши — рывком. Переход — свойство элемента, а не состояния: перенеси его в .btn"
+          },
+          {
+            ok: !!(cardCs && !transparent && borderW > 0 && /\.card--hit/.test(clean)),
+            title: "Карточка и модификатор есть",
+            hint: "Хит — это модификатор поверх базовой карточки: .card--hit, а не отдельный класс со всеми свойствами заново"
+          },
+          {
+            ok: !!(hitPill && hitPill.textContent.trim() !== ""),
+            title: "Смысл передан не только цветом",
+            hint: "Если хит отличается только цветом рамки, человек, не различающий цвета, увидит две одинаковые карточки. Нужна пилюля со словом"
+          },
+          {
+            ok: !!(pillCs && parseFloat(pillCs.fontSize) >= 13),
+            title: "Пилюля читается",
+            hint: "Мелкий шрифт в метке — частая ошибка. Нижняя граница для пилюли — 13–14 пикселей"
+          },
+          {
+            ok: /prefers-reduced-motion/.test(clean) && kf <= 3 && inf <= 1,
+            title: "Движение под контролем",
+            hint: "Две проблемы возможны здесь. Первая: нет блока @media (prefers-reduced-motion: reduce) — движение неприятно части пользователей, и настройку системы надо уважать. Вторая: анимаций больше трёх или несколько бесконечных — интерфейс становится тяжело читать"
+          }
+        ];
+      }
+
+
+      function maybeUnlock(done) {
+        const unlocked = done || openedHints.size >= 3;
+        if (!unlocked) return;
+        solBody.hidden = false;
+        solutionBox.classList.remove("locked");
+        solGate.textContent = done
+          ? "Эталон открыт: все проверки пройдены."
+          : "Эталон открыт: использованы три подсказки.";
+      }
+      function renderTests(results) {
+        testList.innerHTML = "";
+        let passed = 0;
+        results.forEach(function (t) {
+          if (t.ok) passed += 1;
+          const div = document.createElement("div");
+          div.className = "test";
+          div.textContent = (t.ok ? "✅ " : "❌ ") + t.title;
+          if (!t.ok) {
+            const hint = document.createElement("span");
+            hint.className = "hint";
+            hint.textContent = t.hint;
+            div.appendChild(hint);
+          }
+          testList.appendChild(div);
+        });
+        lastPassed = passed;
+        const total = results.length;
+        scoreEl.textContent = passed + " / " + total;
+        scoreline.textContent = passed + " из " + total + " проверок";
+        bar.style.width = (passed / total * 100) + "%";
+        const done = passed === total;
+        badge.textContent = done ? "Кит собран" : "ещё собираем";
+        badge.className = "pill" + (done ? " ok" : "");
+        maybeUnlock(done);
+        return done;
+      }
+      function run() {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        clearTimeout(debounceId);
+        const source = editor.value;
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const doc = preview.contentDocument;
+          if (!doc || !doc.body) {
+            renderTests([{ ok: false, title: "Документ не разобрался", hint: "Проверьте незакрытые теги и фигурные скобки в CSS." }]);
+            return;
+          }
+          renderTests(testsFor(doc, source, doc.defaultView));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(finish, 60);
+        });
+        previewDoc();
+        setTimeout(function () { if (!finished) finish(); }, 1500);
+      }
+      document.getElementById("checkBtn").addEventListener("click", run);
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!window.confirm("Вернуть заготовку?")) return;
+        if (mode === "blocks") {
+          fillBlocks();
+          editor.value = htmlFromBlocks();
+        } else {
+          editor.value = starter;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+        }
+        previewDoc();
+        testList.innerHTML = "";
+        scoreEl.textContent = "0 / 0";
+        scoreline.textContent = "0 из " + TOTAL + " проверок";
+        bar.style.width = "0";
+        badge.textContent = "ещё собираем";
+        badge.className = "pill";
+      });
+      document.getElementById("saveBtn").addEventListener("click", function () {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = DOWNLOAD;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+      });
+      document.querySelectorAll("[data-hint]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const n = btn.getAttribute("data-hint");
+          openedHints.add(n);
+          document.getElementById("h" + n).classList.add("open");
+          hintCountEl.textContent = String(openedHints.size);
+          honesty.textContent = openedHints.size
+            ? "Открыты подсказки: " + Array.from(openedHints).map(function (x) { return Number(x) + 1; }).join(", ") + "."
+            : "";
+          maybeUnlock(lastPassed === TOTAL);
+        });
+      });
+      fillBlocks();
+      bindBlocks();
+      document.getElementById("modeCodeBtn").addEventListener("click", function () { setMode("code"); });
+      document.getElementById("modeBlocksBtn").addEventListener("click", function () { setMode("blocks"); });
+      try {
+        editor.value = localStorage.getItem(KEY) || starter;
+      } catch (e) {
+        editor.value = starter;
+      }
+      try {
+        const savedMode = localStorage.getItem(MODE_KEY);
+        if (savedMode === "blocks" || savedMode === "code") mode = savedMode;
+      } catch (e) {}
+      setMode(mode);
+    })();
+
+  </script>
+</body>
+</html>

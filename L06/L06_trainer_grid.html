@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тренажёр · Занятие 6 · CSS Grid</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+    header.top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 34px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    header.top p { margin: 0; color: var(--tm-muted); font-size: 15px; }
+    .course-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+    .course-links a {
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .brief, .ref, .status, .tests, .hints, .solution, .gloss, .teacher, .spec {
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    html[data-theme="dark"] .brief,
+    html[data-theme="dark"] .ref,
+    html[data-theme="dark"] .status,
+    html[data-theme="dark"] .tests,
+    html[data-theme="dark"] .hints,
+    html[data-theme="dark"] .solution,
+    html[data-theme="dark"] .gloss,
+    html[data-theme="dark"] .spec {
+      background: var(--tm-bg-alt);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    p, li { line-height: 1.55; font-size: 17px; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+    .spec h3 { font-size: 16px; margin: 16px 0 8px; }
+    .spec h3:first-child { margin-top: 0; }
+    .spec ol, .tm-list { margin: 0; padding-left: 0; list-style: none; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: 0.6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: 0.05em;
+      color: var(--tm-green);
+      font-size: 0.78em;
+      letter-spacing: -0.08em;
+    }
+    .ref-page {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .ref-page .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .ref-page .mid { padding: 16px 14px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1fr 1fr; }
+    }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks { grid-template-columns: 1fr 1fr; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .blocks-src, .blocks-dst {
+      min-width: 0;
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 16px;
+    }
+    .blocks-src h2, .blocks-dst h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .layout.is-blocks .pool {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .layout.is-blocks .chip { max-width: none; width: 100%; }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+      caret-color: var(--tm-text);
+    }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      box-shadow: var(--tm-shadow);
+    }
+    .meter {
+      height: 8px;
+      background: var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width 0.22s ease;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      font: inherit;
+      font-weight: 650;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      cursor: pointer;
+    }
+    button.ghost {
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border: 2px solid var(--tm-border);
+    }
+    html[data-theme="dark"] button.ghost { background: var(--tm-bg-alt); }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    html[data-theme="dark"] .pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .pill.ok {
+      background: var(--tm-green-soft);
+      color: var(--tm-ok);
+      border-color: var(--tm-ok);
+    }
+    .test {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--tm-border);
+      font-size: 15px;
+    }
+    .test .hint { color: var(--tm-fail); display: block; margin-top: 4px; }
+    .hintbox {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--tm-green-soft);
+      border-radius: 12px;
+    }
+    .hintbox.open { display: block; }
+    .locked #solBody { display: none; }
+    code, pre { font-family: var(--tm-mono); font-size: 0.92em; }
+    pre.tm-code {
+      white-space: pre-wrap;
+      font-size: 15px;
+      margin: 0;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+    }
+    #solCode {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      padding: 14px;
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      overflow: auto;
+    }
+    .gloss dt { font-weight: 650; margin-top: 12px; font-size: 15px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; box-shadow: none; background: transparent; padding: 8px 0; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); }
+    .hide { display: none !important; }
+    .modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 20px;
+    }
+    .modes button {
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .modes button[aria-pressed="true"] {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 52px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .chip.is-picked, .chip.chip-flash {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .chip.chip-flash { outline-color: var(--tm-fail); }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .page-frame {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .page-frame .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 12px;
+      font-weight: 650;
+    }
+    .page-frame .mid { padding: 12px; }
+    .slot-lab {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 6px;
+      color: var(--tm-muted);
+    }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--tm-bg);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Сетка на Grid</h1>
+        <p>Занятие 6 · буфет «Северный пирог»</p>
+      </div>
+      <p id="scoreline">0 из 11 проверок</p>
+    </header>
+    <nav class="course-links" aria-label="Курс">
+      <a href="../index.html">►► Все занятия</a>
+      <a href="L06_presentation.html">►► Презентация</a>
+      <a href="../L05/L05_presentation.html">►► Занятие 5</a>
+      <a href="../L07/L07_presentation.html">►► Занятие 7</a>
+      <button type="button" class="ghost" id="themeBtn">Тема</button>
+    </nav>
+
+    <div class="modes" role="tablist" aria-label="Как решать">
+      <button type="button" id="modeCodeBtn" aria-pressed="true">1. Писать код</button>
+      <button type="button" id="modeBlocksBtn" aria-pressed="false">2. Собрать блоками</button>
+    </div>
+
+    <section class="brief spec">
+      <h2>ТЗ</h2>
+      <p>Заказ буфета «Северный пирог».<br>Сделай меню, которое нормально смотрится с телефона.</p>
+      <ul class="tm-list">
+        <li>Меню — сетка на Grid, ширина колонок в <code>fr</code></li>
+        <li>На узком экране одна колонка, от 600 — две, от 900 — три</li>
+        <li>Пиши по Mobile First: базовые правила для телефона, расширения через <code>min-width</code></li>
+        <li>Медиазапросы в конце файла, по возрастанию ширины</li>
+        <li>Таблица часов работы не должна вылезать за край</li>
+      </ul>
+      <p>Без <code>max-width</code> в медиазапросах и без процентов в колонках.</p>
+      <div id="specCode">
+        <h3>Как сделать кодом</h3>
+        <ol>
+          <li>База: <code>.menu { display: grid; grid-template-columns: 1fr; gap: 16px; }</code>.</li>
+          <li>От 600 px — <code>repeat(2, 1fr)</code>, от 900 px — <code>repeat(3, 1fr)</code>.</li>
+          <li>Медиазапросы в конце, сначала 600, ниже 900.</li>
+          <li>Обёртке таблицы — <code>overflow-x: auto</code>. Не прячь содержимое.</li>
+        </ol>
+      </div>
+      <div id="specBlocks" class="hide">
+        <h3>Как сделать блоками</h3>
+        <p>Слева блоки CSS, справа поля. Чип ставится кликом, перетаскиванием или клавишей Enter.</p>
+      </div>
+    </section>
+
+    <section class="ref">
+      <h2>Эталон-цель</h2>
+      <p class="lead">Телефон — одна колонка. Планшет — две. Ноутбук — три. Таблица едет внутри себя.</p>
+      <div class="ref-page">
+        <div class="bar">меню · 1 → 2 → 3 колонки</div>
+        <div class="mid">
+          <p>База 1fr, затем min-width 600 и 900. Часы работы в .table-wrap.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <strong>Прогресс:</strong>
+      <span id="score">0 / 0</span>
+      · подсказок открыто: <span id="hintCount">0</span>/3
+      · <span id="badge" class="pill">ещё собираем</span>
+      <div class="meter"><span id="bar"></span></div>
+      <div class="row">
+        <button type="button" id="checkBtn">Проверить</button>
+        <button type="button" class="ghost" id="resetBtn">Сбросить</button>
+        <button type="button" class="ghost" id="saveBtn">Скачать страницу</button>
+      </div>
+      <p id="honesty" class="lead" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="layout">
+      <div id="paneCode">
+        <h2>Редактор</h2>
+        <textarea id="editor" spellcheck="false" aria-label="Код страницы"></textarea>
+      </div>
+      <div id="paneBlocks" class="blocks-board hide">
+        <div class="blocks-src">
+          <h2>Блоки кода</h2>
+          <p class="lead">Слева блоки, справа поля.</p>
+          <div class="pool" id="blockPool" aria-label="Готовые фрагменты"></div>
+        </div>
+        <div class="blocks-dst">
+          <h2>Поля</h2>
+          <div class="page-frame">
+            <div class="bar">CSS в порядке файла</div>
+            <div class="mid">
+              <span class="slot-lab">1. Меню — базовые правила</span>
+              <div class="slot" data-accept="menu"></div>
+              <span class="slot-lab">2. Таблица</span>
+              <div class="slot" data-accept="wrap"></div>
+              <span class="slot-lab">3. Медиазапрос: планшет</span>
+              <div class="slot" data-accept="mq600"></div>
+              <span class="slot-lab">4. Медиазапрос: ноутбук</span>
+              <div class="slot" data-accept="mq900"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panePreview">
+        <h2>Результат</h2>
+        <iframe id="preview" title="Превью страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <section class="tests">
+      <h2>Самопроверка</h2>
+      <p class="lead">Сетка и gap — через getComputedStyle. Медиазапросы и порядок — по исходному CSS: превью одной ширины.</p>
+      <div id="testList"></div>
+    </section>
+
+    <section class="hints">
+      <h2>Подсказки</h2>
+      <p class="lead">Три подсказки. На демо — своими словами.</p>
+      <div class="row">
+        <button type="button" class="ghost" data-hint="0">1 — вопрос</button>
+        <button type="button" class="ghost" data-hint="1">2 — приём</button>
+        <button type="button" class="ghost" data-hint="2">3 — фрагмент</button>
+      </div>
+      <div class="hintbox" id="h0">С какого экрана ты начинаешь? Посмотри на свои базовые правила: если раскомментировать только их, как страница будет выглядеть на телефоне? И второй вопрос: в каком порядке у тебя написаны медиазапросы?</div>
+      <div class="hintbox" id="h1">Базовое правило: display: grid; grid-template-columns: 1fr; gap: 16px;. Дальше два блока в конце файла: @media (min-width: 600px) с repeat(2, 1fr), ниже @media (min-width: 900px) с repeat(3, 1fr). Таблице — обёртка с overflow-x: auto.</div>
+      <div class="hintbox" id="h2"><pre class="tm-code">.menu {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.table-wrap { overflow-x: auto; }
+
+@media (min-width: 600px) {
+  .menu { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+}
+
+@media (min-width: 900px) {
+  .menu { grid-template-columns: repeat(3, 1fr); }
+}</pre></div>
+    </section>
+
+    <section class="solution locked" id="solutionBox">
+      <h2>Эталонное решение</h2>
+      <p id="solGate">Откроется, когда все проверки зелёные или открыты три подсказки.</p>
+      <div id="solBody" hidden>
+        <p><strong>Почему так:</strong> База — одна колонка, потому что Mobile First. Медиазапросы по возрастанию: на широком экране истинны оба, побеждает нижний. Проценты плюс gap вылезают за край. Таблицу не прячем — даём прокрутку обёртке.</p>
+        <pre id="solCode"></pre>
+      </div>
+    </section>
+
+    <section class="gloss" id="glossary">
+      <h2>Глоссарий занятия</h2>
+      <dl>
+        <dt>Grid</dt>
+        <dd>Двумерная сетка: display: grid на родителе.</dd>
+        <dt>fr</dt>
+        <dd>Доля свободного места после промежутков.</dd>
+        <dt>@media</dt>
+        <dd>Правила при условии. Здесь — ширина окна.</dd>
+        <dt>Mobile First</dt>
+        <dd>База для узкого экрана, расширения через min-width.</dd>
+        <dt>overflow-x: auto</dt>
+        <dd>Прокрутка широкой таблицы внутри обёртки.</dd>
+      </dl>
+    </section>
+
+    <details class="teacher">
+      <summary>Карточка педагога</summary>
+      <ul>
+        <li><strong>Навык:</strong> CSS Grid, fr, Mobile First, порядок медиазапросов, обёртка таблицы.</li>
+        <li><strong>Норматив:</strong> 25–40 мин. Код или блоки.</li>
+        <li><strong>Типичные ошибки:</strong> три колонки в базе; проценты; max-width; 900 выше 600; display: none; нет overflow-x.</li>
+        <li><strong>Готово, когда:</strong> 11 зелёных и вслух: что на телефоне и почему 600 выше 900 нельзя.</li>
+        <li><strong>Усложнение:</strong> grid-template-areas — только плюс, тестами не ловим.</li>
+        <li><strong>Поддержка:</strong> режим блоков; слоты уже в порядке файла.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type="text/plain" id="starter"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный пирог</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f4f6f3;
+    }
+
+    /* --- базовые правила: телефон --- */
+
+    .menu {
+      list-style: none;
+      padding-left: 0;
+      margin: 0 0 24px;
+      /* твой код здесь: сетка в одну колонку, промежуток 16px */
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e3e7e1;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    /* твой код здесь: обёртка таблицы с прокруткой */
+
+    table { border-collapse: collapse; width: 100%; min-width: 480px; }
+    th, td { border: 1px solid #e3e7e1; padding: 8px 10px; text-align: left; }
+
+    /* --- медиазапросы: в конце файла, по возрастанию --- */
+
+    /* твой код здесь: от 600px — две колонки, промежуток 20px */
+
+    /* твой код здесь: от 900px — три колонки */
+  </style>
+</head>
+<body>
+
+  <h2>Меню на сегодня</h2>
+  <ul class="menu">
+    <li class="card">Калитка с картошкой<br>45 ₽</li>
+    <li class="card">Шаньга со сметаной<br>50 ₽</li>
+    <li class="card">Рыбник<br>90 ₽</li>
+    <li class="card">Брусничный пирог<br>70 ₽</li>
+    <li class="card">Морошковый пирог<br>85 ₽</li>
+    <li class="card">Черничная ватрушка<br>60 ₽</li>
+  </ul>
+
+  <h2>Часы работы</h2>
+  <div class="table-wrap">
+    <table>
+      <caption>Часы работы буфета</caption>
+      <thead>
+        <tr><th scope="col">День</th><th scope="col">Открыт</th><th scope="col">Большая перемена</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Понедельник — пятница</th><td>8:30 — 15:00</td><td>11:25 — 11:45</td></tr>
+        <tr><th scope="row">Суббота</th><td>9:00 — 13:00</td><td>11:00 — 11:20</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
+</script>
+
+  <script type="text/plain" id="etalon"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный пирог</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f4f6f3;
+    }
+
+    /* --- базовые правила: телефон --- */
+
+    .menu {
+      list-style: none;
+      padding-left: 0;
+      margin: 0 0 24px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e3e7e1;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    table { border-collapse: collapse; width: 100%; min-width: 480px; }
+    th, td { border: 1px solid #e3e7e1; padding: 8px 10px; text-align: left; }
+
+    /* --- медиазапросы: в конце файла, по возрастанию --- */
+
+    @media (min-width: 600px) {
+      .menu {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+    }
+
+    @media (min-width: 900px) {
+      .menu {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Меню на сегодня</h2>
+  <ul class="menu">
+    <li class="card">Калитка с картошкой<br>45 ₽</li>
+    <li class="card">Шаньга со сметаной<br>50 ₽</li>
+    <li class="card">Рыбник<br>90 ₽</li>
+    <li class="card">Брусничный пирог<br>70 ₽</li>
+    <li class="card">Морошковый пирог<br>85 ₽</li>
+    <li class="card">Черничная ватрушка<br>60 ₽</li>
+  </ul>
+
+  <h2>Часы работы</h2>
+  <div class="table-wrap">
+    <table>
+      <caption>Часы работы буфета</caption>
+      <thead>
+        <tr><th scope="col">День</th><th scope="col">Открыт</th><th scope="col">Большая перемена</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Понедельник — пятница</th><td>8:30 — 15:00</td><td>11:25 — 11:45</td></tr>
+        <tr><th scope="row">Суббота</th><td>9:00 — 13:00</td><td>11:00 — 11:20</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
+</script>
+
+  <script>
+    (function () {
+      const KEY = "wdc-l06-grid-v1";
+      const MODE_KEY = "wdc-l06-mode-v1";
+      const TOTAL = 11;
+      const DOWNLOAD = "l06-grid.html";
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      function fromPlain(id) {
+        return document.getElementById(id).textContent.replace(/^\n/, "").replace(/<\\\/script>/gi, "<" + "/script>");
+      }
+      const starter = fromPlain("starter");
+      const etalon = fromPlain("etalon");
+      const testList = document.getElementById("testList");
+      const scoreEl = document.getElementById("score");
+      const scoreline = document.getElementById("scoreline");
+      const bar = document.getElementById("bar");
+      const badge = document.getElementById("badge");
+      const honesty = document.getElementById("honesty");
+      const hintCountEl = document.getElementById("hintCount");
+      const solBody = document.getElementById("solBody");
+      const solGate = document.getElementById("solGate");
+      const solCode = document.getElementById("solCode");
+      const solutionBox = document.getElementById("solutionBox");
+      solCode.textContent = etalon;
+
+      const openedHints = new Set();
+      let debounceId = 0;
+      let lastPassed = 0;
+      let mode = "code";
+      let picked = null;
+      const BLOCKS = [
+        { id: "menu-ok", accept: "menu", label: "Меню: одна колонка (база)", show: "grid-template-columns: 1fr",
+          html: '.menu {\n      list-style: none;\n      padding-left: 0;\n      margin: 0 0 24px;\n      display: grid;\n      grid-template-columns: 1fr;\n      gap: 16px;\n    }' },
+        { id: "menu-bad1", accept: "none", label: "Меню: сразу три колонки", show: "repeat(3, 1fr) в базе",
+          html: '.menu {\n      list-style: none;\n      padding-left: 0;\n      margin: 0 0 24px;\n      display: grid;\n      grid-template-columns: repeat(3, 1fr);\n      gap: 20px;\n    }' },
+        { id: "menu-bad2", accept: "none", label: "Меню: колонки в процентах", show: "33% 33% 33%",
+          html: '.menu {\n      list-style: none;\n      padding-left: 0;\n      margin: 0 0 24px;\n      display: grid;\n      grid-template-columns: 33% 33% 33%;\n      gap: 16px;\n    }' },
+        { id: "wrap-ok", accept: "wrap", label: "Таблица: обёртка с прокруткой", show: "overflow-x: auto",
+          html: '.table-wrap { overflow-x: auto; }' },
+        { id: "wrap-bad1", accept: "none", label: "Таблица: спрятать на телефоне", show: "display: none",
+          html: '@media (min-width: 0px) { .table-wrap { display: none; } }' },
+        { id: "wrap-bad2", accept: "none", label: "Таблица: мелкий шрифт", show: "font-size: 9px",
+          html: '.table-wrap table { font-size: 9px; }' },
+        { id: "mq600-ok", accept: "mq600", label: "От 600px: две колонки", show: "@media (min-width: 600px)",
+          html: '@media (min-width: 600px) {\n      .menu {\n        grid-template-columns: repeat(2, 1fr);\n        gap: 20px;\n      }\n    }' },
+        { id: "mq600-bad", accept: "none", label: "До 600px: одна колонка", show: "@media (max-width: 600px)",
+          html: '@media (max-width: 600px) {\n      .menu {\n        grid-template-columns: 1fr;\n      }\n    }' },
+        { id: "mq900-ok", accept: "mq900", label: "От 900px: три колонки", show: "@media (min-width: 900px)",
+          html: '@media (min-width: 900px) {\n      .menu {\n        grid-template-columns: repeat(3, 1fr);\n      }\n    }' },
+        { id: "mq900-bad", accept: "none", label: "От 900px: колонка 400px минимум", show: "minmax(400px, 1fr)",
+          html: '@media (min-width: 900px) {\n      .menu {\n        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));\n      }\n    }' }
+      ];
+      
+      const PAGE_HEAD = "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"utf-8\">\n" +
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" +
+        "  <title>Северный пирог</title>\n  <style>\n" +
+        "    *, *::before, *::after { box-sizing: border-box; }\n\n" +
+        "    body {\n      font-family: Arial, Helvetica, sans-serif;\n      margin: 0;\n      padding: 16px;\n      background: #f4f6f3;\n    }\n\n" +
+        "    .card {\n      background: #ffffff;\n      border: 1px solid #e3e7e1;\n      border-radius: 14px;\n      padding: 16px;\n    }\n\n" +
+        "    table { border-collapse: collapse; width: 100%; min-width: 480px; }\n" +
+        "    th, td { border: 1px solid #e3e7e1; padding: 8px 10px; text-align: left; }\n\n    ";
+      const PAGE_TAIL = "\n  </style>\n</head>\n<body>\n\n" +
+        "  <h2>Меню на сегодня</h2>\n  <ul class=\"menu\">\n" +
+        "    <li class=\"card\">Калитка с картошкой<br>45 ₽</li>\n" +
+        "    <li class=\"card\">Шаньга со сметаной<br>50 ₽</li>\n" +
+        "    <li class=\"card\">Рыбник<br>90 ₽</li>\n" +
+        "    <li class=\"card\">Брусничный пирог<br>70 ₽</li>\n" +
+        "    <li class=\"card\">Морошковый пирог<br>85 ₽</li>\n" +
+        "    <li class=\"card\">Черничная ватрушка<br>60 ₽</li>\n  </ul>\n\n" +
+        "  <h2>Часы работы</h2>\n  <div class=\"table-wrap\">\n    <table>\n" +
+        "      <caption>Часы работы буфета</caption>\n      <thead>\n" +
+        "        <tr><th scope=\"col\">День</th><th scope=\"col\">Открыт</th><th scope=\"col\">Большая перемена</th></tr>\n" +
+        "      </thead>\n      <tbody>\n" +
+        "        <tr><th scope=\"row\">Понедельник — пятница</th><td>8:30 — 15:00</td><td>11:25 — 11:45</td></tr>\n" +
+        "        <tr><th scope=\"row\">Суббота</th><td>9:00 — 13:00</td><td>11:00 — 11:20</td></tr>\n" +
+        "      </tbody>\n    </table>\n  </div>\n\n</body>\n</html>";
+
+
+      function stripComments(src) {
+        return String(src).replace(/\/\*[\s\S]*?\*\//g, "").replace(/<!--[\s\S]*?-->/g, "");
+      }
+      function gapPx(cs) {
+        const raw = ((cs.gap && cs.gap !== "normal") ? cs.gap : (cs.rowGap || cs.columnGap || ""));
+        if (!raw || raw === "normal") return 0;
+        const nums = String(raw).match(/[\d.]+/g);
+        if (!nums) return 0;
+        return Math.max.apply(null, nums.map(Number));
+      }
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+      function slotHtml(accept) {
+        const chip = document.querySelector('#paneBlocks .slot[data-accept="' + accept + '"] .chip');
+        if (!chip) return "";
+        const item = findBlock(chip.dataset.id);
+        return item ? item.html : "";
+      }
+      function htmlFromBlocks() {
+        return PAGE_HEAD +
+          slotHtml("menu") + "\n\n    " +
+          slotHtml("wrap") + "\n\n    " +
+          slotHtml("mq600") + "\n\n    " +
+          slotHtml("mq900") +
+          PAGE_TAIL;
+      }
+      function makeChip(item, uid) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.dataset.id = item.id;
+        b.dataset.uid = uid;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (picked === b) {
+            b.classList.remove("is-picked");
+            picked = null;
+            return;
+          }
+          document.querySelectorAll(".chip.is-picked").forEach(function (c) { c.classList.remove("is-picked"); });
+          picked = b;
+          b.classList.add("is-picked");
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter" && e.key !== " ") return;
+          e.preventDefault();
+          const slot = Array.prototype.find.call(
+            document.querySelectorAll("#paneBlocks .slot"),
+            function (s) {
+              return s.getAttribute("data-accept") === item.accept && !s.querySelector(".chip");
+            }
+          );
+          if (slot) {
+            placeChip(slot, b);
+          } else {
+            b.classList.add("chip-flash");
+            setTimeout(function () { b.classList.remove("chip-flash"); }, 400);
+          }
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", uid);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        b.addEventListener("dragover", function (e) { e.preventDefault(); });
+        b.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slot = b.closest(".slot");
+          if (picked && slot) {
+            placeChip(slot, picked);
+            return;
+          }
+          if (picked && picked.parentElement !== document.getElementById("blockPool")) {
+            document.getElementById("blockPool").appendChild(picked);
+            picked.classList.remove("is-picked");
+            picked = null;
+            editor.value = htmlFromBlocks();
+            previewDoc();
+          }
+        });
+        return b;
+      }
+      function fillBlocks() {
+        const pool = document.getElementById("blockPool");
+        pool.innerHTML = "";
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.innerHTML = "";
+        });
+        shuffle(BLOCKS).forEach(function (item, i) {
+          pool.appendChild(makeChip(item, "b" + i + item.id));
+        });
+      }
+      function placeChip(slot, chip) {
+        const old = slot.querySelector(".chip");
+        if (old) document.getElementById("blockPool").appendChild(old);
+        slot.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        editor.value = htmlFromBlocks();
+        previewDoc();
+      }
+      function bindBlocks() {
+        const pool = document.getElementById("blockPool");
+        const pane = document.getElementById("paneBlocks");
+        function returnToPool() {
+          if (!picked || picked.parentElement === pool) return;
+          pool.appendChild(picked);
+          picked.classList.remove("is-picked");
+          picked = null;
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+        pool.addEventListener("click", returnToPool);
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          returnToPool();
+        });
+        pane.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (picked) placeChip(slot, picked);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(slot, picked);
+          });
+        });
+      }
+      function setMode(next) {
+        mode = next;
+        const isCode = next === "code";
+        document.getElementById("modeCodeBtn").setAttribute("aria-pressed", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-pressed", String(!isCode));
+        document.getElementById("paneCode").classList.toggle("hide", !isCode);
+        document.getElementById("paneBlocks").classList.toggle("hide", isCode);
+        document.querySelector(".layout").classList.toggle("is-blocks", !isCode);
+        document.getElementById("specCode").classList.toggle("hide", !isCode);
+        document.getElementById("specBlocks").classList.toggle("hide", isCode);
+        try { localStorage.setItem(MODE_KEY, next); } catch (e) {}
+        if (isCode) {
+          const hasChip = !!document.querySelector("#paneBlocks .slot .chip");
+          if (hasChip) {
+            editor.value = htmlFromBlocks();
+          } else {
+            try { editor.value = localStorage.getItem(KEY) || starter; } catch (e) { editor.value = starter; }
+          }
+          previewDoc();
+        } else {
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+      }
+      function previewDoc() {
+        const baseHref = new URL("./", window.location.href).href;
+        let html = editor.value;
+        if (/<head[^>]*>/i.test(html)) {
+          html = html.replace(/<head([^>]*)>/i, '<head$1><base href="' + baseHref + '">');
+        }
+        preview.srcdoc = html;
+        if (mode === "code") {
+          try { localStorage.setItem(KEY, editor.value); } catch (e) {}
+        }
+      }
+      function schedulePreview() {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(previewDoc, 280);
+      }
+      editor.addEventListener("input", schedulePreview);
+
+      
+      function stripMediaBlocks(src) {
+        var s = stripComments(src);
+        var out = "";
+        var i = 0;
+        while (i < s.length) {
+          var idx = s.indexOf("@media", i);
+          if (idx === -1) {
+            out += s.slice(i);
+            break;
+          }
+          out += s.slice(i, idx);
+          var brace = s.indexOf("{", idx);
+          if (brace === -1) break;
+          var depth = 1;
+          var j = brace + 1;
+          while (j < s.length && depth > 0) {
+            if (s[j] === "{") depth += 1;
+            else if (s[j] === "}") depth -= 1;
+            j += 1;
+          }
+          i = j;
+        }
+        return out;
+      }
+      function mediaChunk(src, px) {
+        var clean = stripComments(src);
+        var re = new RegExp("@media\\s*\\(\\s*min-width\\s*:\\s*" + px + "px\\s*\\)");
+        var idx = clean.search(re);
+        if (idx === -1) return "";
+        return clean.slice(idx, idx + 420);
+      }
+      function hasHidden(src) {
+        var clean = stripComments(src);
+        return clean.split("}").some(function (chunk) {
+          if (!/display\s*:\s*none/.test(chunk)) return false;
+          return /\.menu|\.card|\.table-wrap|\btable\b/.test(chunk);
+        });
+      }
+      function testsFor(doc, src, win) {
+        const clean = stripComments(src);
+        const menu = doc.querySelector(".menu");
+        const wrap = doc.querySelector(".table-wrap");
+        const menuCs = menu && win ? win.getComputedStyle(menu) : null;
+        const wrapCs = wrap && win ? win.getComputedStyle(wrap) : null;
+        const base = stripMediaBlocks(src);
+        const menuRule = (base.match(/\.menu\s*\{([^}]*)\}/) || [])[1] || "";
+        const cols = (menuRule.match(/grid-template-columns\s*:\s*([^;]+)/) || [])[1] || "";
+        const baseOne = cols.replace(/\s+/g, " ").trim() === "1fr";
+        const i600 = clean.search(/min-width\s*:\s*600px/);
+        const i900 = clean.search(/min-width\s*:\s*900px/);
+        const iMedia = clean.search(/@media/);
+        const iMenu = clean.search(/\.menu\s*\{/);
+        const chunk600 = mediaChunk(src, 600);
+        const chunk900 = mediaChunk(src, 900);
+        const twoCols = /repeat\s*\(\s*2\b/.test(chunk600) || /1fr\s+1fr(?!\s+1fr)/.test(chunk600);
+        const threeCols = /repeat\s*\(\s*3\b/.test(chunk900) || /1fr\s+1fr\s+1fr/.test(chunk900);
+        const ox = wrapCs ? String(wrapCs.overflowX) : "";
+        return [
+          {
+            ok: !!(menuCs && menuCs.display === "grid"),
+            title: "Меню стало сеткой",
+            hint: "Карточки должны лечь в сетку. Свойство display: grid пишется контейнеру — списку .menu, а не карточке"
+          },
+          {
+            ok: baseOne,
+            title: "База рассчитана на телефон",
+            hint: "Mobile First означает: базовое правило — для узкого экрана. Три колонки в базе означают, что на телефоне карточки будут шириной в треть экрана"
+          },
+          {
+            ok: !!(menuCs && gapPx(menuCs) > 0),
+            title: "Промежутки заданы",
+            hint: "Карточки слиплись. В Grid промежуток между клетками задаётся тем же свойством gap, что и во Flexbox"
+          },
+          {
+            ok: !/grid-template-columns\s*:[^;]*%/.test(clean),
+            title: "Ширина колонок в долях",
+            hint: "Проценты плюс gap дают больше 100 %, и последняя колонка вылезет за край. В Grid ширину колонок задают в fr: доли делят то, что осталось после промежутков"
+          },
+          {
+            ok: !!chunk600 && twoCols,
+            title: "Планшетная раскладка есть",
+            hint: "Нужен блок @media (min-width: 600px) с двумя колонками: repeat(2, 1fr)"
+          },
+          {
+            ok: !!chunk900 && threeCols,
+            title: "Раскладка для ноутбука есть",
+            hint: "Нужен блок @media (min-width: 900px) с тремя колонками: repeat(3, 1fr)"
+          },
+          {
+            ok: i600 !== -1 && i900 !== -1 && i600 < i900,
+            title: "Порядок медиазапросов верный",
+            hint: "Медиазапрос 900 написан выше 600. На широком экране истинны оба условия, и побеждает написанный ниже — три колонки не появятся никогда. Ни ошибки, ни предупреждения при этом не будет. Расставь по возрастанию"
+          },
+          {
+            ok: iMedia !== -1 && iMenu !== -1 && iMedia > iMenu,
+            title: "Медиазапросы в конце файла",
+            hint: "Медиазапрос не повышает специфичность селектора — он только добавляет условие. Написанный выше базового правила, он проиграет в каскаде. Все медиазапросы ставятся в конец файла"
+          },
+          {
+            ok: !/@media\s*\(\s*max-width/.test(clean),
+            title: "Только Mobile First",
+            hint: "max-width — это Desktop First: каждое правило отменяет предыдущее. На курсе используется только min-width, и смешивать их в одном файле нельзя"
+          },
+          {
+            ok: ox === "auto" || ox === "scroll",
+            title: "Таблица прокручивается внутри себя",
+            hint: "Широкая таблица вытолкнет всю страницу вбок. Оберни её в блок с overflow-x: auto — тогда ездить будет только таблица"
+          },
+          {
+            ok: !hasHidden(src),
+            title: "Ничего не спрятано",
+            hint: "Прятать содержимое на телефоне нельзя: пользователь телефона — основной пользователь этой страницы, и он потеряет часть сайта. Не помещается — перестрой, а не прячь"
+          }
+        ];
+      }
+
+
+      function maybeUnlock(done) {
+        const unlocked = done || openedHints.size >= 3;
+        if (!unlocked) return;
+        solBody.hidden = false;
+        solutionBox.classList.remove("locked");
+        solGate.textContent = done
+          ? "Эталон открыт: все проверки пройдены."
+          : "Эталон открыт: использованы три подсказки.";
+      }
+      function renderTests(results) {
+        testList.innerHTML = "";
+        let passed = 0;
+        results.forEach(function (t) {
+          if (t.ok) passed += 1;
+          const div = document.createElement("div");
+          div.className = "test";
+          div.textContent = (t.ok ? "✅ " : "❌ ") + t.title;
+          if (!t.ok) {
+            const hint = document.createElement("span");
+            hint.className = "hint";
+            hint.textContent = t.hint;
+            div.appendChild(hint);
+          }
+          testList.appendChild(div);
+        });
+        lastPassed = passed;
+        const total = results.length;
+        scoreEl.textContent = passed + " / " + total;
+        scoreline.textContent = passed + " из " + total + " проверок";
+        bar.style.width = (passed / total * 100) + "%";
+        const done = passed === total;
+        badge.textContent = done ? "Сетка собрана" : "ещё собираем";
+        badge.className = "pill" + (done ? " ok" : "");
+        maybeUnlock(done);
+        return done;
+      }
+      function run() {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        clearTimeout(debounceId);
+        const source = editor.value;
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const doc = preview.contentDocument;
+          if (!doc || !doc.body) {
+            renderTests([{ ok: false, title: "Документ не разобрался", hint: "Проверьте незакрытые теги и фигурные скобки в CSS." }]);
+            return;
+          }
+          renderTests(testsFor(doc, source, doc.defaultView));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(finish, 60);
+        });
+        previewDoc();
+        setTimeout(function () { if (!finished) finish(); }, 1500);
+      }
+      document.getElementById("checkBtn").addEventListener("click", run);
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!window.confirm("Вернуть заготовку?")) return;
+        if (mode === "blocks") {
+          fillBlocks();
+          editor.value = htmlFromBlocks();
+        } else {
+          editor.value = starter;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+        }
+        previewDoc();
+        testList.innerHTML = "";
+        scoreEl.textContent = "0 / 0";
+        scoreline.textContent = "0 из " + TOTAL + " проверок";
+        bar.style.width = "0";
+        badge.textContent = "ещё собираем";
+        badge.className = "pill";
+      });
+      document.getElementById("saveBtn").addEventListener("click", function () {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = DOWNLOAD;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+      });
+      document.querySelectorAll("[data-hint]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const n = btn.getAttribute("data-hint");
+          openedHints.add(n);
+          document.getElementById("h" + n).classList.add("open");
+          hintCountEl.textContent = String(openedHints.size);
+          honesty.textContent = openedHints.size
+            ? "Открыты подсказки: " + Array.from(openedHints).map(function (x) { return Number(x) + 1; }).join(", ") + "."
+            : "";
+          maybeUnlock(lastPassed === TOTAL);
+        });
+      });
+      fillBlocks();
+      bindBlocks();
+      document.getElementById("modeCodeBtn").addEventListener("click", function () { setMode("code"); });
+      document.getElementById("modeBlocksBtn").addEventListener("click", function () { setMode("blocks"); });
+      try {
+        editor.value = localStorage.getItem(KEY) || starter;
+      } catch (e) {
+        editor.value = starter;
+      }
+      try {
+        const savedMode = localStorage.getItem(MODE_KEY);
+        if (savedMode === "blocks" || savedMode === "code") mode = savedMode;
+      } catch (e) {}
+      setMode(mode);
+    })();
+
+  </script>
+</body>
+</html>

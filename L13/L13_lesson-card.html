@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 13. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L13_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L13_trainer_git.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 13 · техкарта</p>
+    <h1>Занятие 13. Git: контроль версий</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L13</td></tr><tr><td>Тема</td><td>Git: контроль версий</td></tr><tr><td>Модуль</td><td>Модуль 5. Git и GitHub: контроль версий и коллаборация</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Итоговый Dashboard живёт в репозитории. Отсюда — история проекта, из которой на защите видно, что работа шла постепенно, а не «за одну ночь». Критерий «Культура работы с Git» (5 баллов из 30) начинает набираться сегодня</td></tr><tr><td>Артефакт на выходе</td><td>Репозиторий сайта буфета «Северный пирог»: не менее пяти осмысленных коммитов, ветка <code>feature/menu</code>, отправка в удалённый репозиторий, показанный откат сломанной версии</td></tr><tr><td>Тип практики</td><td>Сценарий с автопроверкой</td></tr><tr><td>Файл тренажёра</td><td><code>L13_trainer_git.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l13-git-v1</code> (ответы сценария и собранные сообщения коммитов). Ключ режима не используется — у этого тренажёра один режим</td></tr><tr><td>Контрольная точка</td><td>Нет. Занятие готовит контрольную точку занятия 14 «принятый Pull Request»</td></tr><tr><td>Опора</td><td>L02–L12: есть готовые файлы сайта буфета (<code>index.html</code>, <code>style.css</code>, <code>script.js</code>, <code>pie.svg</code>), которые и попадут в репозиторий. Технически занятие ни от чего не зависит: Git не требует знания JavaScript</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–3</td><td>Вход</td><td>Слайды 1–2. Задаёт вопрос про «финал 2»</td><td>Отвечают с места, узнают ситуацию</td><td>Группа включилась, есть 2–3 реплики</td></tr><tr><td>3–6</td><td>Зачем (5.1)</td><td>Слайд 3. Называет три причины, отдельно подчёркивает связь с занятием 15</td><td>Слушают, записывают три причины</td><td>Кто-то переспросил про публикацию — значит, услышали</td></tr><tr><td>6–13</td><td>Подтема 5.2 Репозиторий</td><td>Слайды 4–5 + демонстрация шаги 1–2. Показывает <code>.git</code> и <code>git status</code></td><td>Смотрят, повторяют на своих компьютерах <code>git init</code> и <code>git status</code></td><td><strong>Обход:</strong> у каждого в папке появилась <code>.git</code>, <code>git status</code> показывает свои четыре файла, а не двести чужих</td></tr><tr><td>13–21</td><td>Подтема 5.3 Коммит</td><td>Слайд 6 + демонстрация шаги 3–5. Разбирает два шага и объясняет, зачем их два</td><td>Делают первый коммит, читают отчёт Git</td><td>У каждого <code>git log --oneline</code> показывает одну строку</td></tr><tr><td>21–27</td><td>Подтема 5.4 Сообщение</td><td>Слайды 7–8. Разбирает шесть примеров «плохо / хорошо» с доски</td><td>Оценивают вслух три сообщения: годится или нет и почему</td><td>Группа сама забраковала «поправил стили»</td></tr><tr><td>27–33</td><td>Подтема 5.5 История и откат</td><td>Слайд 9–10 + демонстрация шаги 6–7. <strong>Ломает проект намеренно</strong></td><td>Смотрят на белую страницу и на консоль, засекают время починки</td><td>Реакция группы на <code>git restore</code> — это и есть мотивация занятия</td></tr><tr><td>33–38</td><td>Подтема 5.6 Ветка</td><td>Слайд 11 + демонстрация шаги 8–9</td><td>Слушают, отвечают на вопрос «где сейчас сортировка»</td><td>Кто-то объяснил своими словами, почему в <code>main</code> сортировки нет</td></tr><tr><td>38–42</td><td>Подтема 5.7 Удалённый репозиторий</td><td>Слайды 12–13. Показывает страницу репозитория в браузере</td><td>Заводят пустой репозиторий на платформе, копируют адрес</td><td>У каждого открыта страница своего пустого репозитория</td></tr><tr><td>42–45</td><td>Пауза</td><td>Отвечает на вопросы, помогает отставшим по <code>git init</code></td><td>Отдыхают, разминка для глаз</td><td>Отставших по репозиторию не осталось</td></tr><tr><td>45–60</td><td>Практика, часть 1</td><td>Слайд 14. Раздаёт карточку с десятью шагами. Ходит по группе</td><td>Шаги 1–7: репозиторий, три коммита, <code>git log</code></td><td><strong>Контроль 1 (55-я минута):</strong> у каждого не меньше двух коммитов, ни одного сообщения короче пяти символов</td></tr><tr><td>60–70</td><td>Практика, часть 2</td><td>Помогает с откатом; у кого проект не ломается — предлагает сломать демонстративно</td><td>Шаг 8: ломают файл, смотрят консоль, чинят <code>git restore</code></td><td><strong>Контроль 2:</strong> каждый вслух назвал, что увидел в консоли до починки</td></tr><tr><td>70–80</td><td>Практика, часть 3</td><td>Проверяет имена веток: <code>feature/</code> + латиница в нижнем регистре</td><td>Шаг 9: ветка <code>feature/menu</code>, своё изменение, коммит</td><td><strong>Контроль 3:</strong> <code>git branch</code> показывает две ветки у каждого</td></tr><tr><td>80–88</td><td>Тренажёр</td><td>Открывает <code>L13_trainer_git.html</code> на проекторе, разбирает ситуацию 1 вместе</td><td>Проходят десять ситуаций и три сообщения коммитов</td><td>Порог: 8 из 10 и все три сообщения приняты</td></tr><tr><td>88–95</td><td>Отправка</td><td>Слайд 15. Следит, чтобы <code>push</code> сделали все, включая отставших</td><td>Шаг 10: <code>push</code> обеих веток, открывают страницу репозитория</td><td><strong>Контроль 4 (обязательный):</strong> каждый показал браузер с историей коммитов на сервере</td></tr><tr><td>95–100</td><td>Итог и ИИ</td><td>Слайд 16. Правило курса. Домашнее задание</td><td>Записывают домашку</td><td><code>git status</code> → <code>working tree clean</code> у всех</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Пройти весь путь самому накануне</strong>, на своём тестовом репозитории: <code>init</code> → коммиты → ветка → <code>push</code> → открыть страницу репозитория в браузере. Особенно проверить вход в учётную запись платформы на школьных машинах: если авторизация не проходит, занятие встанет на двадцать минут.</li><li><strong>Проверить, что Git установлен на всех машинах.</strong> Команда <code>git --version</code> должна отвечать номером версии. Установка на десяти компьютерах во время занятия невозможна.</li><li><strong>Проверить, что у каждого есть учётная запись</strong> на доступной платформе репозиториев и что почта подтверждена. Список сверить заранее, за занятие до этого.</li><li><strong>Заготовить карточку из десяти шагов</strong> (раздел 9, «Стартовая заготовка») — по одной на компьютер, бумажную. Переписывать команды с проектора медленно и с ошибками.</li><li><strong>Заготовить резервный вариант</strong>: если платформа недоступна, занятие полностью проводится локально (шаги 1–9), а <code>push</code> переносится на начало занятия 14. Локальная часть — это 90 % содержания, срывать занятие нельзя.</li><li><strong>Заготовить папку <code>severny-pirog</code></strong> с рабочим сайтом буфета для тех, у кого файлы прошлых занятий потерялись.</li><li>Настроить в терминале крупный шрифт (не меньше 20) и светлую тему на время демонстрации.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Терминал, открытый в папке <code>severny-pirog</code>, крупным шрифтом.</li><li>Проводник с включённым показом скрытых файлов — чтобы <code>.git</code> было видно.</li><li>Браузер с открытым <code>index.html</code> (для демонстрации поломки и починки).</li><li>Вторая вкладка браузера — страница удалённого репозитория.</li><li>Файл <code>script.js</code> в редакторе — его ломаем на шаге 6 демонстрации.</li><li>Тренажёр <code>L13_trainer_git.html</code> — открыть к 88-й минуте.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<ol><li><strong>Терминал открылся не в той папке, и <code>git init</code> создал репозиторий на рабочем столе.</strong> Признак: <code>git status</code> выдаёт сотни строк. Готовое действие: научить читать строку приглашения терминала («какая папка написана перед знаком доллара?»), удалить лишнюю <code>.git</code>, перейти в проект и повторить. Разобрать это сразу на обходе 6–13 минут, до того как ошибка размножится по группе.</li><li><strong>«У меня Git сломался» — забыт <code>git add</code>.</strong> Признак: <code>nothing to commit, working tree clean</code> после <code>commit</code>. Готовое действие: не подсказывать команду, а попросить прочитать ответ Git вслух. В девяти случаях из десяти ученик догадывается сам, и это запоминается лучше подсказки.</li><li><strong>Авторизация на платформе при первом <code>push</code>.</strong> Признак: команда висит или просит логин и пароль, а пароль не подходит (платформы требуют токен вместо пароля). Готовое действие: заранее пройти этот шаг у себя, знать точную последовательность для вашей платформы и держать её на бумаге. Если у двух-трёх человек не выходит — не задерживать всю группу, перенести их <code>push</code> на начало занятия 14, а коммиты у них локально уже есть.</li></ol>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<p>Интернет нужен только на последнем шаге. Если дома его нет — первые три пункта делаются полностью офлайн, а <code>push</code> переносится на начало следующего занятия.</p>
+<ol><li>Открой свой репозиторий и выполни <code>git log --oneline</code>. Выпиши в тетрадь <strong>самое плохое</strong> своё сообщение коммита и рядом напиши, как надо было. Одна строка на каждое.</li><li>Внеси в сайт буфета одно небольшое улучшение — любое: поправь текст в подвале, добавь ещё один пирог в массив <code>PIES</code>, поменяй акцентный цвет. Сделай это <strong>в новой ветке</strong> <code>feature/homework</code> и зафиксируй одним коммитом с осмысленным сообщением.</li><li>Сломай проект нарочно (удали закрывающую фигурную скобку в <code>script.js</code>), убедись, что страница белая, и почини командой <code>git restore</code>. Запиши в тетрадь, что было написано в консоли браузера, — дословно.</li><li>Отправь ветку: <code>git push -u origin feature/homework</code>.</li></ol>
+<p>Сдаётся одной строкой в чат группы: ссылка на свой репозиторий. Проверять педагог будет по <code>git log</code> и списку веток, открывать код не потребуется.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ итогового проекта (Приложение 1 к программе):</strong></p>
+<blockquote><p>«использование ветвления (разработка фич в отдельных ветках с последующим Pull Request)»</p></blockquote>
+<p>Сегодня закрывается первая половина этого пункта — ветвление. Вторая половина, Pull Request, — занятие 14. С сегодняшнего дня и до защиты действует правило: <strong>каждая новая функциональность итогового проекта делается в отдельной ветке</strong>.</p>
+<p><strong>Критерий из 30 баллов (Приложение 2):</strong></p>
+<blockquote><p>«Культура работы с Git — 5 баллов: 10+ осмысленных коммитов, ветвление, PR»</p></blockquote>
+<p>Занятие даёт первые два элемента из трёх: осмысленные коммиты и ветвление. Десять коммитов не набираются за одно занятие — они накапливаются с сегодняшнего дня до занятия 23. Именно поэтому привычка коммитить каждые 15–20 минут закладывается сейчас, а не в модуле 9: начать вести историю за два занятия до защиты уже не получится.</p>
+<p><strong>Что переносится в занятие 15:</strong> удалённый репозиторий, созданный сегодня, — это тот самый источник, из которого пойдёт публикация сайта. Ученик без отправленного репозитория к занятию 15 не получит публичной ссылки, а это контрольная точка программы.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L13_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L13_trainer_git.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 13 · Тренажёр: Git</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--tm-border);
+      margin-bottom: 16px;
+    }
+    .topbar__title {
+      font-size: 1.45rem;
+      margin: 0;
+      letter-spacing: -0.03em;
+      flex: 1;
+      min-width: 12rem;
+      text-wrap: balance;
+    }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .25em .8em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-pill.is-done {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    .opt:focus-within {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: clamp(16px, 2vw, 24px);
+      margin-bottom: 12px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .brief { position: relative; overflow: hidden; }
+    .brief::after {
+      content: "";
+      position: absolute;
+      top: -34px;
+      right: -34px;
+      width: 96px;
+      height: 8px;
+      background: var(--tm-green);
+      transform: rotate(45deg);
+      transform-origin: center;
+      opacity: .9;
+    }
+    .brief .tm-eyebrow { margin: 0 0 8px; }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .pane { min-width: 0; }
+    .pane__label {
+      margin: 0 0 8px;
+      font-weight: 700;
+      color: var(--tm-green-dark);
+    }
+    .tm-progress {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      height: 10px;
+      margin: 0 0 14px;
+    }
+    .tm-progress span {
+      display: block;
+      height: 100%;
+      border-radius: 3px;
+      background: var(--tm-border);
+      transition: background .22s ease;
+    }
+    .tm-progress span.is-done { background: var(--tm-ok); }
+    .sit-q { margin: 0 0 12px; font-size: 1.05em; }
+    .opts { display: flex; flex-direction: column; gap: 8px; margin: 0; border: 0; padding: 0; }
+    .opts legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .opt {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+      cursor: pointer;
+      font-size: 17px;
+    }
+    .opt:hover { box-shadow: var(--tm-shadow); }
+    .opt.is-picked { background: var(--tm-green-soft); }
+    .opt input { margin-top: .35em; accent-color: var(--tm-green-dark); }
+    .sit-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .sit-nav__pos { color: var(--tm-muted); font-weight: 600; }
+    .repo-rows { margin: 0; }
+    .repo-row {
+      display: grid;
+      grid-template-columns: 11.5em 1fr;
+      gap: 8px;
+      padding: .45em 0;
+      border-bottom: 1px solid var(--tm-border);
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .repo-row:last-child { border-bottom: 0; }
+    .repo-row dt { margin: 0; color: var(--tm-muted); font-weight: 600; font-family: var(--tm-font); }
+    .repo-row dd { margin: 0; color: var(--tm-text); word-break: break-word; }
+    .msg-block .tm-eyebrow { margin: 0 0 8px; }
+    .msg-field { margin: 0 0 16px; }
+    .msg-field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .msg-field .hint {
+      display: block;
+      color: var(--tm-muted);
+      font-weight: 400;
+      font-size: .93em;
+      margin-top: 4px;
+    }
+    .msg-field input {
+      width: 100%;
+      font: 400 16px/1.45 var(--tm-font);
+      padding: .7em .9em;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+    }
+    html[data-theme="dark"] .msg-field input { background: var(--tm-code-bg); }
+    .field-err {
+      margin: 6px 0 0;
+      color: var(--tm-fail);
+      font-size: .93em;
+    }
+    .field-err.is-ok { color: var(--tm-ok); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .tm-test {
+      display: flex;
+      gap: .7em;
+      padding: .55em 0;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--tm-border);
+      animation: fadein .14s ease both;
+    }
+    .tm-test:nth-child(1) { animation-delay: 0ms; }
+    .tm-test:nth-child(2) { animation-delay: 40ms; }
+    .tm-test:nth-child(3) { animation-delay: 80ms; }
+    .tm-test:nth-child(4) { animation-delay: 120ms; }
+    .tm-test:nth-child(5) { animation-delay: 160ms; }
+    .tm-test:nth-child(6) { animation-delay: 200ms; }
+    .tm-test:nth-child(7) { animation-delay: 240ms; }
+    .tm-test:nth-child(8) { animation-delay: 280ms; }
+    .tm-test:nth-child(9) { animation-delay: 320ms; }
+    .tm-test:nth-child(10) { animation-delay: 360ms; }
+    .tm-test:nth-child(11) { animation-delay: 400ms; }
+    .tm-test:nth-child(12) { animation-delay: 440ms; }
+    @keyframes fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .hint-box {
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-sm);
+      padding: 12px;
+      margin: 10px 0;
+    }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      line-height: 1.5;
+      tab-size: 2;
+      white-space: pre-wrap;
+      font-size: 15px;
+    }
+    .hide { display: none !important; }
+    .etalon__sit { margin: 0 0 18px; padding-bottom: 12px; border-bottom: 1px solid var(--tm-border); }
+    .etalon__sit:last-child { border-bottom: 0; }
+    .etalon__sit h3 { margin: 0 0 8px; font-size: 1.05em; }
+    .etalon__opt { margin: 0 0 8px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 13 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">История «Северного пирога»</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 12</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Ты ведёшь репозиторий сайта буфета «Северный пирог». Десять ситуаций — десять моментов рабочего дня. В каждой выбери, что сделать дальше. Потом собери три сообщения коммитов, которые пройдут проверку. Порог зачёта — 8 правильных ответов из 10 и все три сообщения принятыми.</p>
+</section>
+
+<main class="layout" id="layout">
+  <section class="pane tm-card" aria-labelledby="tapeTitle">
+    <p class="tm-eyebrow" id="tapeTitle">►► СИТУАЦИИ</p>
+    <div class="tm-progress" id="progress" role="img" aria-label="Отвечено 0 из 10"></div>
+    <p class="sit-q" id="sitQ"></p>
+    <fieldset class="opts" id="sitOpts">
+      <legend>Варианты ответа</legend>
+    </fieldset>
+    <div class="sit-nav">
+      <button class="tm-btn tm-btn--ghost" id="prevBtn" type="button">Назад</button>
+      <span class="sit-nav__pos" id="sitPos">Ситуация 1 из 10</span>
+      <button class="tm-btn tm-btn--ghost" id="nextBtn" type="button">Дальше</button>
+    </div>
+  </section>
+
+  <aside class="pane tm-card" aria-labelledby="repoTitle">
+    <p class="tm-eyebrow" id="repoTitle">►► СОСТОЯНИЕ РЕПОЗИТОРИЯ</p>
+    <p class="pane__label">Это учебная модель в памяти страницы, не настоящий Git.</p>
+    <dl class="repo-rows" id="repoPanel" aria-live="polite">
+      <div class="repo-row"><dt>Ветка:</dt><dd id="repoBranch">нет</dd></div>
+      <div class="repo-row"><dt>Коммитов:</dt><dd id="repoCommits">0</dd></div>
+      <div class="repo-row"><dt>Изменённые файлы:</dt><dd id="repoFiles">index.html, style.css, script.js, pie.svg</dd></div>
+      <div class="repo-row"><dt>Отправлено:</dt><dd id="repoPushed">нет</dd></div>
+    </dl>
+  </aside>
+</main>
+
+<section class="msg-block tm-card">
+  <p class="tm-eyebrow">►► СООБЩЕНИЯ КОММИТОВ</p>
+  <p>Три поля. Под каждым — что изменилось. Напиши сообщение по правилам курса.</p>
+  <div class="msg-field">
+    <label for="msg0">Сообщение 1</label>
+    <span class="hint" id="msgHint0">В <code>index.html</code> добавлены шапка, <code>main</code> и подвал. Раньше файл был пустым</span>
+    <input id="msg0" type="text" maxlength="120" autocomplete="off" aria-describedby="msgHint0 msgErr0">
+    <p class="field-err hide" id="msgErr0"></p>
+  </div>
+  <div class="msg-field">
+    <label for="msg1">Сообщение 2</label>
+    <span class="hint" id="msgHint1">В <code>style.css</code> исправлено правило: кнопка «В заказ» переносилась на второй ряд на экране 320 px</span>
+    <input id="msg1" type="text" maxlength="120" autocomplete="off" aria-describedby="msgHint1 msgErr1">
+    <p class="field-err hide" id="msgErr1"></p>
+  </div>
+  <div class="msg-field">
+    <label for="msg2">Сообщение 3</label>
+    <span class="hint" id="msgHint2">В <code>script.js</code> повторяющаяся разметка карточки вынесена в функцию <code>renderCard</code></span>
+    <input id="msg2" type="text" maxlength="120" autocomplete="off" aria-describedby="msgHint2 msgErr2">
+    <p class="field-err hide" id="msgErr2"></p>
+  </div>
+  <button class="tm-btn tm-btn--ghost" id="msgCheckBtn" type="button">Проверить сообщения</button>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hint1Btn" type="button">Подсказка 1 — вопрос</button>
+  <button class="tm-btn tm-btn--ghost" id="hint2Btn" type="button" disabled>Подсказка 2 — приём</button>
+  <button class="tm-btn tm-btn--ghost" id="hint3Btn" type="button" disabled>Подсказка 3 — фрагмент</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="reviewBtn" type="button" disabled>Показать разбор</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<section class="hints" id="hints"></section>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► РАЗБОР</p>
+  <p>Почему так выбран каждый вариант — по всем десяти ситуациям.</p>
+  <div id="solBody"></div>
+</section>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Репозиторий</dt>
+    <dd>Папка проекта, которая хранит все зафиксированные состояния своих файлов. Внутри — скрытая папка <code>.git</code>.</dd>
+    <dt>Коммит</dt>
+    <dd>Зафиксированное состояние проекта с сообщением, датой и автором. К любому можно вернуться.</dd>
+    <dt>Индекс</dt>
+    <dd>Промежуточная зона: туда командой <code>git add</code> кладут изменения перед коммитом.</dd>
+    <dt>Ветка</dt>
+    <dd>Отдельная линия истории. Основная называется <code>main</code>; в ней не экспериментируют.</dd>
+    <dt>git restore</dt>
+    <dd>Возвращает файл к состоянию последнего коммита, если правки ещё не зафиксированы.</dd>
+    <dt>git revert</dt>
+    <dd>Создаёт новый коммит, который отменяет указанный. Нужен, когда плохое изменение уже в истории.</dd>
+  </dl>
+</section>
+
+<details class="teacher">
+  <summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> выбрать следующее действие в Git-ситуации; отличить <code>restore</code> от <code>revert</code>; сформулировать сообщение коммита по правилу «что изменилось».</li>
+    <li><strong>Норматив:</strong> 15–25 мин на занятии (блок 80–88 мин). Это сценарий, не симулятор командной строки: настоящий Git — в практике раздела 9.</li>
+    <li><strong>Типичные ошибки:</strong> один коммит «работа»; забытый <code>git add</code>; правка в <code>main</code>; <code>revert</code> вместо <code>restore</code>; голый <code>git push</code> новой ветки; союз «и» в сообщении.</li>
+    <li><strong>Зачёт:</strong> тесты 2–11 не меньше 8 из 10 <em>и</em> зелёный тест 12 (три сообщения). Кнопка «Показать разбор» открывает все варианты. После трёх подсказок разбор открывается независимо.</li>
+    <li><strong>Усложнение:</strong> восемь и больше коммитов без союза «и»; пара «поломка — revert» вместо <code>restore</code>.</li>
+    <li><strong>Поддержка:</strong> разобрать ситуации 7 и 9 на проекторе; сообщения брать из карточки и объяснять вслух, почему выбран предмет изменения.</li>
+    <li><strong>ИИ:</strong> промпт из занятия формулирует сообщение по списку diff. Руками: 5–72 символа, нет «рефакторинг/оптимизация», описано то, что ученик правда сделал.</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  "use strict";
+
+  const DRAFT_KEY = "wdc-l13-git-v1";
+
+  /* Панель — объект в памяти. Настоящий Git и сеть не вызываются. */
+  const SITUATIONS = [
+    {
+      q: "Ты собрал все файлы сайта буфета в папку <code>severny-pirog</code>. Истории у проекта пока нет. Что делаешь первым?",
+      scene: {
+        branch: "нет",
+        commits: 0,
+        files: "index.html, style.css, script.js, pie.svg",
+        pushed: "нет"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "<code>git init</code>",
+          why: "Репозиторий создаётся один раз, до первого коммита. Без него ни одна другая команда Git в этой папке не сработает.",
+          ok: true,
+          effect: { branch: "main", commits: 0, files: "index.html, style.css, script.js, pie.svg", pushed: "нет" }
+        },
+        {
+          letter: "Б",
+          label: "<code>git add .</code>",
+          why: "Добавлять некуда: репозитория ещё нет. Git ответит <code>fatal: not a git repository</code>.",
+          ok: false
+        },
+        {
+          letter: "В",
+          label: "<code>git commit -m \"начало\"</code>",
+          why: "Та же причина, плюс попытка зафиксировать состояние в несуществующей истории.",
+          ok: false
+        },
+        {
+          letter: "Г",
+          label: "<code>git push</code>",
+          why: "Отправлять нечего и некуда: ни истории, ни адреса удалённого репозитория.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Ты выполнил <code>git init</code> и набрал <code>git status</code>. В ответе — список из четырёх файлов под заголовком <code>Untracked files</code>. Что это значит?",
+      scene: {
+        branch: "main",
+        commits: 0,
+        files: "index.html, style.css, script.js, pie.svg",
+        pushed: "нет"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "Git не поддерживает эти файлы",
+          why: "Git хранит любые файлы, тип содержимого его не интересует.",
+          ok: false
+        },
+        {
+          letter: "Б",
+          label: "Файлы лежат в папке, но Git пока не следит за ними",
+          why: "«Untracked» переводится буквально: неотслеживаемый. Пока ты не выполнил <code>git add</code>, файл в историю не попадёт.",
+          ok: true
+        },
+        {
+          letter: "В",
+          label: "Файлы повреждены",
+          why: "Слово <code>Untracked</code> не имеет отношения к целостности файлов; сломанный файл Git показал бы как обычный изменённый.",
+          ok: false
+        },
+        {
+          letter: "Г",
+          label: "Файлы уже в последнем коммите",
+          why: "Тогда они вообще не попали бы в вывод: у зафиксированного файла нет отличий, и <code>git status</code> о нём молчит.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Ты правил <code>style.css</code> и <code>script.js</code>. Стили закончены, скрипт — на середине и сейчас ломает страницу. Хочешь зафиксировать только стили. Что делаешь?",
+      scene: {
+        branch: "main",
+        commits: 1,
+        files: "style.css, script.js",
+        pushed: "нет"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "<code>git add .</code> затем <code>git commit</code>",
+          why: "Точка означает «всё изменённое», сломанный <code>script.js</code> попадёт в тот же коммит.",
+          ok: false,
+          effect: { commits: 2, files: "нет" }
+        },
+        {
+          letter: "Б",
+          label: "<code>git add style.css</code> затем <code>git commit -m \"...\"</code>",
+          why: "В индекс попадает один файл, коммит фиксирует только его. Незаконченный скрипт остаётся в работе.",
+          ok: true,
+          effect: { commits: 2, files: "script.js" }
+        },
+        {
+          letter: "В",
+          label: "<code>git commit -m \"...\"</code> без <code>git add</code>",
+          why: "Индекс пуст, Git ответит <code>no changes added to commit</code> и коммит не создаст.",
+          ok: false
+        },
+        {
+          letter: "Г",
+          label: "Скопировать <code>style.css</code> в отдельную папку",
+          why: "Это возвращение к папкам-копиям, ровно от которых Git и избавляет.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Ты сделал <code>git add index.html</code>, затем ещё раз отредактировал <code>index.html</code> и сразу выполнил <code>git commit</code>. Что попало в историю?",
+      scene: {
+        branch: "main",
+        commits: 2,
+        files: "index.html",
+        pushed: "нет"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "Обе версии",
+          why: "Один коммит фиксирует одно состояние файла, «обеих версий» в нём быть не может.",
+          ok: false
+        },
+        {
+          letter: "Б",
+          label: "Версия на момент <code>git add</code>",
+          why: "Индекс — снимок, а не ссылка. Правки после <code>add</code> в коммит не попадают и остаются в статусе «изменено, не подготовлено».",
+          ok: true,
+          effect: { commits: 3, files: "index.html" }
+        },
+        {
+          letter: "В",
+          label: "Последняя версия",
+          why: "Это самое частое заблуждение: кажется, что Git берёт файл с диска в момент коммита, но он берёт его из индекса.",
+          ok: false,
+          effect: { commits: 3, files: "нет" }
+        },
+        {
+          letter: "Г",
+          label: "Ничего, Git выдаст ошибку",
+          why: "Ошибки не будет, коммит создастся, и именно поэтому ошибку легко не заметить.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Панель показывает: <code>Ветка: main</code>, <code>Коммитов: 3</code>, <code>Изменённые файлы: нет</code>. Ты хочешь попробовать рискованную переделку меню. Что делаешь?",
+      scene: {
+        branch: "main",
+        commits: 3,
+        files: "нет",
+        pushed: "нет"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "Правишь <code>script.js</code> прямо здесь",
+          why: "Это работа в <code>main</code>: если переделка не выйдет, рабочая версия окажется испорченной.",
+          ok: false,
+          effect: { files: "script.js" }
+        },
+        {
+          letter: "Б",
+          label: "<code>git switch -c feature/menu</code>",
+          why: "Эксперимент уходит в отдельную ветку, <code>main</code> остаётся рабочей.",
+          ok: true,
+          effect: { branch: "feature/menu" }
+        },
+        {
+          letter: "В",
+          label: "Копируешь <code>script.js</code> в <code>script_new.js</code>",
+          why: "Копия файла не даёт истории: непонятно, какой из двух подключён, и в проекте появляется мусор.",
+          ok: false,
+          effect: { files: "script.js, script_new.js" }
+        },
+        {
+          letter: "Г",
+          label: "<code>git revert</code> последнего коммита",
+          why: "Отменять нечего, ты пока ничего не сломал.",
+          ok: false,
+          effect: { commits: 2 }
+        }
+      ]
+    },
+    {
+      q: "Ты в ветке <code>feature/menu</code>, час поработал, коммитов не делал. Набираешь <code>git switch main</code>. Git отвечает: <code>error: Your local changes... would be overwritten by checkout</code>. Что произошло?",
+      scene: {
+        branch: "feature/menu",
+        commits: 3,
+        files: "script.js",
+        pushed: "нет"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "Ветка <code>main</code> удалена",
+          why: "Тогда сообщение было бы другим: <code>invalid reference</code>.",
+          ok: false
+        },
+        {
+          letter: "Б",
+          label: "Нужны права администратора",
+          why: "Git не запрашивает прав на переключение веток.",
+          ok: false
+        },
+        {
+          letter: "В",
+          label: "Незакоммиченные изменения не принадлежат ни одной ветке, и переключение их бы стёрло",
+          why: "Git защищает твою работу и просит сначала сделать коммит.",
+          ok: true
+        },
+        {
+          letter: "Г",
+          label: "Надо выполнить <code>git push</code>",
+          why: "<code>push</code> отправляет <strong>коммиты</strong>; несохранённые правки он не видит вообще.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Панель показывает: <code>Ветка: main</code>, <code>Коммитов: 4</code>, <code>Изменённые файлы: script.js</code>, <code>Отправлено: да</code>. Ты полчаса правил <code>script.js</code>, страница стала белой, что именно сломал — не помнишь. Коммита с этими правками нет. Что делаешь?",
+      scene: {
+        branch: "main",
+        commits: 4,
+        files: "script.js",
+        pushed: "да"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "<code>git restore script.js</code>",
+          why: "Файл возвращается к последнему коммиту. Правки последнего получаса теряются — но они и были поломкой.",
+          ok: true,
+          effect: { files: "нет" }
+        },
+        {
+          letter: "Б",
+          label: "<code>git revert</code>",
+          why: "Отменять нечего: поломка не в коммите, а в рабочем файле. Git будет отменять предыдущий, нормальный коммит и сломает ещё и его.",
+          ok: false,
+          effect: { commits: 5, files: "нет" }
+        },
+        {
+          letter: "В",
+          label: "<code>git commit -m \"фикс\"</code>",
+          why: "Ты зафиксируешь сломанное состояние, и в истории появится заведомо нерабочая запись.",
+          ok: false,
+          effect: { commits: 5, files: "нет" }
+        },
+        {
+          letter: "Г",
+          label: "Переустановить Git",
+          why: "Инструмент исправен; сломан файл проекта.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Ты выбираешь сообщение для коммита, в котором добавлена кнопка «Сначала дешёвые» и функция сортировки. Что годится?",
+      scene: {
+        branch: "feature/menu",
+        commits: 4,
+        files: "index.html, style.css, script.js",
+        pushed: "только main"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "<code>фикс</code>",
+          why: "Слово из запрещённого списка, короче пяти символов, информации ноль.",
+          ok: false
+        },
+        {
+          letter: "Б",
+          label: "<code>Улучшена архитектура и оптимизирован код меню</code>",
+          why: "Взрослые слова без содержания: не понять ни что появилось, ни где.",
+          ok: false
+        },
+        {
+          letter: "В",
+          label: "<code>Добавлена сортировка меню по возрастанию цены</code>",
+          why: "Названо конкретное изменение, длина в норме, союза «и» нет.",
+          ok: true,
+          effect: { commits: 5, files: "нет" }
+        },
+        {
+          letter: "Г",
+          label: "<code>добавил кнопку и функцию и поправил стили и переименовал классы</code>",
+          why: "Три союза «и» — в коммит свалены четыре изменения; откатить их по отдельности будет нельзя.",
+          ok: false
+        }
+      ]
+    },
+    {
+      q: "Панель показывает: <code>Ветка: feature/menu</code>, <code>Коммитов: 5</code>, <code>Изменённые файлы: нет</code>, <code>Отправлено: только main</code>. Конец занятия, три минуты до звонка. Что делаешь?",
+      scene: {
+        branch: "feature/menu",
+        commits: 5,
+        files: "нет",
+        pushed: "только main"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "Выключаешь компьютер, всё уже в коммитах",
+          why: "Коммиты лежат только на этом компьютере; ветка <code>feature/menu</code> на сервере отсутствует.",
+          ok: false
+        },
+        {
+          letter: "Б",
+          label: "<code>git push</code>",
+          why: "Неверно как единственное действие: без указания новой ветки Git ответит подсказкой <code>fatal: The current branch feature/menu has no upstream branch</code>.",
+          ok: false
+        },
+        {
+          letter: "В",
+          label: "<code>git push -u origin feature/menu</code>",
+          why: "Новая ветка отправляется с флагом <code>-u</code> один раз; дальше для неё хватит просто <code>git push</code>.",
+          ok: true,
+          effect: { pushed: "main и feature/menu" }
+        },
+        {
+          letter: "Г",
+          label: "<code>git switch main</code> и <code>git push</code>",
+          why: "Отправится <code>main</code>, где новых коммитов нет; работа в ветке так и останется только на компьютере.",
+          ok: false,
+          effect: { branch: "main", pushed: "только main" }
+        }
+      ]
+    },
+    {
+      q: "Педагог смотрит две истории. Первая: 1 коммит, сообщение «работа», веток одна. Вторая: 11 коммитов с осмысленными сообщениями, две ветки, всё отправлено. По критерию «Культура работы с Git» (5 баллов) вторая получает больше. Почему — выбери точную причину.",
+      scene: {
+        branch: "feature/menu",
+        commits: 5,
+        files: "нет",
+        pushed: "main и feature/menu"
+      },
+      options: [
+        {
+          letter: "А",
+          label: "Потому что коммитов больше",
+          why: "Неверно как формулировка. Двадцать коммитов «фикс», «фикс2» не лучше одного: считается не количество, а читаемость истории.",
+          ok: false
+        },
+        {
+          letter: "Б",
+          label: "Потому что по истории видно, из каких шагов собран проект, и к любому можно вернуться",
+          why: "Это и есть смысл критерия: история должна работать как инструмент, а не как отчёт.",
+          ok: true
+        },
+        {
+          letter: "В",
+          label: "Потому что так требует платформа",
+          why: "Платформа принимает любую историю; требование идёт от практики командной работы.",
+          ok: false
+        },
+        {
+          letter: "Г",
+          label: "Потому что вторая история красивее",
+          why: "Речь не об эстетике: с первой историей после поломки возвращаться некуда.",
+          ok: false
+        }
+      ]
+    }
+  ];
+
+  const KEYWORDS = [
+    ["шапк", "подвал", "каркас", "структур", "разметк"],
+    ["кнопк", "перенос", "320", "узк", "мобильн"],
+    ["rendercard", "функци", "карточк", "вынесен", "повтор"]
+  ];
+
+  const FORBIDDEN_ROOTS = [
+    "рефакторинг", "оптимизац", "оптимиз", "архитектур", "изменения",
+    "правки", "правка", "фиксы", "работа", "улучшен", "фикс", "тест"
+  ];
+
+  const HINTS = [
+    "В каждой ситуации спрашивай себя одно: изменение уже в истории или ещё нет? От этого зависит всё — что фиксировать, что отменять и куда отправлять.",
+    "Пять команд закрывают девять ситуаций из десяти: <code>git init</code> — создать репозиторий; <code>git add</code> + <code>git commit -m</code> — зафиксировать; <code>git restore</code> — вернуть файл к последнему коммиту; <code>git switch -c</code> — уйти в ветку; <code>git push -u origin &lt;ветка&gt;</code> — отправить ветку впервые. <code>git revert</code> нужен только тогда, когда плохое изменение уже стало коммитом.",
+    "<pre class=\"tm-code\">Ситуация 7. Правки НЕ закоммичены, значит история чистая.\nВернуть файл к последнему коммиту:\n    git restore script.js\n\nСитуация 9. Ветка feature/menu на сервере ещё не существует.\nОтправить её впервые:\n    git push -u origin feature/menu\nДальше для этой ветки хватит:\n    git push</pre>"
+  ];
+
+  const EMOJI_RE = /[\u2190-\u21FF\u2300-\u27BF\u2B00-\u2BFF\uD83C-\uDBFF][\uDC00-\uDFFF]?|\uFE0F|\u200D/;
+
+  let answers = [null, null, null, null, null, null, null, null, null, null];
+  let messages = ["", "", ""];
+  let hintsOpened = 0;
+  let checked = false;
+  let current = 0;
+  let repo = copyScene(SITUATIONS[0].scene);
+  let msgTimer = 0;
+  let lastPassed = 0;
+  let lastThreshold = false;
+
+  const progressEl = document.getElementById("progress");
+  const sitQ = document.getElementById("sitQ");
+  const sitOpts = document.getElementById("sitOpts");
+  const sitPos = document.getElementById("sitPos");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const testsEl = document.getElementById("tests");
+  const hintsEl = document.getElementById("hints");
+  const scoreEl = document.getElementById("score");
+  const honesty = document.getElementById("honesty");
+  const etalonBox = document.getElementById("etalonBox");
+  const solBody = document.getElementById("solBody");
+  const reviewBtn = document.getElementById("reviewBtn");
+  const hintBtns = [
+    document.getElementById("hint1Btn"),
+    document.getElementById("hint2Btn"),
+    document.getElementById("hint3Btn")
+  ];
+  const msgInputs = [
+    document.getElementById("msg0"),
+    document.getElementById("msg1"),
+    document.getElementById("msg2")
+  ];
+
+  function copyScene(scene) {
+    return {
+      branch: scene.branch,
+      commits: scene.commits,
+      files: scene.files,
+      pushed: scene.pushed
+    };
+  }
+
+  function findOption(sitIndex, letter) {
+    const opts = SITUATIONS[sitIndex].options;
+    for (let i = 0; i < opts.length; i++) {
+      if (opts[i].letter === letter) return opts[i];
+    }
+    return null;
+  }
+
+  function saveDraft() {
+    const data = {
+      answers: answers.slice(),
+      messages: messages.slice(),
+      hintsOpened: hintsOpened,
+      checked: checked
+    };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (err) {}
+  }
+
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (err) {}
+    if (!data || typeof data !== "object") return;
+    if (Array.isArray(data.answers) && data.answers.length === 10) {
+      answers = data.answers.map(function (v) {
+        return v === "А" || v === "Б" || v === "В" || v === "Г" ? v : null;
+      });
+    }
+    if (Array.isArray(data.messages)) {
+      messages = [
+        String(data.messages[0] || ""),
+        String(data.messages[1] || ""),
+        String(data.messages[2] || "")
+      ];
+    }
+    hintsOpened = Math.max(0, Math.min(3, Number(data.hintsOpened) || 0));
+    checked = !!data.checked;
+  }
+
+  function renderRepo() {
+    document.getElementById("repoBranch").textContent = String(repo.branch);
+    document.getElementById("repoCommits").textContent = String(repo.commits);
+    document.getElementById("repoFiles").textContent = String(repo.files);
+    document.getElementById("repoPushed").textContent = String(repo.pushed);
+  }
+
+  function applyRepo(scene) {
+    repo = copyScene(scene);
+    renderRepo();
+  }
+
+  function answeredCount() {
+    return answers.filter(Boolean).length;
+  }
+
+  function renderProgress() {
+    const n = answeredCount();
+    progressEl.setAttribute("aria-label", "Отвечено " + n + " из 10");
+    progressEl.innerHTML = "";
+    for (let i = 0; i < 10; i++) {
+      const tick = document.createElement("span");
+      if (answers[i]) tick.className = "is-done";
+      progressEl.appendChild(tick);
+    }
+  }
+
+  function showSituation(index) {
+    current = index;
+    const sit = SITUATIONS[index];
+    applyRepo(sit.scene);
+    if (answers[index]) {
+      const chosen = findOption(index, answers[index]);
+      if (chosen && chosen.effect) {
+        Object.assign(repo, chosen.effect);
+        renderRepo();
+      }
+    }
+    sitQ.innerHTML = sit.q;
+    sitPos.textContent = "Ситуация " + (index + 1) + " из 10";
+    prevBtn.disabled = index === 0;
+    nextBtn.disabled = index === 9;
+    sitOpts.innerHTML = "<legend>Варианты ответа</legend>";
+    sit.options.forEach(function (opt) {
+      const lab = document.createElement("label");
+      lab.className = "opt" + (answers[index] === opt.letter ? " is-picked" : "");
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "sit";
+      input.value = opt.letter;
+      input.checked = answers[index] === opt.letter;
+      input.addEventListener("change", function () {
+        onAnswer(opt.letter);
+      });
+      const span = document.createElement("span");
+      span.innerHTML = "<strong>" + opt.letter + ")</strong> " + opt.label;
+      lab.appendChild(input);
+      lab.appendChild(span);
+      sitOpts.appendChild(lab);
+    });
+    renderProgress();
+  }
+
+  function onAnswer(letter) {
+    answers[current] = letter;
+    const sit = SITUATIONS[current];
+    applyRepo(sit.scene);
+    const opt = findOption(current, letter);
+    if (opt && opt.effect) Object.assign(repo, opt.effect);
+    renderRepo();
+    Array.prototype.forEach.call(sitOpts.querySelectorAll(".opt"), function (lab) {
+      const inp = lab.querySelector("input");
+      lab.classList.toggle("is-picked", inp && inp.value === letter);
+    });
+    renderProgress();
+    saveDraft();
+  }
+
+  function stripWord(word) {
+    return word.replace(/^[«»„“”"'()[\]{}.,:;!?…—–\-]+|[«»„“”"'()[\]{}.,:;!?…—–\-]+$/g, "");
+  }
+
+  function findForbiddenWord(text) {
+    const words = text.split(/\s+/);
+    for (let i = 0; i < words.length; i++) {
+      const raw = stripWord(words[i]);
+      if (!raw) continue;
+      const lower = raw.toLowerCase();
+      for (let r = 0; r < FORBIDDEN_ROOTS.length; r++) {
+        if (lower.indexOf(FORBIDDEN_ROOTS[r]) === 0) return raw;
+      }
+    }
+    return "";
+  }
+
+  function hasKeyword(text, fieldIndex) {
+    const roots = KEYWORDS[fieldIndex];
+    const words = text.split(/\s+/);
+    for (let i = 0; i < words.length; i++) {
+      const raw = stripWord(words[i]);
+      const w = raw.toLowerCase();
+      if (!w) continue;
+      const longEnough = w.length >= 4 || w === "320";
+      if (!longEnough) continue;
+      for (let r = 0; r < roots.length; r++) {
+        if (w.indexOf(roots[r]) !== -1) return true;
+      }
+    }
+    return false;
+  }
+
+  /* Валидатор сообщений: все пять правил, тексты ошибок дословные. */
+  function validate(text, fieldIndex) {
+    const value = String(text || "");
+    const len = value.length;
+    if (len < 5) {
+      return { ok: false, error: "Слишком коротко: по такому сообщению ничего не понять" };
+    }
+    if (len > 72) {
+      return { ok: false, error: "Длиннее 72 символов — Git обрежет строку в списке истории" };
+    }
+    const banned = findForbiddenWord(value);
+    if (banned) {
+      return {
+        ok: false,
+        error: "Слово \"" + banned + "\" ничего не сообщает об изменении. Напиши, что появилось или что починилось"
+      };
+    }
+    const ands = value.match(/(^|\s)и(\s|$)/g);
+    if (ands && ands.length > 1) {
+      return { ok: false, error: "Два союза \"и\" — в один коммит попало несколько разных изменений. Раздели их" };
+    }
+    if (!hasKeyword(value, fieldIndex)) {
+      return { ok: false, error: "Непонятно, о каком именно изменении речь. Назови предмет: что именно изменилось" };
+    }
+    const trimmed = value.replace(/\s+$/, "");
+    if (/\.$/.test(trimmed) || EMOJI_RE.test(value)) {
+      return { ok: false, error: "Точка и эмодзи в списке коммитов выглядят мусором — убери" };
+    }
+    return { ok: true, error: "" };
+  }
+
+  function showMessageErrors() {
+    const failed = [];
+    for (let i = 0; i < 3; i++) {
+      const res = validate(messages[i], i);
+      const el = document.getElementById("msgErr" + i);
+      if (res.ok) {
+        el.textContent = "";
+        el.className = "field-err hide";
+      } else {
+        el.textContent = res.error;
+        el.className = "field-err";
+        failed.push(i + 1);
+      }
+    }
+    return failed;
+  }
+
+  function buildTests() {
+    const unanswered = [];
+    for (let i = 0; i < 10; i++) {
+      if (!answers[i]) unanswered.push(i + 1);
+    }
+    const sitOk = [
+      answers[0] === "А",
+      answers[1] === "Б",
+      answers[2] === "Б",
+      answers[3] === "Б",
+      answers[4] === "Б",
+      answers[5] === "В",
+      answers[6] === "А",
+      answers[7] === "В",
+      answers[8] === "В",
+      answers[9] === "Б"
+    ];
+    const msgFailed = [];
+    const msgAllOk = [0, 1, 2].every(function (i) {
+      const ok = validate(messages[i], i).ok;
+      if (!ok) msgFailed.push(i + 1);
+      return ok;
+    });
+
+    return [
+      {
+        ok: unanswered.length === 0,
+        success: "✅ Все десять ситуаций пройдены",
+        fail: "❌ Осталось без ответа: " + unanswered.join(", ") + ". Пролистай ленту кнопкой «Назад» — неотвеченные помечены серым в полосе прогресса"
+      },
+      {
+        ok: sitOk[0],
+        success: "✅ Верно: `git init` — первая команда в новом проекте",
+        fail: "❌ Пока нет папки `.git`, любая другая команда Git ответит `fatal: not a git repository`. С чего начинается репозиторий?"
+      },
+      {
+        ok: sitOk[1],
+        success: "✅ Верно: Git видит файл, но пока за ним не следит",
+        fail: "❌ «Untracked» — это не про поломку и не про формат. Это про то, знает ли Git о файле. Кто ему об этом сообщает?"
+      },
+      {
+        ok: sitOk[2],
+        success: "✅ Верно: в коммит попадает только то, что ты выбрал",
+        fail: "❌ `git add .` берёт всё изменённое, включая незаконченный скрипт. Как добавить один файл?"
+      },
+      {
+        ok: sitOk[3],
+        success: "✅ Верно: в коммит ушла версия на момент `git add`",
+        fail: "❌ Индекс не следит за файлом после добавления. Значит, правки, сделанные после `add`, в коммит… что?"
+      },
+      {
+        ok: sitOk[4],
+        success: "✅ Верно: рискованное — в ветку, `main` остаётся рабочей",
+        fail: "❌ Панель показывает, что ты в `main` и всё чисто. Где положено пробовать рискованное, чтобы не испортить рабочую версию?"
+      },
+      {
+        ok: sitOk[5],
+        success: "✅ Верно: Git не даёт стереть незакоммиченную работу",
+        fail: "❌ Прочитай ответ Git ещё раз: «local changes would be overwritten». Чьи это изменения и почему они мешают переключиться?"
+      },
+      {
+        ok: sitOk[6],
+        success: "✅ Верно: поломка не в истории, а в рабочем файле",
+        fail: "❌ Панель говорит: `Изменённые файлы: script.js`, коммита с поломкой нет. `revert` отменяет коммиты. Что отменяет правки в файле?"
+      },
+      {
+        ok: sitOk[7],
+        success: "✅ Верно: названо конкретное изменение",
+        fail: "❌ Проверь варианты по трём правилам: есть ли предмет изменения, нет ли запрещённых слов, сколько союзов «и»"
+      },
+      {
+        ok: sitOk[8],
+        success: "✅ Верно: новая ветка отправляется с флагом `-u`",
+        fail: "❌ Панель: `Отправлено: только main`. Ты в другой ветке. Голый `git push` для неё ответит `has no upstream branch` — чего не хватает в команде?"
+      },
+      {
+        ok: sitOk[9],
+        success: "✅ Верно: история ценна тем, что по ней можно вернуться",
+        fail: "❌ Двадцать коммитов «фикс» — это много коммитов и никакой пользы. Значит, дело не в количестве. В чём?"
+      },
+      {
+        ok: msgAllOk,
+        success: "✅ Все три сообщения читаются без пояснений",
+        fail: "❌ Не приняты поля: " + msgFailed.join(", ") + ". Под каждым полем написано, что именно нарушено — правило длины, запрещённое слово, два «и» или отсутствие предмета"
+      }
+    ];
+  }
+
+  function thresholdMet(list) {
+    let sitPassed = 0;
+    for (let i = 1; i <= 10; i++) {
+      if (list[i] && list[i].ok) sitPassed += 1;
+    }
+    return sitPassed >= 8 && list[11] && list[11].ok;
+  }
+
+  function renderEtalon() {
+    let html = "";
+    SITUATIONS.forEach(function (sit, idx) {
+      html += "<article class=\"etalon__sit\">";
+      html += "<h3>Ситуация " + (idx + 1) + "</h3>";
+      html += "<p>" + sit.q + "</p>";
+      sit.options.forEach(function (opt) {
+        const why = /^(верно|неверно)/i.test(opt.why)
+          ? opt.why
+          : (opt.ok ? "верно. " : "неверно. ") + opt.why;
+        html += "<p class=\"etalon__opt\"><strong>" + opt.letter + ")</strong> " + opt.label +
+          " — " + why + "</p>";
+      });
+      html += "</article>";
+    });
+    solBody.innerHTML = html;
+  }
+
+  function unlockReview(reason) {
+    reviewBtn.disabled = false;
+    if (reason === "hints") {
+      etalonBox.classList.remove("hide");
+    }
+  }
+
+  function renderResults(list) {
+    testsEl.innerHTML = "";
+    let passed = 0;
+    list.forEach(function (t, idx) {
+      if (t.ok) passed += 1;
+      const row = document.createElement("div");
+      row.className = "tm-test " + (t.ok ? "tm-test--ok" : "tm-test--fail");
+      row.id = "test-" + (idx + 1);
+      const mark = document.createElement("span");
+      mark.className = "tm-test__mark";
+      mark.textContent = t.ok ? "✅" : "❌";
+      const body = document.createElement("div");
+      const title = document.createElement("div");
+      title.textContent = t.ok ? t.success.replace(/^✅\s*/, "") : t.fail.replace(/^❌\s*/, "");
+      if (!t.ok) title.className = "tm-test__hint";
+      body.appendChild(title);
+      row.appendChild(mark);
+      row.appendChild(body);
+      testsEl.appendChild(row);
+    });
+    lastPassed = passed;
+    lastThreshold = thresholdMet(list);
+    scoreEl.textContent = passed + " / 12";
+    scoreEl.className = "tm-pill" + (lastThreshold ? " is-done" : "");
+    var status = [];
+    if (hintsOpened > 0) {
+      status.push("Открыты подсказки: " + hintsOpened + ". Это не штраф, но на защите объясните решение своими словами.");
+    }
+    if (lastThreshold) {
+      unlockReview("tests");
+      status.push("Задача сдана. Подсказок открыто: " + hintsOpened + ".");
+    }
+    honesty.textContent = status.join(" ");
+    return lastThreshold;
+  }
+
+  function runChecks() {
+    checked = true;
+    showMessageErrors();
+    const list = buildTests();
+    renderResults(list);
+    saveDraft();
+    return list;
+  }
+
+  function focusFirstFail(list) {
+    for (let i = 0; i < list.length; i++) {
+      if (!list[i].ok) {
+        const row = document.getElementById("test-" + (i + 1));
+        if (row) {
+          row.setAttribute("tabindex", "-1");
+          row.focus();
+        }
+        return;
+      }
+    }
+  }
+
+  function replayHints() {
+    hintsEl.innerHTML = "";
+    for (let i = 0; i < hintsOpened; i++) {
+      const box = document.createElement("div");
+      box.className = "hint-box";
+      box.innerHTML = "<strong>Подсказка " + (i + 1) + ".</strong> " + HINTS[i];
+      hintsEl.appendChild(box);
+    }
+    hintBtns[0].disabled = hintsOpened >= 1;
+    hintBtns[1].disabled = hintsOpened < 1 || hintsOpened >= 2;
+    hintBtns[2].disabled = hintsOpened < 2 || hintsOpened >= 3;
+    if (hintsOpened > 0) {
+      honesty.textContent = "Открыты подсказки: " + hintsOpened +
+        ". Это не штраф, но на защите объясните решение своими словами.";
+    }
+    if (hintsOpened >= 3) unlockReview("hints");
+  }
+
+  function openHint(level) {
+    if (level !== hintsOpened) return;
+    if (hintsOpened >= 3) return;
+    hintsOpened += 1;
+    const box = document.createElement("div");
+    box.className = "hint-box";
+    box.innerHTML = "<strong>Подсказка " + hintsOpened + ".</strong> " + HINTS[hintsOpened - 1];
+    hintsEl.appendChild(box);
+    hintBtns[0].disabled = hintsOpened >= 1;
+    hintBtns[1].disabled = hintsOpened < 1 || hintsOpened >= 2;
+    hintBtns[2].disabled = hintsOpened < 2 || hintsOpened >= 3;
+    honesty.textContent = "Открыты подсказки: " + hintsOpened +
+      ". Это не штраф, но на защите объясните решение своими словами.";
+    if (hintsOpened >= 3) unlockReview("hints");
+    saveDraft();
+  }
+
+  prevBtn.addEventListener("click", function () {
+    if (current > 0) showSituation(current - 1);
+  });
+  nextBtn.addEventListener("click", function () {
+    if (current < 9) showSituation(current + 1);
+  });
+
+  msgInputs.forEach(function (el, i) {
+    el.addEventListener("input", function () {
+      messages[i] = el.value;
+      clearTimeout(msgTimer);
+      msgTimer = setTimeout(saveDraft, 280);
+    });
+  });
+
+  document.getElementById("msgCheckBtn").addEventListener("click", function (e) {
+    e.preventDefault();
+    clearTimeout(msgTimer);
+    saveDraft();
+    const list = runChecks();
+    focusFirstFail(list);
+  });
+
+  document.getElementById("checkBtn").addEventListener("click", function (e) {
+    e.preventDefault();
+    clearTimeout(msgTimer);
+    const list = runChecks();
+    focusFirstFail(list);
+  });
+
+  hintBtns.forEach(function (btn, i) {
+    btn.addEventListener("click", function () { openHint(i); });
+  });
+
+  reviewBtn.addEventListener("click", function () {
+    etalonBox.classList.toggle("hide");
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Сбросить ответы и сообщения? Черновик в памяти тоже очистится.")) return;
+    answers = [null, null, null, null, null, null, null, null, null, null];
+    messages = ["", "", ""];
+    hintsOpened = 0;
+    checked = false;
+    lastPassed = 0;
+    lastThreshold = false;
+    msgInputs.forEach(function (el) { el.value = ""; });
+    document.querySelectorAll(".field-err").forEach(function (el) {
+      el.textContent = "";
+      el.className = "field-err hide";
+    });
+    testsEl.innerHTML = "";
+    hintsEl.innerHTML = "";
+    honesty.textContent = "";
+    scoreEl.textContent = "0 / 12";
+    scoreEl.className = "tm-pill";
+    reviewBtn.disabled = true;
+    etalonBox.classList.add("hide");
+    hintBtns[0].disabled = false;
+    hintBtns[1].disabled = true;
+    hintBtns[2].disabled = true;
+    try { localStorage.removeItem(DRAFT_KEY); } catch (err) {}
+    showSituation(0);
+  });
+
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const html = document.documentElement;
+    const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+  });
+
+  renderEtalon();
+  loadDraft();
+  msgInputs.forEach(function (el, i) { el.value = messages[i]; });
+  replayHints();
+  showSituation(0);
+  if (checked) runChecks();
+})();
+</script>
+</body>
+</html>

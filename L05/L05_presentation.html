@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 5. Построение раскладок</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 5</strong>
+      <span>Построение раскладок</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Три занятия мы решали, что на странице есть и как оно выглядит. Сегодня — где оно стоит» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 3 · ЗАНЯТИЕ 5</p>
+        <h1>Построение раскладок</h1>
+        <p class="lead">Занятие 5 из 24. Сегодня блоки перестают идти столбиком.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L05_trainer_flex.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L04/L04_presentation.html">►► Занятие 4</a>
+          <a class="tm-btn tm-btn--ghost" href="../L06/L06_presentation.html">►► Занятие 6</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Две задачи. Обе решаются одним инструментом, и обе — по одной строке» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>Шесть пирогов на три экрана</h2>
+        <p>Марина Петровна: «Хочется, чтобы пироги были рядом, а не столбиком на весь экран. И чтобы контакты были внизу, а не сразу под меню, когда пирогов мало»</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Для документа это удобно. Для ряда карточек — мешает» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Почему всё идёт столбиком</h2>
+        <ul class="tm-list">
+          <li><strong>Блочные</strong> (<code>div</code>, <code>p</code>, <code>li</code>, <code>section</code>) — с новой строки, во всю ширину</li>
+          <li><strong>Строчные</strong> (<code>span</code>, <code>a</code>, <code>img</code>) — в строке, по содержимому</li>
+          <li>Это нормальный поток: правило браузера по умолчанию</li>
+        </ul>
+        <pre class="tm-code">&lt;div&gt; — блочный
+&lt;span&gt; — строчный</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Просил двести, получил двести тридцать шесть. Сейчас покажу это в DevTools на числах» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Блочная модель: элемент из четырёх слоёв</h2>
+        <ul class="tm-list">
+          <li>содержимое → <code>padding</code> → <code>border</code> → <code>margin</code></li>
+          <li>По умолчанию <code>width</code> задаёт <strong>только содержимое</strong></li>
+          <li>200 + 16 + 16 + 2 + 2 = <strong>236</strong></li>
+        </ul>
+        <pre class="tm-code">.card {
+  width: 200px;
+  padding: 16px;
+  border: 2px solid;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Считайте это обязательным заклинанием. Ставится в начало файла, в любом проекте, всегда» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Строка, которая ставится первой всегда</h2>
+        <p><code>border-box</code> означает: <code>width</code> — это итоговая ширина, вместе с отступами и рамкой</p>
+        <pre class="tm-code"><span class="hl">*, *::before, *::after {</span>
+<span class="hl">  box-sizing: border-box;</span>
+}</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2><span class="hl">Одна строка</span> превращает столбик в ряд</h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Полка решает, как стоят книги. Книге не пишут инструкцию» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Flexbox: правила пишет контейнер</h2>
+        <ul class="tm-list">
+          <li><code>display: flex</code> — <strong>родителю</strong>, не карточкам</li>
+          <li>Действует только на прямых детей</li>
+          <li>Дети перестают растягиваться на всю ширину</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">.menu { display: flex; }</span>
+.card { padding: 16px; }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Не встали в ряд — проверьте, тому ли элементу написали. Нужен их общий родитель» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>display: flex</code> не тому элементу</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>В ряд встанет содержимое карточки, а сами карточки останутся столбиком. Самая частая ошибка первого занятия по Flexbox</p>
+          <pre class="tm-code">.card { display: flex; }</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Вдоль ряда — как распределены. Поперёк — как выровнены по росту. Больше запоминать почти нечего» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Две оси — и это почти весь Flexbox</h2>
+        <ul class="tm-list">
+          <li><strong><code>justify-content</code></strong> — вдоль ряда: <code>flex-start</code>, <code>center</code>, <code>flex-end</code>, <code>space-between</code></li>
+          <li><strong><code>align-items</code></strong> — поперёк: <code>stretch</code>, <code>center</code>, <code>flex-start</code>, <code>flex-end</code></li>
+          <li><code>stretch</code> по умолчанию — поэтому карточки одинаковой высоты</li>
+        </ul>
+        <pre class="tm-code">.top {
+<span class="hl">  justify-content: space-between;</span>
+<span class="hl">  align-items: center;</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Подсказка: решение из занятия 2» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>В шапке три элемента, а разнести надо на две группы. Как?</h2>
+        <p>Название слева, ссылка и кнопка вместе справа. <code>space-between</code> разнесёт все три поровну</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Одно свойство вместо трёх правил. И у крайней карточки ничего не торчит в сторону» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>gap</code> вместо отступов у каждого</h2>
+        <ul class="tm-list">
+          <li>Пишется контейнеру</li>
+          <li>По краям ряда ничего не добавляет</li>
+          <li>Работает и между строками при переносе</li>
+        </ul>
+        <pre class="tm-code">.menu {
+  display: flex;
+<span class="hl">  gap: 20px;</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас сузим окно и посмотрим. Это ваша первая адаптивная раскладка» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Перенос и гибкость</h2>
+        <ul class="tm-list">
+          <li><code>flex-wrap: wrap</code> — разрешить перенос</li>
+          <li><code>flex: 1 1 220px</code> — базовый размер, право растянуться и сжаться</li>
+          <li>Шесть в ряд → три → две → одна. <strong>Без единого медиазапроса</strong></li>
+        </ul>
+        <pre class="tm-code">.menu { flex-wrap: wrap; }
+<span class="hl">.card { flex: 1 1 220px; }</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Правило курса: основная раскладка — только Flexbox, со следующего занятия ещё Grid. Абсолют — только для декоративных наложений» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Вёрстка «на глаз»</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Фиксированные пиксели, <code>float</code>, абсолютное позиционирование. На вашем мониторе идеально, на телефоне — горизонтальная прокрутка</p>
+          <pre class="tm-code">.menu { width: 1000px; }
+.card { width: 220px; float: left; }</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «`min-height`, а не `height`: минимум во весь экран, но расти можно» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Подвал внизу: четыре строки</h2>
+        <p>Каркас, который вы перенесёте в итоговый проект без изменений</p>
+        <pre class="tm-code">body {
+<span class="hl">  min-height: 100vh;</span>
+<span class="hl">  display: flex;</span>
+<span class="hl">  flex-direction: column;</span>
+}
+<span class="hl">main { flex: 1; }</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверка перед сдачей — пять секунд: сузьте окно до ширины телефона» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Шапка: название слева, кнопка справа</li>
+          <li>Меню: карточки в ряд с переносом</li>
+          <li>Подвал прижат к низу</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> <code>box-sizing</code> первой строкой, промежутки через <code>gap</code>, карточки через <code>flex</code>, на ширине 375 нет горизонтальной прокрутки, <code>float</code> и абсолюта нет</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L05_trainer_flex.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L04/L04_presentation.html">►► Занятие 4</a>
+          <a class="tm-btn tm-btn--ghost" href="../L06/L06_presentation.html">►► Занятие 6</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольный вопрос: попросите поставить блоки в ряд, не запрещая `float`. Посмотрим, кто поймает устаревший совет» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: проверка раскладки на узком экране</h2>
+        <pre class="tm-code">Ты проверяешь CSS-раскладку начинающего верстальщика.
+Контекст: страница школьного буфета. Только HTML и CSS, без библиотек. Основной инструмент раскладки в проекте — Flexbox; CSS Grid ещё не проходили. Уровень автора — пятое занятие курса.
+Задача: найди в моём CSS места, из-за которых раскладка сломается на экране шириной 375 пикселей.
+Ограничения: не предлагай CSS Grid, медиазапросы, float, position: absolute и библиотеки; не переписывай мой код целиком; не предлагай менять разметку; пиши по-русски.
+Формат ответа: нумерованный список, не больше пяти пунктов. В каждом: строка моего кода → что сломается на узком экране → чем заменить, одной строкой.
+Критерии проверки: каждый пункт относится к строке, которая есть в моём коде; замена — валидный CSS без Grid и медиазапросов; указано, что именно увидит пользователь при поломке.
+
+Вот мой CSS:
+[вставь сюда свой код]</pre>
+        <p><strong>Проверить руками:</strong> строка существует · не предложила Grid и медиазапросы · свойство существует · правка проверена сужением окна · ничего не сломалось рядом · можешь объяснить</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 5</h3>
+      <dl>
+        <dt>Нормальный поток</dt>
+        <dd>Правило браузера по умолчанию: элементы идут сверху вниз в том порядке, в каком написаны в разметке.</dd>
+        <dt>Блочный элемент</dt>
+        <dd>Начинается с новой строки и занимает всю доступную ширину: <code>div</code>, <code>p</code>, <code>h1</code>, <code>li</code>, <code>section</code>.</dd>
+        <dt>Строчный элемент</dt>
+        <dd>Идёт в строке по ширине содержимого: <code>span</code>, <code>a</code>, <code>b</code>, <code>img</code>.</dd>
+        <dt>display</dt>
+        <dd>Свойство, задающее способ размещения элемента: <code>block</code>, <code>inline</code>, <code>flex</code>.</dd>
+        <dt>Блочная модель</dt>
+        <dd>Устройство элемента из четырёх слоёв: содержимое, <code>padding</code>, <code>border</code>, <code>margin</code>.</dd>
+        <dt>padding</dt>
+        <dd>Внутренний отступ: от содержимого до рамки.</dd>
+        <dt>border</dt>
+        <dd>Рамка элемента.</dd>
+        <dt>margin</dt>
+        <dd>Внешний отступ: расстояние до соседних элементов. В ширину элемента не входит.</dd>
+        <dt>box-sizing: border-box</dt>
+        <dd>Режим, в котором <code>width</code> — это итоговая ширина, включая <code>padding</code> и <code>border</code>. Ставится первой строкой стилей всегда.</dd>
+        <dt>Flexbox</dt>
+        <dd>Механизм раскладки, расставляющий элементы вдоль одной линии. Основной инструмент раскладки на курсе.</dd>
+        <dt>Флекс-контейнер</dt>
+        <dd>Элемент с <code>display: flex</code>. Правила пишутся ему, слушаются его прямыми детьми.</dd>
+        <dt>Флекс-элемент</dt>
+        <dd>Прямой ребёнок флекс-контейнера.</dd>
+        <dt>Основная ось</dt>
+        <dd>Линия, вдоль которой выстроились элементы. По умолчанию слева направо.</dd>
+        <dt>Поперечная ось</dt>
+        <dd>Перпендикулярная основной. По умолчанию сверху вниз.</dd>
+        <dt>justify-content</dt>
+        <dd>Распределение элементов вдоль основной оси: <code>flex-start</code>, <code>center</code>, <code>flex-end</code>, <code>space-between</code>.</dd>
+        <dt>align-items</dt>
+        <dd>Выравнивание по поперечной оси: <code>stretch</code>, <code>center</code>, <code>flex-start</code>, <code>flex-end</code>.</dd>
+        <dt>flex-direction</dt>
+        <dd>Направление основной оси: <code>row</code> (по умолчанию) или <code>column</code>.</dd>
+        <dt>gap</dt>
+        <dd>Промежуток между элементами внутри контейнера. По краям ничего не добавляет и работает при переносе строк.</dd>
+        <dt>flex-wrap: wrap</dt>
+        <dd>Разрешение переносить элементы на новую строку, когда они не помещаются.</dd>
+        <dt>flex: 1 1 220px</dt>
+        <dd>Сокращённая запись: базовый размер элемента с правом растянуться и сжаться.</dd>
+        <dt>vh</dt>
+        <dd>Единица высоты окна: <code>100vh</code> — вся высота видимой области.</dd>
+        <dt>min-height</dt>
+        <dd>Минимальная высота. В отличие от <code>height</code>, позволяет блоку вырасти, если содержимого больше.</dd>
+        <dt>float</dt>
+        <dd>Старый способ раскладки. На курсе для раскладки не используется.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

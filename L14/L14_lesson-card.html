@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 14. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L14_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L14_trainer_pr.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 14 · техкарта</p>
+    <h1>Занятие 14. GitHub: Pull Request и Code Review</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L14</td></tr><tr><td>Тема</td><td>GitHub: Pull Request и Code Review</td></tr><tr><td>Модуль</td><td>Модуль 5. Git и GitHub: контроль версий и коллаборация</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Каждая новая возможность итогового Dashboard будет приезжать в <code>main</code> через Pull Request. Отсюда же — третий элемент критерия «Культура работы с Git»: не только коммиты и ветки, но и принятый PR</td></tr><tr><td>Артефакт на выходе</td><td><strong>Принятый Pull Request</strong> в репозитории сайта буфета: ветка → изменения → описание → чужое ревью по чек-листу → доработка → слияние. Плюс разобранный вручную конфликт слияния</td></tr><tr><td>Тип практики</td><td>Сценарий с автопроверкой</td></tr><tr><td>Файл тренажёра</td><td><code>L14_trainer_pr.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l14-pr-v1</code> (ответы сценария, найденные замечания ревью, собранное описание PR). Ключ режима не используется</td></tr><tr><td>Контрольная точка</td><td><strong>Да. Контрольная точка программы: принятый Pull Request.</strong> Проверяется по списку веток и закрытому PR в репозитории</td></tr><tr><td>Опора</td><td>L13: репозиторий заведён, коммиты делаются, ветка <code>feature/menu</code> существует, обе ветки отправлены на сервер. Без отправленной ветки Pull Request создать нельзя</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–3</td><td>Вход</td><td>Слайды 1–2. Объявляет контрольную точку занятия</td><td>Слушают, записывают, что надо получить к концу</td><td>Все поняли: артефакт — принятый PR, а не код</td></tr><tr><td>3–6</td><td>Зачем (5.1)</td><td>Слайд 3. Связывает с занятием 15: из <code>main</code> идёт публикация</td><td>Отвечают на вопрос «почему в main нельзя незаконченное»</td><td>Прозвучал ответ про публичную ссылку</td></tr><tr><td>6–13</td><td>Подтемы 5.2–5.3</td><td>Слайды 4–6 + демонстрация шаги 1–5. Показывает диф</td><td>Смотрят; создают ветку и делают своё изменение</td><td><strong>Обход:</strong> у каждого создана ветка с именем <code>feature/</code> или <code>fix/</code> латиницей</td></tr><tr><td>13–20</td><td>Подтема 5.4 Ревью</td><td>Слайды 7–8. Разбирает фрагмент с нарушениями <strong>вместе с группой</strong></td><td>Ищут нарушения вслух, называют пункт чек-листа</td><td>Группа сама нашла не меньше трёх из пяти</td></tr><tr><td>20–25</td><td>Формулировка замечания</td><td>Слайд 9 + демонстрация шаг 7. Показывает формулу «место + что не так + почему»</td><td>Переформулируют три плохих замечания в хорошие</td><td>Каждый вслух переформулировал одно</td></tr><tr><td>25–33</td><td>Подтема 5.5 Конфликт</td><td>Слайды 10–12 + демонстрация шаги 9–11. <strong>Провоцирует конфликт заранее подготовленными ветками</strong></td><td>Смотрят на служебные строки, отвечают на вопрос слайда 12</td><td>Реакция «а, это просто два варианта» — цель этого блока</td></tr><tr><td>33–38</td><td>Подтемы 5.6–5.7</td><td>Слайды 13, разбирает три варианта ответа на замечание и порядок работы пары</td><td>Разбиваются на пары, добавляют друг друга в участники репозитория</td><td><strong>Контроль:</strong> у каждого напарник добавлен и виден в настройках</td></tr><tr><td>38–42</td><td>Пауза</td><td>Помогает парам, у кого не настроился доступ; включает запасной вариант там, где нужно</td><td>Отдыхают</td><td>Ни одна пара не осталась без способа обменяться ревью</td></tr><tr><td>42–55</td><td>Практика, часть 1</td><td>Слайд 14. Раздаёт карточки: список задач, шаблон описания, чек-лист ревьюера</td><td>Делают изменение, коммитят, <code>push</code>, создают PR с описанием</td><td><strong>Контроль 1 (55-я минута):</strong> у каждого на сервере есть ветка и открытый PR с непустым описанием</td></tr><tr><td>55–65</td><td>Практика, часть 2: ревью</td><td>Ходит по парам, следит, чтобы замечания были привязаны к строкам, а не к PR целиком</td><td>Читают чужой PR по пяти пунктам, оставляют не меньше трёх замечаний</td><td><strong>Контроль 2:</strong> в каждом PR не меньше трёх комментариев к строкам</td></tr><tr><td>65–75</td><td>Практика, часть 3: доработка и конфликт</td><td>Проверяет, что доработка идёт в ту же ветку. Даёт паре задание изменить одну строку в разных ветках</td><td>Правят по замечаниям, коммитят, <code>push</code>. Разбирают конфликт</td><td><strong>Контроль 3:</strong> в файле после разрешения ноль строк с <code>&lt;&lt;&lt;</code>, <code>===</code>, <code>&gt;&gt;&gt;</code>; страница открывается</td></tr><tr><td>75–83</td><td>Принятие PR</td><td>Следит, чтобы PR закрывали <strong>слиянием</strong>, а не кнопкой «Close»</td><td>Принимают PR друг друга, удаляют ветки, делают <code>git switch main</code> + <code>git pull</code></td><td><strong>Контроль 4 (контрольная точка):</strong> у каждого PR со статусом «слит»</td></tr><tr><td>83–92</td><td>Тренажёр</td><td>Открывает <code>L14_trainer_pr.html</code>, разбирает ситуацию 1 вместе</td><td>Проходят три вкладки тренажёра</td><td>Порог: 7 из 9 ситуаций, 4 из 5 нарушений, описание принято</td></tr><tr><td>92–100</td><td>Итог и ИИ</td><td>Слайды 16–17. Правило курса. Домашнее задание</td><td>Записывают домашку</td><td>У всех <code>git status</code> → <code>working tree clean</code>, <code>git branch</code> без слитых веток</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Пройти весь путь накануне на тестовом репозитории:</strong> ветка → PR → комментарий к строке → доработка → конфликт → разрешение → слияние. Особенно проверить, что комментарии к строкам дифа на вашей платформе доступны ученическим учётным записям.</li><li><strong>Проверить возможность добавлять участников в репозиторий</strong> на доступной платформе. Если её нет — заранее подготовить запасной вариант из подтемы 5.7 и не выяснять это в 38-ю минуту.</li><li><strong>Подготовить две ветки для демонстрации конфликта:</strong> в <code>main</code> цена калитки 50, в <code>feature/price-update</code> — 55. Конфликт должен возникнуть с первого нажатия «Merge», без импровизации на проекторе.</li><li><strong>Подготовить фрагмент кода с пятью нарушениями</strong> (раздел 11, часть 2) — вывести на слайд 8 и раздать на бумаге.</li><li><strong>Раздаточные карточки:</strong> список задач для веток, шаблон описания PR в три блока, чек-лист ревьюера из пяти пунктов. По одной на ученика.</li><li><strong>Составить пары заранее</strong>, а не на занятии. Учесть темп: сильного с сильным — они успеют по два PR; отстающего — с тем, кто объяснит.</li><li><strong>Резервный вариант при недоступности платформы:</strong> слияние делается локально командой <code>git merge feature/...</code>, ревью — по бумажному чек-листу с записью замечаний в тетрадь, конфликт провоцируется теми же двумя ветками. Контрольная точка в этом случае фиксируется педагогом по выводу <code>git log --oneline --graph</code>.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Страница репозитория с открытой вкладкой Pull Requests.</li><li>Вкладка «Files changed» с дифом — на ней проходит половина занятия.</li><li>Редактор с <code>script.js</code>, где виден конфликт (шаг 10 демонстрации).</li><li>Терминал с крупным шрифтом.</li><li>Браузер со страницей сайта буфета — для проверки после разрешения конфликта.</li><li>Тренажёр <code>L14_trainer_pr.html</code> — открыть к 83-й минуте.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<ol><li><strong>Ветка не отправлена, кнопки PR нет.</strong> Признак: «у меня нет кнопки». Готовое действие: не подсказывать команду сразу, а попросить открыть список веток на сервере — ученик сам увидит, что там одна <code>main</code>. После этого <code>git push -u origin имя-ветки</code> запоминается навсегда. Разбирать сразу на контроле 55-й минуты.</li><li><strong>Доработка уехала в <code>main</code> вместо ветки.</strong> Признак: PR не обновляется, а в <code>main</code> появились новые коммиты. Готовое действие: научить проверять первую строку <code>git status</code> перед каждым коммитом. Если изменения уже в <code>main</code> — не паниковать: их можно перенести, но на занятии проще откатить <code>git revert</code> и повторить в ветке.</li><li><strong>Пара приняла PR друг у друга за полторы минуты, не читая.</strong> Признак: ноль комментариев в PR. Готовое действие: переоткрыть PR (кнопка «Reopen») и провести ревью вместе с педагогом вслух, по одному пункту чек-листа. Одного такого разбора на группу обычно достаточно: остальные пары начинают читать всерьёз.</li></ol>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li>Открой закрытый сегодня Pull Request и перечитай его целиком: описание, диф, замечания, свои ответы. Выпиши в тетрадь <strong>одно замечание напарника, которое ты сначала считал придиркой</strong>, и рядом — было оно по делу или нет, с аргументом в одну строку.</li><li>Проведи ревью <strong>своего же</strong> старого кода. Возьми <code>script.js</code> из репозитория и пройди по пяти пунктам чек-листа. Выпиши все найденные нарушения списком: строка + пункт + что не так. Меньше трёх — значит, смотрел невнимательно, пройди ещё раз по пунктам подряд.</li><li>Исправь любые два из найденных нарушений. Каждое — в отдельной ветке <code>fix/&lt;что-чинишь&gt;</code> и отдельным коммитом с осмысленным сообщением. Отправь обе ветки на сервер.</li><li>Создай Pull Request для одной из двух веток и заполни описание по трём блокам — в блоке «Как проверить» обязательно должен быть пункт про ширину 320 px.</li></ol>
+<p>Сдаётся ссылкой на PR. Педагог смотрит описание и качество замечаний из пункта 2 — код открывать не потребуется.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ итогового проекта (Приложение 1 к программе):</strong></p>
+<blockquote><p>«использование ветвления (разработка фич в отдельных ветках с последующим Pull Request)»</p></blockquote>
+<p>Сегодня пункт закрывается целиком: ветвление было на занятии 13, Pull Request — сегодня. С этого момента и до защиты действует правило без исключений: <strong>каждая новая возможность итогового Dashboard делается в отдельной ветке и приезжает в <code>main</code> через Pull Request</strong>. На занятиях 20–22 это будет проверяться в чек-листе каждого спринта.</p>
+<p><strong>Критерий из 30 баллов (Приложение 2):</strong></p>
+<blockquote><p>«Культура работы с Git — 5 баллов: 10+ осмысленных коммитов, ветвление, PR»</p></blockquote>
+<p>Третий и последний элемент критерия закрыт. Дальше он только накапливается: к защите нужно не меньше десяти осмысленных коммитов и видимая история ветвления с принятыми PR. Один PR, сделанный сегодня, — это доказательство, что процедура освоена; остальные наберутся в модуле 9.</p>
+<p><strong>Контрольная точка программы:</strong> «принятый Pull Request» (модуль 5). Проверяется по списку веток и закрытому PR со статусом «слит». Ученик, у которого PR закрыт кнопкой «Close» без слияния, контрольную точку не прошёл — это надо проверить лично у каждого до конца занятия.</p>
+<p><strong>Что переносится в занятие 15:</strong> к следующему занятию <code>main</code> у каждого должна содержать рабочую версию сайта буфета — именно её будут публиковать. Если после слияния в <code>main</code> что-то сломалось, чинить это надо сейчас, а не в начале занятия 15: там всё время уйдёт на публикацию.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L14_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L14_trainer_pr.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

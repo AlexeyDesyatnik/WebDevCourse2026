@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 6. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L06_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L06_trainer_grid.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 06 · техкарта</p>
+    <h1>Занятие 6. CSS Grid и адаптивная вёрстка</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L06</td></tr><tr><td>Тема</td><td>CSS Grid и адаптивная вёрстка</td></tr><tr><td>Модуль</td><td>Модуль 3. CSS3: Адаптивный дизайн и UI (8 ч)</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Сетка Dashboard — это Grid. Требование ТЗ «адаптивная вёрстка Mobile First, Grid + Flexbox» закрывается сегодня наполовину; вторая половина, Flexbox, закрыта вчера</td></tr><tr><td>Артефакт на выходе</td><td>Страница буфета с адаптивной сеткой меню: 1 колонка на телефоне, 2 на планшете, 3 на ноутбуке. Свёрстана Mobile First</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима)</td></tr><tr><td>Файл тренажёра</td><td><code>L06_trainer_grid.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l06-grid-v1</code>, <code>wdc-l06-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td>Нет</td></tr><tr><td>Опора</td><td>L05: блочная модель, <code>box-sizing</code>, Flexbox, <code>gap</code>, каркас страницы. L04: переменные, DevTools</td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на нормальный вид с телефона. <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+<blockquote><p><strong>Правило курса, продолжение вчерашнего.</strong> Инструментов раскладки на курсе ровно два, и у каждого своя область. <strong>Flexbox</strong> — когда элементы выстраиваются вдоль одной линии: шапка, ряд кнопок, форма. <strong>Grid</strong> — когда нужны и строки, и колонки одновременно: сетка карточек, раскладка всей страницы. Третьего инструмента не будет.</p></blockquote>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход и разбор прошлого</td><td>Слайды 1–2. Открывает вчерашнее меню и сужает до промежуточной ширины: последняя карточка растянута</td><td>Смотрят, формулируют проблему</td><td>Группа называет, почему нижний ряд выглядит неровно</td></tr><tr><td>4–10</td><td>Теория 5.1</td><td>Слайд 3. Одномерный и двумерный, таблица выбора инструмента</td><td>Слушают</td><td>Двое отвечают, чем разложить форму «подписи слева, поля справа»</td></tr><tr><td>10–17</td><td>Теория 5.2</td><td>Слайды 4–5. Колонки, <code>fr</code>, <code>repeat</code>, ошибка с процентами. <strong>Показывает подсветку сетки в DevTools</strong></td><td>Смотрят, повторяют у себя</td><td><strong>Точка контроля:</strong> каждый нашёл значок <code>grid</code> в DevTools и увидел линии сетки</td></tr><tr><td>17–19</td><td>Пауза в теории</td><td>Слайд 6, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>19–25</td><td>Теория 5.3</td><td>Слайд 7. <code>auto-fit</code> и <code>minmax</code>. <strong>Медленно сужает окно на проекторе</strong></td><td>Смотрят, считают колонки вслух</td><td>Группа увидела перестроение 4 → 3 → 2 → 1</td></tr><tr><td>25–32</td><td>Теория 5.4</td><td>Слайды 8–9. Медиазапросы, порядок, точки перелома</td><td>Слушают</td><td>—</td></tr><tr><td>32–34</td><td><strong>Вопрос классу</strong></td><td>Слайд 10. «Почему медиазапрос в начале файла не работает?» Пауза 10 секунд</td><td>Думают, отвечают трое</td><td>Прозвучало «специфичность одинаковая, побеждает нижнее»</td></tr><tr><td>34–35</td><td>Теория 5.5, заход</td><td>Слайд 11. Mobile First</td><td>Слушают</td><td>—</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–50</td><td>Теория 5.5–5.6</td><td>Слайды 11–12. Mobile First подробно, <code>grid-template-areas</code></td><td>Слушают</td><td>Группа объясняет, почему правила «накапливаются»</td></tr><tr><td>50–53</td><td>Теория 5.7</td><td>Слайды 13, 15. Почему эмулятора мало, чек-лист из шести пунктов</td><td>Слушают, записывают чек-лист</td><td>Чек-лист записан у каждого</td></tr><tr><td>53–66</td><td><strong>Демонстрация</strong></td><td>Десять шагов раздела 6, включая обе намеренные ошибки</td><td>Смотрят, повторяют у себя с шага 2</td><td><strong>Точка контроля:</strong> к 62-й минуте у всех меню на Grid и работает первый медиазапрос</td></tr><tr><td>66–72</td><td><strong>Проверка на телефонах</strong></td><td>Запускает локальный сервер, пишет адрес на доске, помогает подключиться</td><td>Открывают свою страницу с телефона, проходят чек-лист</td><td><strong>Точка контроля:</strong> у каждого страница открыта на телефоне и записана минимум одна найденная проблема</td></tr><tr><td>72–83</td><td>Практика: тренажёр</td><td>Открывает <code>L06_trainer_grid.html</code>. Помогает точечно</td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 80-й минуте у большинства 8/11 и выше. Кто застрял на тесте 7 — разобрать на весь класс</td></tr><tr><td>83–90</td><td>Практика: свой файл</td><td>Обходит ряды, у каждого сужает окно до 360</td><td>Доводят <code>index.html</code></td><td><strong>Точка контроля:</strong> на ширине 360 нет горизонтальной прокрутки</td></tr><tr><td>90–95</td><td>Работа с ИИ</td><td>Слайд 16. Разбирает ответ модели, обязательно — контрольный вопрос про таблицу</td><td>Запускают промпт, проверяют по шести пунктам</td><td>Хотя бы двое поймали совет спрятать таблицу</td></tr><tr><td>95–100</td><td><strong>Мини-демо и фиксация</strong></td><td>Спрашивает троих: покажи страницу на телефоне и объясни, что делает <code>auto-fit</code>. Сохранение</td><td>Показывают, объясняют, сохраняют</td><td>Файл сохранён. Правило про Mobile First произнесено вслух</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Проверить локальный сервер и доступ с телефонов заранее, в том же кабинете.</strong> Это самый рискованный пункт занятия: сеть может изолировать устройства друг от друга. Запустить <code>python -m http.server 8770</code> в папке <code>материалы</code>, узнать адрес машины, открыть с личного телефона. Если не работает — есть запасной вариант: раздать файлы на телефоны учеников через мессенджер или проверить по очереди на одном телефоне, подключённом к проектору.</li><li>Написать адрес и порт на доске крупно до начала занятия.</li><li>Предупредить группу на прошлом занятии: <strong>принести телефоны</strong>.</li><li>Подготовить пример «Flexbox против Grid» из подтемы 5.1 отдельным файлом — нужен на минуте 4.</li><li>Подготовить файл с ошибкой порядка медиазапросов — для шага 7 демонстрации. Набирать при всех дольше, чем открыть готовый.</li><li>Подготовить файл поддержки: <code>.menu</code> уже на Grid с одной колонкой, оба медиазапроса написаны, но пустые. Плюс карточка на парту с синтаксисом <code>repeat</code> и чек-листом проверки на телефоне.</li><li>Подготовить задание «плюс» заранее: <code>grid-template-areas</code> с боковой панелью, два варианта сетки с обоснованием, поиск точки перелома опытом.</li><li>Пройти тренажёр самому. Норматив — 14–18 минут. Отдельно проверить, что тест 7 действительно ловит обратный порядок, а тест 2 не проходит при трёх колонках в базе.</li><li>Проверить доступ к ИИ-сервису. При недоступности — сохранить два ответа заранее, один обязательно с <code>max-width</code>.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L06_presentation.html</code> — слайды 1–16.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 53.</li><li>Браузер с тем же файлом, <strong>окно не развёрнуто</strong>: сужать мышью на минутах 19 и 60.</li><li>DevTools с включённой подсветкой сетки — на минуте 10.</li><li>Терминал с запущенным локальным сервером — с минуты 66.</li><li>Тренажёр <code>L06_trainer_grid.html</code> — открыть на минуте 72.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. Телефоны не открывают страницу: не видят машину педагога в сети.</strong><br>Действие педагога: не тратить на диагностику больше трёх минут. Переходить к запасному варианту — проверка по очереди на одном телефоне, подключённом к проектору, по три человека. Каждый должен увидеть <strong>свою</strong> страницу на настоящем устройстве хотя бы раз: это цель этапа, а не способ.</p>
+<p><strong>2. Медиазапросы написаны, но раскладка не переключается.</strong><br>Действие педагога: два вопроса подряд. «В каком порядке они у тебя написаны?» и «где они стоят — до базовых правил или после?» Обе причины покрываются этими вопросами. Не смотреть в код самому: ученик должен научиться проверять это сам, потому что ошибка не даёт никаких сообщений.</p>
+<p><strong>3. Ученик переписывает на Grid всё подряд, включая шапку.</strong><br>Действие педагога: вернуть к вопросу выбора инструмента. «Сколько осей тебе тут важно?» В шапке одна линия — значит, Flexbox, и вчерашний код трогать не надо. Заодно снимается тревога «я вчера всё сделал не так».</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Найди свою точку перелома опытом.</strong> Медленно сужай окно и найди ширину, на которой твоя вёрстка становится плохой: текст в карточке начинает переноситься уродливо, кнопки съезжают. Запиши это число и сравни с тем, что стоит у тебя в медиазапросе. Если отличается сильно — поправь медиазапрос под реальность.</li><li><strong>Разбери адаптивность чужого сайта.</strong> Открой любой сайт с телефона и с компьютера. Запиши три отличия в раскладке: что переставили, что спрятали, что изменили в размере. Затем открой тот же сайт на компьютере, сузь окно и посмотри, на какой ширине происходит переключение.</li><li><strong>Пройди чек-лист на телефоне ещё раз</strong>, дома, на своём интернете. Записанное на занятии проверь: исправилось ли. Если что-то не успел исправить — запиши, что именно, чтобы доделать на занятии 7.</li></ol>
+<p>Первый пункт важнее остальных: он отучает от привычки ставить круглые числа, не глядя на собственную вёрстку.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «HTML/CSS: адаптивная вёрстка (Mobile First), использование Grid и Flexbox».</p>
+<p>Сегодня это требование закрыто полностью: Grid разобран, Mobile First заложен, Flexbox был вчера. Дальше остаётся применять.</p>
+<p>Практически: строка <code>repeat(auto-fit, minmax(220px, 1fr))</code> переносится в итоговый Dashboard как есть — ею будет выложена сетка карточек в любой из шести тем. Раскладка <code>grid-template-areas</code> с боковой панелью пригодится в P05 «Классный штаб» и P06 «Банк добрых дел», где блоков много и они по-разному ведут себя на разных экранах.</p>
+<p>И главное — привычка: <strong>начинать CSS проекта с базовых правил для узкого экрана.</strong> На занятии 20, когда будешь разворачивать каркас Dashboard, порядок написания правил уже должен быть автоматическим.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Адаптивность и качество UI/UX» (5 баллов)</strong> — прямо и полностью. Плюс <strong>«Соответствие ТЗ» (10 баллов)</strong>: Mobile First, Grid и Flexbox названы в требованиях поимённо.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L06_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L06_trainer_grid.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

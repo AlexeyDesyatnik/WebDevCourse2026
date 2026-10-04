@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 7. Анимации и UI-кит</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 7</strong>
+      <span>Анимации и UI-кит</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Сегодня заканчиваем вёрстку. Со следующего занятия начинается JavaScript» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 3 · ЗАНЯТИЕ 7</p>
+        <h1>Анимации и UI-кит</h1>
+        <p class="lead">Занятие 7 из 24. Последнее занятие модуля вёрстки: сегодня лендинг буфета становится законченным.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L06/L06_presentation.html">►► Занятие 6</a>
+          <a class="tm-btn tm-btn--primary" href="L07_trainer_uikit.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L08/L08_presentation.html">►► Занятие 8</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Обе просьбы про одно: интерфейс должен сообщать о себе. Это работа, а не украшательство» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Чтобы было понятно, что кнопка — это кнопка»</h2>
+        <p>Марина Петровна: «Хочется, чтобы хиты было видно сразу. И чтобы было понятно, что кнопка — это кнопка, на неё можно нажать»</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Откройте свои страницы и сравните. У кого совпало — поднимите руку» -->
+        <p class="tm-eyebrow">►► КРЮЧОК</p>
+        <h2>Три кнопки на вашей странице выглядят по-разному</h2>
+        <p>Скругления разные, отступы разные, цвета близкие, но не совпадают. Никто этого не хотел — просто писали в разное время</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Правка в одном месте на весь проект. И все кнопки одинаковые сами собой» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Компонент: базовый класс плюс модификатор</h2>
+        <ul class="tm-list">
+          <li><code>.btn</code> — форма, размер, шрифт, поведение</li>
+          <li><code>.btn--primary</code>, <code>.btn--ghost</code> — <strong>только цвет</strong></li>
+          <li>Два класса через пробел в разметке</li>
+          <li>Имя по роли, не по цвету</li>
+        </ul>
+        <pre class="tm-code">&lt;button class="btn btn--primary"&gt;
+<span class="hl">.btn { padding: 12px 24px; }</span>
+.btn--primary { background: var(--pie-accent); }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Сдвиг на один пиксель при нажатии. Копейка, а ощущение — как будто кнопка правда нажалась» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Три состояния кнопки</h2>
+        <ul class="tm-list">
+          <li><code>:hover</code> — курсор наведён. На телефоне не срабатывает</li>
+          <li><code>:focus-visible</code> — фокус с клавиатуры. <strong>Обязателен всегда</strong></li>
+          <li><code>:active</code> — момент нажатия</li>
+        </ul>
+        <pre class="tm-code">.btn:hover { background: var(--pie-accent-dark); }
+<span class="hl">.btn:focus-visible { outline: 3px solid var(--pie-accent-dark); }</span>
+.btn:active { transform: translateY(1px); }</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза, затем переход к демонстрации шагов 7–9) -->
+        <h2>Сейчас я сделаю страницу непригодной <span class="hl">одной строкой</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Правило курса: убрать подсветку фокуса без замены — блокирующий дефект при приёмке» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>outline: none</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Стандартная обводка кажется некрасивой, и её убирают. Результат: человек, который ходит по странице клавишей Tab, <strong>перестаёт видеть, где находится</strong></p>
+          <pre class="tm-code">.btn:focus { outline: none; }</pre>
+        </div>
+        <p>Не нравится — <strong>замени</strong>, а не убирай</p>
+        <pre class="tm-code">.btn:focus-visible {
+  outline: 3px solid var(--pie-accent-dark);
+  outline-offset: 3px;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Дверь без доводчика хлопает. С доводчиком закрывается сама. Функция та же» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>transition</code>: плавность вместо рывка</h2>
+        <ul class="tm-list">
+          <li>Пишется в <strong>базовом</strong> правиле, не в <code>:hover</code></li>
+          <li>120–250 мс. Стандарт для ховера — 160</li>
+          <li>Анимируется не всё: <code>display</code> нельзя, <code>opacity</code> и <code>transform</code> можно</li>
+        </ul>
+        <pre class="tm-code">.btn {
+<span class="hl">  transition: background 160ms ease;</span>
+}
+.btn:hover { background: var(--pie-accent-dark); }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Подсказка: дело не в значении, а в месте» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Наведение плавное, увод — рывком. Где ошибка?</h2>
+        <p>Обсуждаем вслух. Ответ не показываем</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Одна анимация плюс разные задержки — и карточки всплывают по очереди» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>@keyframes</code>: анимация по кадрам</h2>
+        <ul class="tm-list">
+          <li>Что в начале, что в конце — промежуточное рисует браузер</li>
+          <li><code>both</code> — сохраняй значения до старта и после финиша</li>
+          <li><code>animation-delay</code> разной величины даёт «лесенку»</li>
+        </ul>
+        <pre class="tm-code">@keyframes fade-up {
+<span class="hl">  from { opacity: 0; transform: translateY(12px); }</span>
+  to   { opacity: 1; transform: translateY(0); }
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Анимация — сигнал. Когда сигналят все, сигнал перестаёт работать» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Когда движется всё</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Пять анимаций, четыре бесконечные. Читать тяжело, на школьной машине подтормаживает. И ни одна ничего не сообщает</p>
+          <p><strong>Норма: две-три на страницу. Бесконечная — только индикатор ожидания</strong></p>
+          <pre class="tm-code">.btn  { animation: shake 500ms infinite; }
+.pill { animation: pulse 700ms infinite; }
+.top  { animation: rainbow 4s infinite; }</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Единственное место в проекте, где !important оправдан. Он должен перебить всё» -->
+        <p class="tm-eyebrow">►► ЗАЧЕМ</p>
+        <h2>Есть люди, которым движение неприятно</h2>
+        <ul class="tm-list">
+          <li>От раздражения до тошноты и головокружения</li>
+          <li>В системе есть настройка «уменьшить движение»</li>
+          <li>Из CSS она видна как медиазапрос</li>
+          <li>Шесть строк в конец файла — и интерфейс подходит всем</li>
+        </ul>
+        <pre class="tm-code">@media (prefers-reduced-motion: reduce) {
+<span class="hl">  * { animation-duration: .01ms !important; }</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «В DevTools есть эмуляция нарушений цветовосприятия. Включите и посмотрите на свою страницу» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Цвет не может быть единственным сигналом</h2>
+        <ul class="tm-list">
+          <li>Хит только зелёной рамкой — человек, не различающий цвета, увидит две одинаковые карточки</li>
+          <li>Нужно дублирование: слово, значок, форма</li>
+          <li>Пилюля со словом «Хит недели» — от 13–14 пикселей</li>
+        </ul>
+        <pre class="tm-code">&lt;span class="pill"&gt;Хит недели&lt;/span&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «SVG — это текст. Его открывают и читают. viewBox есть? Цвет через currentColor? Мусор убран?» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>SVG от ИИ, вставленный не глядя</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Размер 512 без <code>viewBox</code> — иконка займёт полэкрана. Жёсткий цвет — не переключится с темой. <code>&lt;title&gt;</code> прочитает программа чтения</p>
+          <pre class="tm-code">&lt;svg width="512" height="512" id="Layer_1"&gt;
+  &lt;title&gt;close-icon-final-v2&lt;/title&gt;
+  &lt;path fill="#000000" d="M6 6l12 12M18 6L6 18"&gt;&lt;/path&gt;
+&lt;/svg&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверка кнопки — пять секунд: навёл мышь, нажал Tab, нажал и подержал» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Собираешь <code>ui-kit.html</code>: кнопка, карточка, пилюля, иконка</li>
+          <li>Применяешь кит в <code>index.html</code></li>
+          <li>Ровно две анимации плюс <code>prefers-reduced-motion</code></li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> три состояния кнопки работают, <code>outline: none</code> без замены нет, <code>transition</code> в базовом правиле, хит отличается не только цветом</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L06/L06_presentation.html">►► Занятие 6</a>
+          <a class="tm-btn tm-btn--primary" href="L07_trainer_uikit.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L08/L08_presentation.html">►► Занятие 8</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольная проверка: попросите сделать кнопку красивой, не упоминая доступность. Ставлю на то, что предложат outline: none» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: три SVG-иконки в едином стиле</h2>
+        <pre class="tm-code">Ты рисуешь SVG-иконки для учебного веб-проекта.
+Контекст: страница школьного буфета «Северный пирог». Только HTML и CSS, без библиотек и без внешних файлов — иконка вставляется прямо в разметку. Цвета берутся из CSS-переменных страницы.
+Задача: нарисуй три иконки в едином стиле — пирог, часы, галочка. Стиль контурный, толщина линии одинаковая.
+Ограничения: обязательно `viewBox="0 0 24 24"`; без атрибутов `width` и `height` в разметке; `fill="none"` и `stroke="currentColor"`; `stroke-width="2"`; не больше трёх элементов `path` или `circle` на иконку; никаких `&lt;style&gt;`, `&lt;title&gt;`, `id`, `xmlns:xlink` и атрибутов графических редакторов; никаких градиентов и фильтров.
+Формат ответа: три блока кода, перед каждым — название иконки одной строкой. Ниже — таблица: иконка, где применяется, нужен ли ей `aria-hidden`.
+Критерии проверки: каждая иконка масштабируется от 16 до 64 пикселей без искажений; цвет управляется свойством `color` родителя; в коде нет ничего, кроме `svg`, `path` и `circle`.</pre>
+        <p><strong>Проверить руками:</strong> есть <code>viewBox</code> · нет <code>width</code>/<code>height</code> в разметке · цвет через <code>currentColor</code> · нет мусорных атрибутов и <code>&lt;title&gt;</code> · проверено на трёх размерах · похоже на заявленное</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 7</h3>
+      <dl>
+        <dt>Компонент</dt>
+        <dd>Самостоятельный кусочек интерфейса с именем, который переиспользуется: кнопка, карточка, поле, метка.</dd>
+        <dt>UI-кит</dt>
+        <dd>Набор компонентов проекта, описанный один раз и применяемый везде.</dd>
+        <dt>Базовый класс</dt>
+        <dd>Правило компонента с тем, что общее для всех его экземпляров: <code>.btn</code>.</dd>
+        <dt>Модификатор</dt>
+        <dd>Дополнительный класс, меняющий одну характеристику базового: <code>.btn--primary</code>.</dd>
+        <dt>Состояние</dt>
+        <dd>Вид элемента в зависимости от того, что с ним происходит. Задаётся псевдоклассом.</dd>
+        <dt>:hover</dt>
+        <dd>Состояние «курсор наведён». На телефоне не срабатывает.</dd>
+        <dt>:focus-visible</dt>
+        <dd>Состояние «элемент получил фокус с клавиатуры». Подсветку убирать нельзя.</dd>
+        <dt>:active</dt>
+        <dd>Состояние «элемент нажат и удерживается».</dd>
+        <dt>outline</dt>
+        <dd>Обводка, рисуемая поверх элемента. Не занимает места и не сдвигает соседей, в отличие от <code>border</code>.</dd>
+        <dt>outline-offset</dt>
+        <dd>Отступ обводки от края элемента.</dd>
+        <dt>transition</dt>
+        <dd>Плавный переход свойства из одного значения в другое. Пишется в базовом правиле, а не в состоянии.</dd>
+        <dt>transform</dt>
+        <dd>Сдвиг, поворот, масштаб элемента. Не пересчитывает раскладку и не двигает соседей.</dd>
+        <dt>@keyframes</dt>
+        <dd>Описание анимации по кадрам: что в начале, что в конце.</dd>
+        <dt>animation</dt>
+        <dd>Назначение анимации элементу: имя, длительность, характер, режим заполнения.</dd>
+        <dt>animation-delay</dt>
+        <dd>Задержка перед стартом. Разные задержки у соседей дают эффект «лесенки».</dd>
+        <dt>infinite</dt>
+        <dd>Бесконечное повторение анимации. Оправдано только для индикатора ожидания.</dd>
+        <dt>prefers-reduced-motion</dt>
+        <dd>Медиазапрос, читающий системную настройку «уменьшить движение». Обязателен в любом проекте с анимациями.</dd>
+        <dt>Пилюля (тег, бейдж)</dt>
+        <dd>Маленькая метка со скруглением, обозначающая свойство: «хит», «новинка». Всегда содержит текст, а не только цвет.</dd>
+        <dt>currentColor</dt>
+        <dd>Значение «цвет текста родителя». В SVG позволяет иконке менять цвет вместе с темой.</dd>
+        <dt>viewBox</dt>
+        <dd>Система координат SVG. Без него картинка не масштабируется.</dd>
+        <dt>aria-hidden="true"</dt>
+        <dd>Атрибут «скрыть от программы чтения». Ставится декоративным иконкам рядом с текстом.</dd>
+        <dt>aria-label</dt>
+        <dd>Текстовая подпись элемента для программы чтения. Обязательна кнопке, у которой только иконка.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

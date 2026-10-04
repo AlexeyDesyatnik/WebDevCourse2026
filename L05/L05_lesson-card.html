@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 5. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L05_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L05_trainer_flex.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 05 · техкарта</p>
+    <h1>Занятие 5. Построение раскладок</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L05</td></tr><tr><td>Тема</td><td>Построение раскладок</td></tr><tr><td>Модуль</td><td>Модуль 3. CSS3: Адаптивный дизайн и UI (8 ч)</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Шапка Dashboard с названием слева и переключателем темы справа, ряд карточек-показателей, прижатый вниз подвал — всё это Flexbox. На занятии 20 ты соберёшь каркас проекта теми же приёмами</td></tr><tr><td>Артефакт на выходе</td><td>Страница буфета с рабочей раскладкой: карточки пирогов в ряд с переносом, шапка с разнесёнными краями, подвал прижат к низу экрана</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима)</td></tr><tr><td>Файл тренажёра</td><td><code>L05_trainer_flex.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l05-flex-v1</code>, <code>wdc-l05-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td>Нет</td></tr><tr><td>Опора</td><td>L04: селекторы, классы, каскад, переменные, DevTools → панель Styles. L02: семантические теги</td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на «чтобы пироги были рядом, а не столбиком». <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+<blockquote><p><strong>Правило курса, которое вводится сегодня и действует до защиты.</strong> Основной инструмент раскладки на этом курсе — <strong>Flexbox</strong>. Он объявляется явно и используется по умолчанию. На занятии 6 добавится CSS Grid — только для двумерных сеток, где Flexbox неудобен. Третьего инструмента не будет: смешение подходов — источник устойчивой путаницы, и методические рекомендации к программе требуют этого ограничения прямо.</p></blockquote>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход и разбор прошлого</td><td>Слайды 1–2. Открывает две вчерашние работы: одну с честными токенами, одну, где в тёмной теме потеряна переменная. Без фамилий</td><td>Смотрят, находят ошибку</td><td>Группа называет причину нечитаемого текста</td></tr><tr><td>4–9</td><td>Теория 5.1</td><td>Слайд 3. Блочные и строчные, нормальный поток. Показывает пример с <code>div</code> и <code>span</code></td><td>Слушают</td><td>Двое объясняют, почему цена в <code>div</code> уехала на новую строку</td></tr><tr><td>9–16</td><td>Теория 5.2</td><td>Слайды 4–5. Блочная модель. <strong>Разбор схемы в DevTools на числах</strong></td><td>Смотрят, повторяют у себя</td><td><strong>Точка контроля:</strong> каждый нашёл схему блочной модели в панели и назвал реальную ширину своей карточки</td></tr><tr><td>16–18</td><td>Пауза в теории</td><td>Слайд 6, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>18–24</td><td>Теория 5.3</td><td>Слайды 7–8. Flexbox, контейнер и дети, ошибка «не тому элементу»</td><td>Слушают</td><td>Группа формулирует правило: свойство пишется родителю</td></tr><tr><td>24–30</td><td>Теория 5.4</td><td>Слайд 9. Две оси, <code>justify-content</code>, <code>align-items</code></td><td>Слушают</td><td>Двое называют, какое свойство какой осью управляет</td></tr><tr><td>30–32</td><td><strong>Вопрос классу</strong></td><td>Слайд 10. Три элемента в шапке, две группы. Пауза 10 секунд</td><td>Думают, отвечают</td><td>Прозвучало «обернуть два элемента в <code>div</code>»</td></tr><tr><td>32–35</td><td>Теория 5.5</td><td>Слайд 11. <code>gap</code> вместо <code>margin</code></td><td>Слушают</td><td>—</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–52</td><td>Теория 5.6–5.7</td><td>Слайды 12–14. Перенос, гибкость, каркас страницы. <strong>Сужает окно на проекторе</strong></td><td>Смотрят</td><td>Группа увидела перестроение шесть → три → две → одна</td></tr><tr><td>52–67</td><td><strong>Демонстрация</strong></td><td>Десять шагов раздела 6, включая ошибку на шаге 4 и сужение окна на шаге 7</td><td>Смотрят, повторяют у себя с шага 2</td><td><strong>Точка контроля:</strong> к 62-й минуте у всех карточки стоят в ряд</td></tr><tr><td>67–80</td><td>Практика: тренажёр</td><td>Открывает <code>L05_trainer_flex.html</code>. Помогает точечно</td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 75-й минуте у большинства 8/11 и выше. Кто застрял на тесте 2 — разобрать на весь класс</td></tr><tr><td>80–90</td><td>Практика: свой файл</td><td>Обходит ряды <strong>с одной проверкой: сужает окно на чужой машине</strong></td><td>Собирают раскладку в <code>index.html</code></td><td><strong>Точка контроля:</strong> у каждого при ширине 375 нет горизонтальной прокрутки</td></tr><tr><td>90–95</td><td>Работа с ИИ</td><td>Слайд 16. Разбирает один ответ модели, обязательно — контрольный вопрос про <code>float</code></td><td>Запускают промпт, проверяют по шести пунктам</td><td>Хотя бы двое поймали совет про <code>float</code> и записали в комментарий</td></tr><tr><td>95–100</td><td><strong>Мини-демо и фиксация</strong></td><td>Спрашивает троих: сузь окно и объясни, что происходит с карточками и почему. Сохранение файла</td><td>Показывают, объясняют, сохраняют</td><td>Файл сохранён. Правило «основная раскладка — Flexbox» произнесено вслух</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li>Проверить, что у всех сохранился <code>index.html</code> с занятия 4 с работающими токенами. Кому не хватает — выдать готовый.</li><li><strong>Заранее решить и объявить</strong>, что основной инструмент раскладки на курсе — Flexbox, и придерживаться этого до конца. Методические рекомендации требуют этого прямо: смешение подходов даёт устойчивую путаницу.</li><li>Подготовить пример «блочные против строчных» из подтемы 5.1 отдельным файлом: он нужен на минуте 4 и не должен собираться при всех.</li><li>Потренироваться сужать окно браузера мышью на проекторе так, чтобы это было видно с задних парт. Приём используется трижды за занятие и должен работать гладко.</li><li>Подготовить файл поддержки: <code>box-sizing</code> и каркас <code>body</code> + <code>main</code> написаны, <code>.top</code> и <code>.menu</code> пустые с комментариями-подсказками. Плюс раздаточная карточка на парту со значениями свойств.</li><li>Подготовить задание «плюс» заранее: три элемента в шапке двумя группами, форма в два столбца, разбор чужого сайта в DevTools.</li><li>Пройти тренажёр самому. Норматив — 12–16 минут. Отдельно убедиться, что тест 9 сравнивает <code>min-height</code> с высотой окна iframe, а не с константой, — иначе эталон не пройдёт собственные тесты.</li><li>Проверить доступ к ИИ-сервису. При недоступности — сохранить два ответа заранее, один обязательно с советом использовать <code>float</code>.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L05_presentation.html</code> — слайды 1–16.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 52.</li><li>Браузер с тем же файлом рядом, <strong>окно не развёрнуто на весь экран</strong>: его надо будет сужать мышью на минутах 45 и 62.</li><li>DevTools с открытой схемой блочной модели — на минуте 9.</li><li>Тренажёр <code>L05_trainer_flex.html</code> — открыть на минуте 67.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. <code>display: flex</code> написан карточке, и ученик не понимает, почему «почти работает».</strong><br>Действие педагога: не исправлять. Спросить: «что именно у тебя встало в ряд?» Ученик посмотрит внимательнее и увидит, что перестроилось содержимое карточки, а не карточки. Дальше вопрос: «а кто родитель карточек?» Этого хватает.</p>
+<p><strong>2. Карточки не переносятся, а сжимаются в полоски, и ученик считает, что так и должно быть.</strong><br>Действие педагога: сузить окно на его машине и спросить: «ты бы такой страницей пользовался с телефона?» Затем одно слово — <code>flex-wrap</code>.</p>
+<p><strong>3. Сильные заканчивают раскладку за пятнадцать минут.</strong><br>Действие педагога: задание «плюс» выдавать молча и сразу, без объявления на весь класс. Самое ценное в нём — третий пункт: разобрать чужой сайт в DevTools и назвать, каким контейнером выложен ряд карточек. Это готовит к занятию 6.</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Проверь свою страницу на трёх ширинах:</strong> разверни окно на весь экран, сузь до половины, сузь до ширины телефона. Запиши, сколько карточек в ряду в каждом случае. Если где-то появилась горизонтальная прокрутка — найди фиксированные пиксели и убери.</li><li><strong>Разбери чужую раскладку.</strong> Открой любой сайт с рядом карточек, найди в DevTools контейнер с <code>display: flex</code> и запиши три строки: какой это элемент, какие у него флекс-свойства, чем заданы промежутки — <code>gap</code> или отступами у детей.</li><li><strong>Собери «шапку с тремя элементами»</strong> из задания «плюс», если не успел: название слева, ссылка и кнопка вместе справа. Подсказка — в вопросе классу со слайда 10.</li></ol>
+<p>Первый пункт — не формальность. Проверка на трёх ширинах должна стать привычкой к занятию 6, где начнётся Mobile First.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «HTML/CSS: адаптивная вёрстка (Mobile First), использование Grid и Flexbox».</p>
+<p>Сегодня закрыта половина этого требования — Flexbox. Вторая половина, Grid, будет на занятии 6, там же Mobile First.</p>
+<p>Практически: каркас страницы из подтемы 5.7 (<code>body</code> вертикальным флексом, <code>main { flex: 1 }</code>) переносится в итоговый Dashboard <strong>без единого изменения</strong>. Шапка со <code>space-between</code> — тоже: в проекте там будут название панели и переключатель темы. Ряд карточек с <code>flex-wrap</code> и <code>flex: 1 1 220px</code> станет рядом показателей в P01, P02, P04, P05 и P06.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Адаптивность и качество UI/UX» (5 баллов)</strong> — часть про то, что интерфейс не разъезжается. Плюс <strong>«Соответствие ТЗ» (10 баллов)</strong>: Flexbox назван в требованиях прямо.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L05_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L05_trainer_flex.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

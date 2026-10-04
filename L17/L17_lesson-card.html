@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 17. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L17_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L17_trainer_audit.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 17 · техкарта</p>
+    <h1>Занятие 17. Прототип с ИИ и аудит кода</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L17</td></tr><tr><td>Тема</td><td>Прототип с ИИ и аудит кода</td></tr><tr><td>Модуль</td><td>Модуль 7. Vibe Coding: продвинутая разработка с ИИ</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Всё, что придёт от модели в итоговый Dashboard — иконки, README, отрефакторенные функции, — проходит через сегодняшний протокол. Это то, чем закрывается критерий «Осознанное применение ИИ» (5 баллов из 30): не факт использования, а понимание результата</td></tr><tr><td>Артефакт на выходе</td><td>Протокол аудита кода «от ИИ»: найдены и подписаны три галлюцинации, код починен и работает, каждая функция пересказана своими словами. Плюс одна функция сайта буфета, отрефакторенная с моделью и проверенная на граничных случаях</td></tr><tr><td>Тип практики</td><td>Код + блоки (аудит)</td></tr><tr><td>Файл тренажёра</td><td><code>L17_trainer_audit.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l17-audit-v1</code> (черновик кода, отмеченные подозрительные строки), <code>wdc-l17-mode-v1</code> (режим: редактор или блоки)</td></tr><tr><td>Контрольная точка</td><td>Нет. Занятие закрывает модуль 7 и готовит работу с ИИ в модуле 9</td></tr><tr><td>Опора</td><td>L08–L12: массивы, <code>filter</code>, <code>map</code>, <code>join</code>, DOM, обработка сбоя. L16: пять блоков промпта, правило трёх попыток. Без занятия 16 аудит не работает: нечего аудировать, если промпт был из трёх слов</td></tr><tr><td>Последнее занятие сюжета</td><td>С занятия 18 сюжет буфета «Северный пирог» заканчивается, дальше — своя тема Dashboard P01–P06</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–2</td><td>Вход</td><td>Слайд 1. Предупреждает: последнее занятие с буфетом</td><td>Слушают</td><td>Группа знает, что со следующего занятия — свой проект</td></tr><tr><td>2–6</td><td>Крючок</td><td>Слайд 2 + демонстрация шаги 1–2. <strong>Даёт минуту искать ошибку глазами</strong></td><td>Ищут, почти никто не находит</td><td>Ученики сами сказали, что код «выглядит нормально»</td></tr><tr><td>6–12</td><td>Подтема 5.1 Галлюцинация</td><td>Слайды 3–4 + демонстрация шаг 3. Читает сообщение консоли по частям</td><td>Записывают, что такое галлюцинация и почему консоль показывает одну ошибку</td><td>Кто-то объяснил своими словами, почему <code>mapTo</code> не попал в сообщение</td></tr><tr><td>12–18</td><td>Подтемы 5.2, 5.4 Признаки и проверка</td><td>Слайды 5–7 + демонстрация шаги 4–6</td><td>Повторяют проверку <code>[].filterBy</code> у себя в консоли</td><td><strong>Обход:</strong> каждый получил <code>undefined</code> и понимает, что это значит</td></tr><tr><td>18–24</td><td>Подтема 5.3 Протокол</td><td>Слайд 8. Разбирает пять шагов, раздаёт бланк</td><td>Записывают протокол, задают вопросы по шагам</td><td>Каждый может назвать, зачем шаг 3 стоит до запуска</td></tr><tr><td>24–32</td><td>Подтема 5.5 Границы</td><td>Слайды 9–11 + демонстрация шаги 7–11. <strong>Ломает код дважды на проекторе</strong></td><td>Смотрят на пустой блок и на <code>Cannot set properties of null</code></td><td>Группа сама предложила показывать текст вместо пустоты</td></tr><tr><td>32–37</td><td>Подтема 5.6 Пересказ</td><td>Слайды 12–13 + демонстрация шаг 12. Просит пересказать двух учеников</td><td>Пересказывают функцию без имён методов</td><td>Хотя бы один пересказ прозвучал без слова «filter»</td></tr><tr><td>37–42</td><td>Пауза</td><td>Раздаёт карточки: бланк аудита, протокол сравнения, массив <code>PIES</code></td><td>Отдыхают</td><td>Бланк у каждого на столе</td></tr><tr><td>42–56</td><td>Практика, часть 1: аудит</td><td>Слайд 16. <strong>Следит, чтобы бланк заполнялся до правок кода</strong></td><td>Заполняют шаги 1–3, проверяют имена в консоли</td><td><strong>Контроль 1 (56-я минута):</strong> у каждого в бланке три вердикта «НЕ СУЩЕСТВУЕТ» с заменами</td></tr><tr><td>56–66</td><td>Практика, часть 2: починка и границы</td><td>Ходит по группе. Ловит тех, кто убрал <code>By</code>, но оставил аргументы</td><td>Чинят вызовы целиком, добавляют две проверки</td><td><strong>Контроль 2:</strong> страница работает, при <code>showSweet([])</code> виден текст, консоль чистая</td></tr><tr><td>66–76</td><td>Практика, часть 3: рефакторинг</td><td>Слайды 14–15. Показывает промпт с двумя обязательными ограничениями</td><td>Рефакторят свою функцию, заполняют протокол сравнения на трёх наборах</td><td><strong>Контроль 3:</strong> во всех трёх строках протокола «совпало»</td></tr><tr><td>76–86</td><td>Тренажёр</td><td>Открывает <code>L17_trainer_audit.html</code>, разбирает панель аудита вместе</td><td>Отмечают подозрительные строки, чинят код</td><td>Порог: все 12 тестов зелёные</td></tr><tr><td>86–93</td><td>Коммит и push</td><td>Напоминает про ветку и осмысленное сообщение коммита</td><td>Коммитят, отправляют, проверяют публичную ссылку</td><td><strong>Контроль 4:</strong> у каждого ссылка открывается и страница не сломана</td></tr><tr><td>93–100</td><td>Итог</td><td>Слайд 17. Домашнее задание. Анонс занятия 18: выбор темы проекта</td><td>Записывают домашку, смотрят витрину шести тем</td><td>Каждый назвал одну тему, которая ему интересна</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Заранее сохранить пример с галлюцинацией</strong> — он дан целиком в <code>00_STORY_BANK.md</code>, п. 1.5, и в стартовой заготовке раздела 9. Не генерировать при группе: модель может выдать корректный код, и занятие останется без крючка. Это прямое указание методических рекомендаций.</li><li><strong>Проверить консоль на школьных машинах:</strong> DevTools открываются, ввод в Console не заблокирован политикой. Без консоли способ проверки <code>[].имя</code> не работает, и придётся опираться на справочник.</li><li><strong>Проверить доступ к MDN</strong> из сети организации. Если доступа нет — подготовить распечатку страниц по <code>filter</code>, <code>map</code>, <code>join</code> и заранее сказать группе, что справочник бумажный.</li><li><strong>Раздаточные материалы:</strong> бланк аудита (по одному на ученика), протокол сравнения при рефакторинге, карточка с массивом <code>PIES</code>, карточка «четыре признака подозрительной строки».</li><li><strong>Подготовить свою функцию для рефакторинга</strong> — на случай, если у ученика нет собственной подходящей. Годится <code>calc</code> из подтемы 5.7.</li><li><strong>Подготовить витрину шести тем P01–P06</strong> для анонса в конце занятия: ученикам полезно унести вопрос «что я буду делать» домой, а не получить его внезапно на занятии 18.</li><li>Проверить, что <code>main</code> у каждого не сломана после занятий 15–16: сегодня в неё пойдёт коммит.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Редактор с <code>script.js</code> и вставленным кодом «от ИИ» — крупно.</li><li>Браузер со страницей буфета.</li><li>DevTools, вкладка Console — открыта всё занятие, это главный инструмент дня.</li><li>Слайд с пятью шагами протокола — держать фоном всю практику.</li><li>Чат ИИ-сервиса — для блока рефакторинга (66–76 минут).</li><li>Тренажёр <code>L17_trainer_audit.html</code> — открыть к 76-й минуте.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<ol><li><strong>Убрали <code>By</code>, оставили аргументы.</strong> Признак: <code>pies.filter("kind", "сладкое")</code>, в блоке пусто, в консоли странное сообщение про строку. Готовое действие: не называть правильный вызов, а отправить в справочник с одним вопросом — «что принимает <code>filter</code>, сколько аргументов и какого типа?». Ответ ученик приносит сам, и тогда исправление запоминается. Разобрать вслух один раз на всю группу, как только встретится у первого.</li><li><strong>Аудит заканчивается на «заработало».</strong> Признак: страница работает, бланк заполнен на два шага из пяти, ученик тянется коммитить. Готовое действие: попросить пересказать функцию <strong>не глядя в код</strong>. На третьей фразе становится ясно, нужны ли шаги 4 и 5. Правило объявить заранее: сдаётся бланк, а не страница.</li><li><strong>Рефакторинг сломал поведение, и никто не заметил.</strong> Признак: новая функция короче, протокол сравнения пуст или заполнен «по памяти». Готовое действие: заставить прогнать обе версии <strong>в консоли</strong>, на глазах, на трёх наборах, и сравнить числа. Отдельно проверить границу — ровно порог скидки: расхождение чаще всего именно там.</li></ol>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Попроси у модели новую функцию для сайта буфета.</strong> Любую на выбор: подсчёт остатков по всем позициям, поиск самого дешёвого пирога, группировка меню по виду. Промпт собери по пяти блокам занятия 16.</li><li><strong>Прогони ответ через полный протокол аудита</strong> и заполни бланк. Запиши в тетради три числа:</li></ol>
+<ul><li>сколько имён показались подозрительными;</li><li>сколько из них оказались настоящими;</li><li>сколько граничных случаев не было обработано.</li></ul>
+<ol><li><strong>Почини и допиши</strong> — так, чтобы код работал и не падал ни на одном граничном случае из бланка.</li><li>Одной строкой: <strong>что модель сделала за тебя, а что осталось твоей работой.</strong></li><li><strong>Посмотри витрину шести тем P01–P06</strong> и выбери две, которые интересны. На занятии 18 будешь выбирать окончательно; прийти с двумя кандидатами лучше, чем выбирать с нуля за пять минут.</li></ol>
+<p>Сдаётся: заполненный бланк и три числа. Педагог смотрит на бланк, а не на код.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ итогового проекта (Приложение 1 к программе):</strong></p>
+<blockquote><p>«применение ИИ для рефакторинга минимум двух сложных функций JavaScript»</p></blockquote>
+<p>и общий принцип, вынесенный в отдельную строку программы:</p>
+<blockquote><p>«на защите обучающийся обязан объяснить любой фрагмент кода проекта, включая сгенерированный ИИ. Не понимаемый код в зачёт не идёт»</p></blockquote>
+<p>Сегодня даны обе процедуры: аудит для входящего кода и рефакторинг с проверкой совпадения поведения. С этого дня и до защиты действует порядок: <strong>ничто не попадает в коммит итогового проекта, не пройдя пять шагов протокола.</strong></p>
+<p><strong>Критерий из 30 баллов (Приложение 2):</strong></p>
+<blockquote><p>«Осознанное применение ИИ — 5 баллов: иконки/логотип, README, рефакторинг + понимание сгенерированного кода»</p></blockquote>
+<p>Занятие 16 дало первую половину критерия (как просить), занятие 17 — вторую (как проверять). Баллы здесь начисляются не за факт использования модели, а за то, что ты можешь объяснить результат.</p>
+<p><strong>Что переносится дальше:</strong></p>
+<ul><li><strong>Занятие 18</strong> — сюжет буфета закончился, начинается своя тема. Протокол переезжает в неё без изменений.</li><li><strong>Занятие 21</strong> — при подключении API формат ответа проверяется <strong>глазами по настоящему ответу</strong>, а не по тому, что предположила модель. Это прямое продолжение шага 3.</li><li><strong>Занятие 22</strong> — рефакторинг двух функций закрывается здесь, к контрольной точке MVP.</li><li><strong>Занятие 23</strong> — граничные случаи из шага 4 становятся основой чек-листа взаимного тестирования.</li><li><strong>Занятие 24</strong> — на защите звучит блок «роль ИИ и что сделано самостоятельно». Бланки аудита, накопленные с сегодняшнего дня, — готовый материал для этого блока.</li></ul>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L17_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L17_trainer_audit.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

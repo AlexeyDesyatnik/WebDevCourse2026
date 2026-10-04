@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 2. HTML5: структура и семантика</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 2</strong>
+      <span>HTML5: структура и семантика</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 15</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Сегодня вы напишете свой первый файл и откроете его в браузере. С этого момента у нас есть заказчик» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 2 · ЗАНЯТИЕ 2</p>
+        <h1>HTML5: структура и семантика</h1>
+        <p class="lead">Занятие 2 из 24. Сегодня появляется заказчик и начинается сквозной проект.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L02_trainer_semantic.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L01/L01_presentation.html">►► Занятие 1</a>
+          <a class="tm-btn tm-btn--ghost" href="../L03/L03_presentation.html">►► Занятие 3</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Это не выдуманное упражнение. Это заказ, который мы будем выполнять шестнадцать занятий подряд» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>Марина Петровна и очередь на двадцать человек</h2>
+        <p>Школьный буфет «Северный пирог». На большой перемене очередь, и половина стоит просто посмотреть, что сегодня есть. Заказ: страница, где меню видно заранее</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Почему браузер не догадался, что первая строка — заголовок? Потому что мы ему не сказали» -->
+        <p class="tm-eyebrow">►► КРЮЧОК</p>
+        <h2>Вот текст. Браузер его не понял</h2>
+        <p>Слева — текст от заказчика. Справа — как это выглядит в браузере: одна слипшаяся строка</p>
+        <pre class="tm-code">Северный пирог
+Меню на сегодня
+Калитка с картошкой 45</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Запомните формулировку: что это, а не как выглядит. Половина ошибок курса — из-за путаницы в этих двух вопросах» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>HTML отвечает на вопрос «что это», а не «как выглядит»</h2>
+        <ul class="tm-list">
+          <li>Ты не пишешь программу — ты <strong>размечаешь</strong> готовый текст</li>
+          <li>Ставишь пометку: это заголовок, это абзац, это список</li>
+          <li>Как показывать, браузер решает сам</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас я уберу закрывающий тег списка, и вы увидите, что произойдёт» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Тот же текст, но размеченный</h2>
+        <p>Ни одного правила оформления — а страница уже читается</p>
+        <pre class="tm-code">&lt;h1&gt;Северный пирог&lt;/h1&gt;
+<span class="hl">&lt;ul&gt;</span>
+  &lt;li&gt;Калитка с картошкой — 45 ₽&lt;/li&gt;
+  &lt;li&gt;Рыбник — 90 ₽&lt;/li&gt;
+<span class="hl">&lt;/ul&gt;</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «`<br>` переносит строку внутри одного абзаца. Разделять им смысловые куски нельзя» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Разделять смысл переносами строк</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Визуально похоже. Смысла ноль: заголовков нет, списка нет, стилизовать нечего</p>
+          <pre class="tm-code">Северный пирог&lt;br&gt;&lt;br&gt;
+Калитка с картошкой — 45 ₽&lt;br&gt;
+Рыбник — 90 ₽&lt;br&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Эти строки на странице не видно. Уберёте charset — русский текст превратится в кракозябры» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Каркас документа</h2>
+        <ul class="tm-list">
+          <li><code>&lt;!DOCTYPE html&gt;</code> — это современный HTML</li>
+          <li><code>&lt;html lang="ru"&gt;</code> — язык документа</li>
+          <li><code>&lt;head&gt;</code> — для браузера: кодировка, название вкладки</li>
+          <li><code>&lt;body&gt;</code> — для человека: всё, что видно</li>
+        </ul>
+        <pre class="tm-code">&lt;!DOCTYPE html&gt;
+&lt;html lang="ru"&gt;
+&lt;head&gt;
+<span class="hl">&lt;meta charset="utf-8"&gt;</span>
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+<span class="hl">&lt;title&gt;Северный пирог&lt;/title&gt;</span>
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Заголовки — это оглавление вашей страницы. Программа чтения вслух прыгает именно по ним» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Заголовок — это уровень, а не размер</h2>
+        <ul class="tm-list">
+          <li><code>&lt;h1&gt;</code> один на странице: о чём она вся</li>
+          <li>Уровни не перепрыгиваются: 1 → 2 → 3</li>
+          <li>Нужен текст покрупнее — это CSS, одна строка</li>
+        </ul>
+        <pre class="tm-code">&lt;h1&gt;Северный пирог&lt;/h1&gt;
+&lt;h2&gt;Меню на сегодня&lt;/h2&gt;
+&lt;h3&gt;Солёное&lt;/h3&gt;</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>Теперь тег, который не меняет ровно <span class="hl">ничего</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас я оберну свою страницу в эти теги и обновлю браузер. Смотрите внимательно, что изменится» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Четыре тега, которые называют куски страницы</h2>
+        <ul class="tm-list">
+          <li><code>&lt;header&gt;</code> — шапка</li>
+          <li><code>&lt;main&gt;</code> — основное, <strong>ровно один</strong></li>
+          <li><code>&lt;section&gt;</code> — смысловая секция, обязательно с заголовком</li>
+          <li><code>&lt;footer&gt;</code> — подвал</li>
+        </ul>
+        <pre class="tm-code">&lt;header&gt;
+  &lt;h1&gt;Северный пирог&lt;/h1&gt;
+&lt;/header&gt;
+<span class="hl">&lt;main&gt;</span>
+  &lt;section&gt;
+    &lt;h2&gt;Меню на сегодня&lt;/h2&gt;
+  &lt;/section&gt;
+<span class="hl">&lt;/main&gt;</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Ни одного пикселя разницы. Десять секунд на подумать, потом спрошу троих» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Ничего не изменилось. Зачем я это писал?</h2>
+        <p>Обсуждаем вслух. Ответ не показываем — его должна дать группа</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Пандус у входа нужен не всем. Но без него часть людей не войдёт вообще. И на стройке он стоит копейки, а к готовому зданию — дорого» -->
+        <p class="tm-eyebrow">►► ЗАЧЕМ</p>
+        <h2>Три проверки, где разница видна</h2>
+        <ul class="tm-list">
+          <li><strong>Режим чтения</strong> — браузер строит его по вашим тегам</li>
+          <li><strong>Навигация без мыши</strong> — прыжки по заголовкам и сразу к <code>main</code></li>
+          <li><strong>Поиск</strong> — понимает, о чём страница</li>
+        </ul>
+        <p>Плюс: через месяц вы сами разберётесь в своём коде</p>
+      </section>
+
+      <section class="slide">
+        <!-- «`div` не плохой тег. Плохо, когда он единственный. Правило: сначала ищем тег по смыслу, `div` — если такого нет» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>div</code>-суп</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Снаружи похоже на страницу. Внутри — неразличимая масса: ни заголовков, ни списка, ни основного содержимого</p>
+          <pre class="tm-code">&lt;div class="header"&gt;
+  &lt;div class="title"&gt;Северный пирог&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="item"&gt;Калитка — 45 ₽&lt;/div&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Тренажёр по ссылке внизу. Кто не уверен в наборе кода — начинайте со второго режима, с блоков» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Размечаешь текст Марины Петровны в файле <code>index.html</code></li>
+          <li>Тренажёр: два режима — писать код или собрать блоками</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> один <code>h1</code>, один <code>main</code>, шапка и подвал на месте, меню списком, у каждой секции свой заголовок, у картинки осмысленный <code>alt</code></p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L02_trainer_semantic.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L01/L01_presentation.html">►► Занятие 1</a>
+          <a class="tm-btn tm-btn--ghost" href="../L03/L03_presentation.html">►► Занятие 3</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Размечаете сами. Модель — проверяющий, не автор. И если она предложит тег, которого не существует, вы должны это поймать» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: ИИ как проверяющий, а не как автор</h2>
+        <pre class="tm-code">Ты проверяешь HTML-разметку начинающего верстальщика на семантику и доступность.
+Контекст: страница школьного буфета, только HTML, без CSS и JavaScript. Уровень автора — вторая неделя обучения.
+Задача: проверь разметку, которую я приложу, и найди места, где выбран неподходящий по смыслу тег или нарушена доступность.
+Ограничения: не переписывай мой код целиком; не предлагай CSS, JavaScript и библиотеки; не добавляй теги, для которых у меня нет содержимого; пиши по-русски.
+Формат ответа: таблица из трёх колонок — строка моего кода, что не так, чем заменить. Не больше семи строк.
+Критерии проверки: каждое замечание относится к конкретной строке; для каждого объяснено, кому именно это мешает; ничего не выдумано сверх того, что есть в моём коде.
+
+Вот моя разметка:
+[вставь сюда свой код]</pre>
+        <p><strong>Проверить руками:</strong> замечание про реальную строку · предложенный тег существует · нет пустых <code>nav</code>/<code>article</code> · объяснено, кому мешает · страница не сломалась · ты сам согласен</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 2</h3>
+      <dl>
+        <dt>HTML</dt>
+        <dd>Язык разметки. Им ты объясняешь браузеру, что на странице заголовок, что абзац, а что список.</dd>
+        <dt>Разметка</dt>
+        <dd>Расстановка тегов вокруг текста, чтобы у него появился смысл.</dd>
+        <dt>Тег</dt>
+        <dd>Команда разметки в угловых скобках: <code>&lt;p&gt;</code>, <code>&lt;h1&gt;</code>, <code>&lt;main&gt;</code>.</dd>
+        <dt>Парный тег</dt>
+        <dd>Тег с открывающей и закрывающей частью: <code>&lt;p&gt;текст&lt;/p&gt;</code>.</dd>
+        <dt>Одиночный тег</dt>
+        <dd>Тег без закрывающей части: <code>&lt;img&gt;</code>, <code>&lt;br&gt;</code>.</dd>
+        <dt>Элемент</dt>
+        <dd>Тег вместе с содержимым внутри.</dd>
+        <dt>Атрибут</dt>
+        <dd>Дополнение к тегу, пишется в открывающем теге: <code>lang="ru"</code>, <code>alt="…"</code>.</dd>
+        <dt>Вложенность</dt>
+        <dd>Элементы внутри элементов. Открыли снаружи — закрываем изнутри.</dd>
+        <dt>DOCTYPE</dt>
+        <dd>Первая строка файла. Говорит браузеру: это современный HTML.</dd>
+        <dt>Семантика</dt>
+        <dd>Выбор тега по смыслу содержимого, а не по внешнему виду.</dd>
+        <dt>&lt;header&gt;</dt>
+        <dd>Шапка страницы или блока.</dd>
+        <dt>&lt;main&gt;</dt>
+        <dd>Основное содержимое страницы. На странице ровно один.</dd>
+        <dt>&lt;section&gt;</dt>
+        <dd>Смысловая секция. Без заголовка внутри не имеет смысла.</dd>
+        <dt>&lt;footer&gt;</dt>
+        <dd>Подвал: контакты, служебные сведения.</dd>
+        <dt>&lt;div&gt;</dt>
+        <dd>Контейнер без смысла. Берётся, когда нужен просто ящик для оформления.</dd>
+        <dt>&lt;span&gt;</dt>
+        <dd>То же, что <code>div</code>, но внутри строки текста.</dd>
+        <dt>&lt;ul&gt; и &lt;li&gt;</dt>
+        <dd>Маркированный список и его пункт.</dd>
+        <dt>&lt;h1&gt;–&lt;h6&gt;</dt>
+        <dd>Заголовки шести уровней. Уровень — это место в иерархии, а не размер.</dd>
+        <dt>alt</dt>
+        <dd>Текстовое описание картинки. Читается вслух и показывается, если картинка не загрузилась.</dd>
+        <dt>Доступность</dt>
+        <dd>Свойство страницы быть понятной всем, включая тех, кто пользуется программой чтения вслух или только клавиатурой.</dd>
+        <dt>Скринридер</dt>
+        <dd>Программа, читающая страницу вслух. Ориентируется по семантическим тегам и заголовкам.</dd>
+        <dt>Режим чтения</dt>
+        <dd>Встроенная в браузер функция, превращающая страницу в чистый текст. Работает по семантическим тегам.</dd>
+        <dt>div-суп</dt>
+        <dd>Разметка, состоящая из одних контейнеров без смысла.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

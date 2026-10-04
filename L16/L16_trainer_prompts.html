@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 16 · Тренажёр: сборка промпта</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-pill.is-done { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, .chip:focus-visible, .slot:focus-visible, .choice:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { position: relative; overflow: hidden; background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    .brief .tm-eyebrow { margin: 0 0 8px; }
+    .hide { display: none !important; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .course-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    h2 { font-size: 1.15rem; margin: 0 0 10px; }
+    .pane__help { margin: 0 0 12px; color: var(--tm-muted); font-size: .95em; }
+
+    /* Сборка: на узком экране пул на всю ширину, слоты под ним. */
+    .build {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .build { grid-template-columns: 1fr; }
+      #blockPool { width: 100%; }
+    }
+    .pool {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      min-height: 72px; padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      text-align: left;
+      font: 400 15px/1.45 var(--tm-font);
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      padding: 10px 12px;
+      border: 2px solid var(--tm-green-dark);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .chip.is-picked { outline: 3px solid var(--tm-green-dark); outline-offset: 2px; background: var(--tm-green-soft); }
+    .chip code { font-family: var(--tm-mono); font-size: .92em; }
+    .chip-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+    .chip-row:last-child { margin-bottom: 0; }
+    .chip-row .chip { flex: 1; margin: 0; }
+    .chip-remove {
+      flex: 0 0 auto;
+      font: 600 13px/1 var(--tm-font);
+      padding: .45em .7em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-border);
+      background: transparent;
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    .chip-remove:hover { border-color: var(--tm-fail); color: var(--tm-fail); }
+    .slots { display: flex; flex-direction: column; gap: 10px; }
+    .slot {
+      min-height: 88px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      padding: 10px;
+      background: var(--tm-bg-alt);
+    }
+    .slot.is-over, .slot.is-target { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .slot.is-error { border-color: var(--tm-fail); }
+    .slot__label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; color: var(--tm-muted); }
+    .slot__body { min-height: 36px; }
+    .slot-msg { margin: 8px 0 0; font-size: .9em; color: var(--tm-fail); }
+    .assembled {
+      margin-top: 16px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .assembled:empty::before { content: "Слоты пусты — собранный промпт появится здесь."; color: var(--tm-muted); font-family: var(--tm-font); }
+
+    .foreign { margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--tm-border); }
+    .foreign:last-child { border-bottom: 0; margin-bottom: 0; }
+    .foreign h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .choices { display: grid; gap: 8px; margin-top: 10px; }
+    .choice { text-align: left; font: inherit; font-weight: 600; padding: 12px 14px; border: 2px solid var(--tm-border); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); color: var(--tm-text); cursor: pointer; }
+    .choice.is-on { border-color: var(--tm-green); background: var(--tm-green-soft); }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-code-bg); color: var(--tm-code-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 15px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .review-opt { margin: 6px 0; }
+    .review-opt--ok { color: var(--tm-ok); font-weight: 700; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 16 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Сборка промпта</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 12</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<nav class="course-links" aria-label="Соседние материалы">
+  <a class="tm-btn tm-btn--ghost" href="L16_presentation.html">Презентация</a>
+  <a class="tm-btn tm-btn--ghost" href="../L15/L15_trainer_deploy.html">Занятие 15</a>
+  <a class="tm-btn tm-btn--ghost" href="../L17/L17_trainer_audit.html">Занятие 17</a>
+</nav>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Собери промпт на SVG-иконку буфета. Пять слотов — пять блоков промпта, порядок фиксирован. Чипов больше, чем слотов: часть из них — формулировки, которые выглядят солидно, но ничего не задают. Потом разбери четыре чужих промпта и скажи, какого блока в каждом не хватает. Порог: собранный промпт без единого лишнего блока и 3 верных разбора из 4.</p>
+</section>
+
+<div class="tabs" role="tablist" aria-label="Части тренажёра">
+  <button class="tm-btn tm-btn--primary" id="tabBuild" role="tab" aria-selected="true" type="button">Сборка</button>
+  <button class="tm-btn tm-btn--ghost" id="tabOthers" role="tab" aria-selected="false" type="button">Чужие промпты</button>
+</div>
+
+<section class="tm-card" id="paneBuild" role="tabpanel" aria-labelledby="tabBuild">
+  <p class="tm-eyebrow">►► СБОРКА</p>
+  <p class="pane__help">Перетащи чип в слот или кликни по чипу, затем по слоту. С фокуса на чипе — Enter ставит его в подходящий свободный слот. Слот «Ограничения» принимает до трёх чипов; у каждого там есть кнопка «убрать». Тренажёр ничего никуда не отправляет: результат — текст ниже.</p>
+  <div class="build">
+    <div>
+      <p class="slot__label">Чипы</p>
+      <div id="blockPool" class="pool" aria-label="Чипы промпта"></div>
+    </div>
+    <div>
+      <div class="slots" id="slots">
+        <div class="slot" data-accept="context" tabindex="0">
+          <span class="slot__label">[1] Контекст</span>
+          <div class="slot__body" data-body="context"></div>
+        </div>
+        <div class="slot" data-accept="task" tabindex="0">
+          <span class="slot__label">[2] Задача</span>
+          <div class="slot__body" data-body="task"></div>
+        </div>
+        <div class="slot" data-accept="limits" tabindex="0">
+          <span class="slot__label">[3] Ограничения — до трёх</span>
+          <div class="slot__body" data-body="limits"></div>
+          <p class="slot-msg hide" id="limitsMsg" role="status"></p>
+        </div>
+        <div class="slot" data-accept="format" tabindex="0">
+          <span class="slot__label">[4] Формат ответа</span>
+          <div class="slot__body" data-body="format"></div>
+        </div>
+        <div class="slot" data-accept="criteria" tabindex="0">
+          <span class="slot__label">[5] Критерии</span>
+          <div class="slot__body" data-body="criteria"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="tm-eyebrow" style="margin-top:16px">►► СОБРАННЫЙ ПРОМПТ</p>
+  <p class="pane__help">Так текст выглядел бы в чате. Панель обновляется при каждом изменении слотов — это не страница и не iframe.</p>
+  <div class="assembled" id="assembled" aria-live="polite"></div>
+</section>
+
+<section class="tm-card hide" id="paneOthers" role="tabpanel" aria-labelledby="tabOthers" hidden>
+  <p class="tm-eyebrow">►► ЧУЖИЕ ПРОМПТЫ</p>
+  <p class="pane__help">В каждом промпте отсутствует ровно один блок. Остальные четыре заполнены содержательно. Выбери, какого блока не хватает.</p>
+  <div id="foreignList"></div>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Показать разбор</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► РАЗБОР</p>
+  <div id="solBody"></div>
+</section>
+
+<details class="teacher tm-card">
+  <summary>Карточка педагога</summary>
+  <ul class="tm-list">
+    <li><strong>Навык:</strong> собрать промпт из пяти блоков и отличить проверяемое ограничение от пожелания.</li>
+    <li><strong>Норматив:</strong> 10–16 мин. Сначала вкладка «Сборка», потом «Чужие промпты».</li>
+    <li><strong>Зачёт:</strong> тесты 1–8 все зелёные; тесты 9–12 — не меньше 3 из 4. Три подсказки — зачёт с пометкой «с поддержкой».</li>
+    <li><strong>Типичные ошибки:</strong> «ты профессиональный дизайнер» в контексте; «по-современному» в ограничениях; три чипа в слоте, из них два пожелания — тест 4 зелёный, тест 5 красный.</li>
+    <li><strong>Усложнение:</strong> вслух назвать, что отсекает каждый из пяти блоков, если его убрать.</li>
+    <li><strong>Поддержка:</strong> сначала только контекст и задача, ограничения — вторым заходом; подсказку 1 проговорить классу, когда несколько человек ставят роль модели в контекст.</li>
+    <li><strong>Сеть:</strong> тренажёр ничего не отправляет. Настоящая отправка — руками, в сервисе организации, по практике раздела 9.</li>
+  </ul>
+</details>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Контекст</dt>
+    <dd>То, чего модель о проекте знать не может: стек, имена, палитра, для кого результат.</dd>
+    <dt>Ограничения</dt>
+    <dd>Границы ответа: технологии, объём числом, правила курса. Условие обязано проверяться действием или числом.</dd>
+    <dt>Пожелание</dt>
+    <dd>Формулировка, которая выглядит как требование, но не проверяется: «красиво», «современно», «качественно».</dd>
+    <dt>Критерии проверки</dt>
+    <dd>Заранее записано, каким должен быть годный ответ. Формула: что делаю → что должно получиться.</dd>
+  </dl>
+</section>
+
+<script>
+(function () {
+  /* Сценарий L16: без #editor, #panePreview, ключа режима и iframe.
+     Результат — текст в #assembled. Слот limits — массив до трёх чипов. */
+  const DRAFT_KEY = "wdc-l16-prompts-v1";
+  const GOOD_LIMITS = ["lim-svg", "lim-size", "lim-color"];
+  const WRONG_IDS = ["ctx-empty", "ctx-role", "task-vague", "lim-modern", "lim-nice", "fmt-vague", "crit-vague"];
+  const SLOT_ORDER = ["context", "task", "limits", "format", "criteria"];
+  const SLOT_TITLE = {
+    context: "КОНТЕКСТ",
+    task: "ЗАДАЧА",
+    limits: "ОГРАНИЧЕНИЯ",
+    format: "ФОРМАТ ОТВЕТА",
+    criteria: "КРИТЕРИИ"
+  };
+  const EMPTY_NAME = {
+    context: "Контекст",
+    task: "Задача",
+    limits: "Ограничения",
+    format: "Формат ответа",
+    criteria: "Критерии"
+  };
+
+  const BLOCKS = [
+    { id: "ctx-full", accept: "context", ok: true, label: "Учебный сайт школьного буфета. HTML/CSS/JS без фреймворков и библиотек иконок. Палитра: `--pie-accent` #7CC142. Читают школьники с телефона" },
+    { id: "ctx-empty", accept: "context", ok: false, label: "Я делаю сайт. Помоги, пожалуйста" },
+    { id: "ctx-role", accept: "context", ok: false, label: "Ты профессиональный дизайнер с двадцатилетним опытом" },
+    { id: "task-good", accept: "task", ok: true, label: "Нарисуй SVG-иконку калитки — открытого пирожка с картофельной начинкой, вид сверху" },
+    { id: "task-vague", accept: "task", ok: false, label: "Сделай что-нибудь красивое для сайта" },
+    { id: "lim-svg", accept: "limits", ok: true, label: "Только теги SVG: path, circle, g. Без внешних ссылок и base64" },
+    { id: "lim-size", accept: "limits", ok: true, label: "В корневом теге нет width и height, есть `viewBox=\"0 0 48 48\"`" },
+    { id: "lim-color", accept: "limits", ok: true, label: "Одноцветная, `fill=\"currentColor\"`, без градиентов и фильтров" },
+    { id: "lim-modern", accept: "limits", ok: false, label: "Сделай по-современному, как принято в индустрии" },
+    { id: "lim-nice", accept: "limits", ok: false, label: "Чтобы было красиво и всем понравилось" },
+    { id: "fmt-good", accept: "format", ok: true, label: "Один блок кода с готовым SVG, без пояснений до и после. Если данных не хватает — задай не больше трёх вопросов вместо кода" },
+    { id: "fmt-vague", accept: "format", ok: false, label: "Ответь понятно и удобно" },
+    { id: "crit-good", accept: "criteria", ok: true, label: "В 24 px силуэт узнаётся; в 96 px края не размываются; при смене `color` у родителя иконка меняет цвет; могу объяснить каждый path" },
+    { id: "crit-vague", accept: "criteria", ok: false, label: "Иконка должна быть качественной и соответствовать современным стандартам" }
+  ];
+
+  const MISS_OPTS = [
+    { id: "контекста", t: "контекста" },
+    { id: "задачи", t: "задачи" },
+    { id: "ограничений", t: "ограничений" },
+    { id: "формата ответа", t: "формата ответа" },
+    { id: "критериев проверки", t: "критериев проверки" }
+  ];
+
+  const FOREIGN = [
+    {
+      letter: "А",
+      prompt: "Задача: напиши функцию, которая сортирует меню по возрастанию цены.\nОграничения: чистый JavaScript, не длиннее 15 строк, const и let,\nне изменять исходный массив.\nФормат: один блок кода без пояснений.\nКритерии: вставляю в проект, нажимаю кнопку — карточки\nперестраиваются; нажимаю второй раз — порядок снова верный.",
+      ok: "контекста",
+      why: {
+        "контекста": "Верно: не хватает контекста. Не сказано, как называется массив и какие у объектов поля. Ответ придёт с выдуманными именами (`items`, `data`), и в консоли будет `ReferenceError`.",
+        "задачи": "неверно: задача есть и сформулирована глаголом.",
+        "ограничений": "неверно: их четыре, все проверяемые.",
+        "формата ответа": "неверно: формат задан.",
+        "критериев проверки": "неверно: критерии есть, и оба проверяются действием."
+      }
+    },
+    {
+      letter: "Б",
+      prompt: "Контекст: учебный сайт буфета, чистые HTML/CSS/JS без фреймворков,\nмассив PIES с полями id, name, price, kind.\nЗадача: напиши функцию фильтрации меню по kind.\nФормат: один блок кода без пояснений.\nКритерии: вставляю, нажимаю «сладкое» — остаются только сладкие\nпозиции; нажимаю «все» — возвращаются все шесть.",
+      ok: "ограничений",
+      why: {
+        "контекста": "неверно: он есть, с именами и полями.",
+        "задачи": "неверно: одно действие, глаголом.",
+        "ограничений": "Верно: не хватает ограничений. Ничего не сказано про длину, про `const`/`let`, про запрет приёмов не с курса и про то, что исходный массив трогать нельзя. Ответ придёт длинный, возможно с `reduce`, и его будет нечем забраковать.",
+        "формата ответа": "неверно: формат задан.",
+        "критериев проверки": "неверно: два критерия, оба через действие."
+      }
+    },
+    {
+      letter: "В",
+      prompt: "Контекст: учебный сайт буфета, HTML/CSS/JS без фреймворков.\nЗадача: напиши текст блока «О буфете».\nОграничения: 2–3 предложения, не длиннее 220 символов, без слов\n«уникальный», «атмосфера», «лучший». Не выдумывать доставку и скидки.\nФормат: три варианта, каждый на отдельной строке.",
+      ok: "критериев проверки",
+      why: {
+        "контекста": "неверно: он есть, хотя и короткий.",
+        "задачи": "неверно: задача одна и ясная.",
+        "ограничений": "неверно: четыре штуки, все проверяемые.",
+        "формата ответа": "неверно: формат задан явно.",
+        "критериев проверки": "Верно: не хватает критериев проверки. Не сказано, как понять, что вариант годится. Придут три текста, и выбирать придётся «на глаз» — то есть по впечатлению, а не по проверке."
+      }
+    },
+    {
+      letter: "Г",
+      prompt: "Контекст: учебный сайт школьного буфета, чистые HTML/CSS/JS,\nмассив PIES с полями id, name, price, kind, left, hit.\nЗадача: напиши функцию, которая возвращает три самые дешёвые позиции.\nОграничения: не длиннее 12 строк, const и let, не изменять PIES,\nне использовать reduce.\nКритерии: вставляю — в консоли нет ошибок; вызываю — возвращается\nмассив из трёх объектов, отсортированных по возрастанию цены;\nмогу объяснить каждую строку.",
+      ok: "формата ответа",
+      why: {
+        "контекста": "неверно: назван и массив, и все поля.",
+        "задачи": "неверно: одно действие с числом.",
+        "ограничений": "неверно: четыре, все проверяемые.",
+        "формата ответа": "Верно: не хватает формата ответа. Не сказано, в каком виде нужен результат. Придёт код, обёрнутый в объяснение теории сортировки, и нужный кусок придётся выковыривать — с риском захватить лишнюю строку.",
+        "критериев проверки": "неверно: три критерия, все через действие."
+      }
+    }
+  ];
+
+  const HINTS = [
+    { kind: "text", body: "Про каждый чип спроси одно: что именно эта фраза сообщает модели такого, чего она не могла знать? Если ответ \"ничего\" — чип лишний, каким бы солидным он ни выглядел." },
+    { kind: "text", body: "Проверка на пригодность формулировки: можно ли по ней проверить результат действием или числом? \"Не длиннее 20 строк\" — да, посчитал. \"`viewBox=\"0 0 48 48\"`\" — да, посмотрел. \"Современно\" и \"качественно\" — нет, проверить нечем. Первые идут в промпт, вторые не идут никуда." },
+    { kind: "code", body: "КОНТЕКСТ    отсекает ответ про чужой проект (чужой стек, чужие имена)\nЗАДАЧА      отсекает ответ не на тот вопрос\nОГРАНИЧЕНИЯ отсекает библиотеки, лишнюю длину и приёмы не с курса\nФОРМАТ      отсекает два экрана пояснений вокруг нужного куска\nКРИТЕРИИ    отсекает оценку «на глаз»: годится или нет решается проверкой" }
+  ];
+
+  let slots = emptySlots();
+  let answersB = [null, null, null, null];
+  let tab = "build";
+  let hintsOpened = 0;
+  let pickedId = null;
+  let dragging = false;
+  let poolOrder = BLOCKS.map(function (b) { return b.id; });
+  let saveTimer = 0;
+  let flashTimer = 0;
+
+  const poolEl = document.getElementById("blockPool");
+  const assembledEl = document.getElementById("assembled");
+  const testsEl = document.getElementById("tests");
+  const hintsEl = document.getElementById("hints");
+  const scoreEl = document.getElementById("score");
+  const barEl = document.getElementById("bar");
+  const honesty = document.getElementById("honesty");
+  const etalonBtn = document.getElementById("etalonBtn");
+  const etalonBox = document.getElementById("etalonBox");
+  const solBody = document.getElementById("solBody");
+  const limitsMsg = document.getElementById("limitsMsg");
+  const paneBuild = document.getElementById("paneBuild");
+  const paneOthers = document.getElementById("paneOthers");
+  const tabBuild = document.getElementById("tabBuild");
+  const tabOthers = document.getElementById("tabOthers");
+
+  function emptySlots() {
+    return { context: "", task: "", limits: [], format: "", criteria: "" };
+  }
+
+  function byId(id) {
+    return BLOCKS.find(function (b) { return b.id === id; });
+  }
+
+  function usedIds() {
+    const ids = [];
+    SLOT_ORDER.forEach(function (name) {
+      if (name === "limits") slots.limits.forEach(function (id) { ids.push(id); });
+      else if (slots[name]) ids.push(slots[name]);
+    });
+    return ids;
+  }
+
+  function usedWrong() {
+    return usedIds().filter(function (id) { return WRONG_IDS.indexOf(id) !== -1; });
+  }
+
+  function unplace(id) {
+    SLOT_ORDER.forEach(function (name) {
+      if (name === "limits") {
+        slots.limits = slots.limits.filter(function (x) { return x !== id; });
+      } else if (slots[name] === id) {
+        slots[name] = "";
+      }
+    });
+  }
+
+  function slotCanTake(name, id) {
+    const b = byId(id);
+    if (!b || b.accept !== name) return false;
+    if (name === "limits") {
+      if (slots.limits.indexOf(id) !== -1) return true;
+      return slots.limits.length < 3;
+    }
+    return true;
+  }
+
+  function dropChip(id, name) {
+    const b = byId(id);
+    if (!b) return;
+    if (b.accept !== name) {
+      flashSlot(name);
+      return;
+    }
+    if (name === "limits") {
+      if (slots.limits.indexOf(id) !== -1) {
+        pickedId = null;
+        renderBoard();
+        return;
+      }
+      if (slots.limits.length >= 3) {
+        flashSlot("limits");
+        limitsMsg.textContent = "В ограничения можно поставить не больше трёх чипов. Убери один, чтобы добавить другой.";
+        limitsMsg.classList.remove("hide");
+        pickedId = null;
+        renderBoard();
+        return;
+      }
+      unplace(id);
+      slots.limits.push(id);
+      limitsMsg.textContent = "";
+      limitsMsg.classList.add("hide");
+    } else {
+      unplace(id);
+      slots[name] = id;
+    }
+    pickedId = null;
+    renderBoard();
+    renderPrompt();
+    scheduleSave();
+  }
+
+  function flashSlot(name) {
+    const el = document.querySelector('.slot[data-accept="' + name + '"]');
+    if (!el) return;
+    el.classList.add("is-error");
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { el.classList.remove("is-error"); }, 400);
+  }
+
+  function markupLabel(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/`([^`]+)`/g, "<code>$1</code>");
+  }
+
+  function makeChip(id, inSlot) {
+    const b = byId(id);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip" + (pickedId === id ? " is-picked" : "");
+    btn.dataset.id = id;
+    btn.draggable = true;
+    btn.innerHTML = markupLabel(b.label);
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (dragging) return;
+      if (inSlot) {
+        unplace(id);
+        pickedId = null;
+        renderBoard();
+        renderPrompt();
+        scheduleSave();
+        return;
+      }
+      pickedId = pickedId === id ? null : id;
+      renderBoard();
+    });
+    btn.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (inSlot) {
+        unplace(id);
+        pickedId = null;
+        renderBoard();
+        renderPrompt();
+        scheduleSave();
+        return;
+      }
+      const free = SLOT_ORDER.find(function (name) { return slotCanTake(name, id) && (name === "limits" ? slots.limits.indexOf(id) === -1 : !slots[name] || slots[name] === id); });
+      if (!free) {
+        if (b.accept === "limits" && slots.limits.length >= 3) {
+          flashSlot("limits");
+          limitsMsg.textContent = "В ограничения можно поставить не больше трёх чипов. Убери один, чтобы добавить другой.";
+          limitsMsg.classList.remove("hide");
+        } else {
+          flashSlot(b.accept);
+        }
+        return;
+      }
+      dropChip(id, free);
+    });
+    btn.addEventListener("dragstart", function (e) {
+      dragging = true;
+      pickedId = id;
+      try { e.dataTransfer.setData("text/plain", id); } catch (err) {}
+      e.dataTransfer.effectAllowed = "move";
+    });
+    btn.addEventListener("dragend", function () {
+      setTimeout(function () { dragging = false; }, 0);
+    });
+    return btn;
+  }
+
+  function renderSlotChips(name) {
+    const body = document.querySelector('.slot__body[data-body="' + name + '"]');
+    body.innerHTML = "";
+    const ids = name === "limits" ? slots.limits.slice() : (slots[name] ? [slots[name]] : []);
+    ids.forEach(function (id) {
+      if (name === "limits") {
+        const row = document.createElement("div");
+        row.className = "chip-row";
+        const chip = makeChip(id, true);
+        const rm = document.createElement("button");
+        rm.type = "button";
+        rm.className = "chip-remove";
+        rm.textContent = "убрать";
+        rm.addEventListener("click", function (e) {
+          e.stopPropagation();
+          unplace(id);
+          pickedId = null;
+          renderBoard();
+          renderPrompt();
+          scheduleSave();
+        });
+        row.appendChild(chip);
+        row.appendChild(rm);
+        body.appendChild(row);
+      } else {
+        body.appendChild(makeChip(id, true));
+      }
+    });
+  }
+
+  function renderBoard() {
+    const placed = usedIds();
+    poolEl.innerHTML = "";
+    poolOrder.forEach(function (id) {
+      if (placed.indexOf(id) !== -1) return;
+      poolEl.appendChild(makeChip(id, false));
+    });
+    SLOT_ORDER.forEach(renderSlotChips);
+    document.querySelectorAll(".slot").forEach(function (el) {
+      const name = el.getAttribute("data-accept");
+      const can = pickedId && slotCanTake(name, pickedId) && (name === "limits" ? slots.limits.indexOf(pickedId) === -1 : true);
+      el.classList.toggle("is-target", !!can);
+    });
+  }
+
+  function assembledText() {
+    const parts = [];
+    SLOT_ORDER.forEach(function (name) {
+      if (name === "limits") {
+        if (!slots.limits.length) return;
+        parts.push("[" + SLOT_TITLE[name] + "]");
+        slots.limits.forEach(function (id) {
+          const b = byId(id);
+          if (b) parts.push(b.label.replace(/`/g, ""));
+        });
+        parts.push("");
+      } else if (slots[name]) {
+        const b = byId(slots[name]);
+        parts.push("[" + SLOT_TITLE[name] + "]");
+        parts.push(b.label.replace(/`/g, ""));
+        parts.push("");
+      }
+    });
+    return parts.join("\n").replace(/\n+$/, "");
+  }
+
+  function renderPrompt() {
+    assembledEl.textContent = assembledText();
+  }
+
+  function bindSlots() {
+    document.querySelectorAll(".slot").forEach(function (el) {
+      const name = el.getAttribute("data-accept");
+      el.addEventListener("click", function (e) {
+        if (e.target.closest(".chip") || e.target.closest(".chip-remove")) return;
+        if (pickedId) {
+          dropChip(pickedId, name);
+          return;
+        }
+        if (name !== "limits" && slots[name]) {
+          unplace(slots[name]);
+          renderBoard();
+          renderPrompt();
+          scheduleSave();
+        }
+      });
+      el.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        el.classList.add("is-over");
+      });
+      el.addEventListener("dragleave", function () { el.classList.remove("is-over"); });
+      el.addEventListener("drop", function (e) {
+        e.preventDefault();
+        el.classList.remove("is-over");
+        let id = "";
+        try { id = e.dataTransfer.getData("text/plain") || pickedId; } catch (err) { id = pickedId; }
+        if (id) dropChip(id, name);
+      });
+    });
+    poolEl.addEventListener("dragover", function (e) { e.preventDefault(); });
+    poolEl.addEventListener("drop", function (e) {
+      e.preventDefault();
+      let id = "";
+      try { id = e.dataTransfer.getData("text/plain") || pickedId; } catch (err) { id = pickedId; }
+      if (!id) return;
+      unplace(id);
+      pickedId = null;
+      renderBoard();
+      renderPrompt();
+      scheduleSave();
+    });
+  }
+
+  function renderForeign() {
+    const root = document.getElementById("foreignList");
+    root.innerHTML = "";
+    FOREIGN.forEach(function (item, idx) {
+      const card = document.createElement("article");
+      card.className = "foreign";
+      const h = document.createElement("h3");
+      h.textContent = "Промпт " + item.letter;
+      const pre = document.createElement("pre");
+      pre.className = "tm-code";
+      pre.textContent = item.prompt;
+      const q = document.createElement("p");
+      q.textContent = "Какого блока не хватает?";
+      const box = document.createElement("div");
+      box.className = "choices";
+      MISS_OPTS.forEach(function (opt) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "choice" + (answersB[idx] === opt.id ? " is-on" : "");
+        btn.textContent = opt.t;
+        btn.addEventListener("click", function () {
+          answersB[idx] = opt.id;
+          renderForeign();
+          scheduleSave();
+        });
+        box.appendChild(btn);
+      });
+      card.appendChild(h);
+      card.appendChild(pre);
+      card.appendChild(q);
+      card.appendChild(box);
+      root.appendChild(card);
+    });
+  }
+
+  function emptyList() {
+    const miss = [];
+    SLOT_ORDER.forEach(function (name) {
+      const empty = name === "limits" ? slots.limits.length === 0 : !slots[name];
+      if (empty) miss.push(EMPTY_NAME[name]);
+    });
+    return miss;
+  }
+
+  function limitsOkSet() {
+    if (slots.limits.length !== 3) return false;
+    return slots.limits.every(function (id) { return GOOD_LIMITS.indexOf(id) !== -1; });
+  }
+
+  function buildTests() {
+    const empty = emptyList();
+    const wrong = usedWrong();
+    const nLim = slots.limits.length;
+    return [
+      {
+        ok: empty.length === 0,
+        success: "Все пять блоков на месте",
+        fail: "Пустых блоков: " + empty.length + (empty.length ? " (" + empty.join(", ") + ")" : "") + ". Промпт курса — пять блоков, ни один не пропускается"
+      },
+      {
+        ok: slots.context === "ctx-full",
+        success: "Контекст называет стек, палитру и читателя",
+        fail: "Контекст должен содержать то, чего модель знать не может: стек, палитру, для кого результат. «Я делаю сайт» и «ты профессиональный дизайнер» ей ничего не сообщают о твоём проекте"
+      },
+      {
+        ok: slots.task === "task-good",
+        success: "Задача — одно действие, глаголом",
+        fail: "«Сделай что-нибудь красивое» — это не задача: непонятно, что именно нужно нарисовать и в каком виде"
+      },
+      {
+        ok: nLim === 3,
+        success: "Три ограничения — рабочая рамка",
+        fail: "Сейчас ограничений " + nLim + ". Возьми три: чем ограничить формат файла, чем — размеры, чем — цвет"
+      },
+      {
+        ok: limitsOkSet(),
+        success: "Все ограничения проверяемы",
+        fail: "Среди ограничений есть оценочное. Проверь себя вопросом: как я проверю, что это условие выполнено? Если ответа нет — это пожелание, а не ограничение"
+      },
+      {
+        ok: slots.format === "fmt-good",
+        success: "Формат задан: ясно, что придёт и что делать при нехватке данных",
+        fail: "«Ответь понятно и удобно» модель поймёт как «подробно» и добавит два экрана пояснений. Формат описывает вид ответа, а не его качество"
+      },
+      {
+        ok: slots.criteria === "crit-good",
+        success: "Критерии проверяются действием и числом",
+        fail: "«Качественная» и «соответствует стандартам» проверить нельзя. Критерий устроен так: что делаю → что должно получиться"
+      },
+      {
+        ok: wrong.length === 0,
+        success: "Лишних формулировок в промпте нет",
+        fail: "В промпт попали формулировки, которые ничего не задают: " + wrong.length + " штук. Убери их: длина промпта не помогает, помогает снятая неопределённость"
+      },
+      {
+        ok: answersB[0] === "контекста",
+        success: "Верно: не названы имя массива и поля объектов",
+        fail: "Пройди по пяти блокам и отметь, какие есть. Тот, которого нет, и будет ответом. Спроси себя: сможет ли модель написать код, не зная, как называется массив?"
+      },
+      {
+        ok: answersB[1] === "ограничений",
+        success: "Верно: границы ответа не заданы",
+        fail: "Контекст есть, задача есть, формат есть, критерии есть. Чего в этом промпте нельзя найти — длину, запрет на приёмы не с курса, запрет менять исходный массив?"
+      },
+      {
+        ok: answersB[2] === "критериев проверки",
+        success: "Верно: неясно, как отличить годный вариант от негодного",
+        fail: "Придут три текста. По чему ты выберешь один из них — по впечатлению или по проверке? Если проверять нечем, какого блока не хватает?"
+      },
+      {
+        ok: answersB[3] === "формата ответа",
+        success: "Верно: не сказано, в каком виде нужен результат",
+        fail: "Всё, что нужно для правильного кода, здесь есть. Не сказано другое: как этот код должен быть подан, чтобы его можно было скопировать целиком"
+      }
+    ];
+  }
+
+  function thresholdMet(list) {
+    let buildOk = true;
+    for (let i = 0; i < 8; i++) {
+      if (!list[i] || !list[i].ok) buildOk = false;
+    }
+    let others = 0;
+    for (let i = 8; i < 12; i++) {
+      if (list[i] && list[i].ok) others += 1;
+    }
+    return buildOk && others >= 3;
+  }
+
+  function renderResults(list) {
+    testsEl.innerHTML = "";
+    let passed = 0;
+    list.forEach(function (t) {
+      if (t.ok) passed += 1;
+      const row = document.createElement("div");
+      row.className = "tm-test " + (t.ok ? "tm-test--ok" : "tm-test--fail");
+      const mark = document.createElement("span");
+      mark.className = "tm-test__mark";
+      mark.textContent = t.ok ? "✅" : "❌";
+      const body = document.createElement("div");
+      const title = document.createElement("div");
+      title.textContent = t.ok ? t.success : t.fail;
+      if (!t.ok) title.className = "tm-test__hint";
+      body.appendChild(title);
+      row.appendChild(mark);
+      row.appendChild(body);
+      testsEl.appendChild(row);
+    });
+    scoreEl.textContent = passed + " / " + list.length;
+    scoreEl.classList.toggle("is-done", thresholdMet(list));
+    barEl.style.width = (passed / list.length * 100) + "%";
+    const done = thresholdMet(list);
+    const parts = [];
+    if (hintsOpened > 0) {
+      parts.push("Открыты подсказки: " + hintsOpened + ". Это не штраф, но на защите объясните решение своими словами.");
+    }
+    if (done) {
+      parts.push("Задача сдана. Подсказок открыто: " + hintsOpened + ".");
+      unlockReview("порог");
+    } else if (hintsOpened >= 3) {
+      unlockReview("подсказки");
+    }
+    honesty.textContent = parts.join(" ");
+  }
+
+  function runChecks() {
+    clearTimeout(saveTimer);
+    const list = buildTests();
+    renderResults(list);
+    saveDraft();
+  }
+
+  function setTab(name) {
+    tab = name;
+    const build = name === "build";
+    paneBuild.classList.toggle("hide", !build);
+    paneOthers.classList.toggle("hide", build);
+    if (build) paneBuild.removeAttribute("hidden");
+    else paneBuild.setAttribute("hidden", "");
+    if (!build) paneOthers.removeAttribute("hidden");
+    else paneOthers.setAttribute("hidden", "");
+    tabBuild.setAttribute("aria-selected", String(build));
+    tabOthers.setAttribute("aria-selected", String(!build));
+    tabBuild.className = "tm-btn " + (build ? "tm-btn--primary" : "tm-btn--ghost");
+    tabOthers.className = "tm-btn " + (build ? "tm-btn--ghost" : "tm-btn--primary");
+    scheduleSave();
+  }
+
+  function unlockReview(reason) {
+    etalonBtn.disabled = false;
+    if (reason === "подсказки" || reason === "порог") {
+      fillSol();
+      etalonBox.classList.remove("hide");
+    }
+  }
+
+  function fillSol() {
+    const parts = [];
+    parts.push("<h2>Эталонный промпт</h2>");
+    parts.push("<pre class=\"tm-code\">" + esc(etalonPrompt()) + "</pre>");
+    FOREIGN.forEach(function (item) {
+      parts.push("<article class=\"foreign\"><h3>Промпт " + item.letter + "</h3>");
+      parts.push("<pre class=\"tm-code\">" + esc(item.prompt) + "</pre>");
+      MISS_OPTS.forEach(function (opt) {
+        const cls = opt.id === item.ok ? "review-opt review-opt--ok" : "review-opt";
+        parts.push("<p class=\"" + cls + "\"><strong>" + esc(opt.t) + "</strong> — " + markupLabel(item.why[opt.id]) + "</p>");
+      });
+      parts.push("</article>");
+    });
+    solBody.innerHTML = parts.join("");
+  }
+
+  function etalonPrompt() {
+    const ids = ["ctx-full", "task-good", "lim-svg", "lim-size", "lim-color", "fmt-good", "crit-good"];
+    const map = {
+      "ctx-full": "context",
+      "task-good": "task",
+      "lim-svg": "limits",
+      "lim-size": "limits",
+      "lim-color": "limits",
+      "fmt-good": "format",
+      "crit-good": "criteria"
+    };
+    const groups = { context: [], task: [], limits: [], format: [], criteria: [] };
+    ids.forEach(function (id) { groups[map[id]].push(byId(id).label.replace(/`/g, "")); });
+    const lines = [];
+    SLOT_ORDER.forEach(function (name) {
+      lines.push("[" + SLOT_TITLE[name] + "]");
+      groups[name].forEach(function (t) { lines.push(t); });
+      lines.push("");
+    });
+    return lines.join("\n").trim();
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function appendHint(i) {
+    const wrap = document.createElement("div");
+    wrap.className = "hint";
+    const title = document.createElement("p");
+    title.innerHTML = "<strong>Подсказка " + (i + 1) + ".</strong>";
+    wrap.appendChild(title);
+    if (HINTS[i].kind === "code") {
+      const pre = document.createElement("pre");
+      pre.className = "tm-code";
+      pre.textContent = HINTS[i].body;
+      wrap.appendChild(pre);
+    } else {
+      const p = document.createElement("p");
+      p.textContent = HINTS[i].body;
+      wrap.appendChild(p);
+    }
+    hintsEl.appendChild(wrap);
+  }
+
+  function replayHints() {
+    hintsEl.innerHTML = "";
+    for (let i = 0; i < hintsOpened; i++) appendHint(i);
+    if (hintsOpened >= 3) unlockReview("подсказки");
+  }
+
+  function shuffle(list) {
+    const arr = list.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  function saveDraft() {
+    const data = {
+      slots: {
+        context: slots.context || "",
+        task: slots.task || "",
+        limits: slots.limits.slice(),
+        format: slots.format || "",
+        criteria: slots.criteria || ""
+      },
+      answersB: answersB.slice(),
+      tab: tab,
+      hintsOpened: hintsOpened,
+      poolOrder: poolOrder.slice()
+    };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveDraft, 280);
+  }
+
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") {
+      poolOrder = shuffle(poolOrder);
+      return;
+    }
+    if (data.slots && typeof data.slots === "object") {
+      slots.context = data.slots.context || "";
+      slots.task = data.slots.task || "";
+      slots.format = data.slots.format || "";
+      slots.criteria = data.slots.criteria || "";
+      slots.limits = Array.isArray(data.slots.limits) ? data.slots.limits.filter(byId).slice(0, 3) : [];
+    }
+    if (Array.isArray(data.answersB)) {
+      answersB = [0, 1, 2, 3].map(function (i) { return data.answersB[i] || null; });
+    }
+    if (data.tab === "others" || data.tab === "build") tab = data.tab;
+    hintsOpened = Math.max(0, Math.min(3, Number(data.hintsOpened) || 0));
+    if (Array.isArray(data.poolOrder) && data.poolOrder.length) {
+      const known = BLOCKS.map(function (b) { return b.id; });
+      poolOrder = data.poolOrder.filter(function (id) { return known.indexOf(id) !== -1; });
+      known.forEach(function (id) { if (poolOrder.indexOf(id) === -1) poolOrder.push(id); });
+    } else {
+      poolOrder = shuffle(poolOrder);
+    }
+  }
+
+  function resetAll() {
+    if (!confirm("Вернуть стартовую заготовку? Сборка и ответы будут потеряны.")) return;
+    clearTimeout(saveTimer);
+    slots = emptySlots();
+    answersB = [null, null, null, null];
+    hintsOpened = 0;
+    pickedId = null;
+    poolOrder = shuffle(BLOCKS.map(function (b) { return b.id; }));
+    testsEl.innerHTML = "";
+    hintsEl.innerHTML = "";
+    honesty.textContent = "";
+    assembledEl.textContent = "";
+    etalonBtn.disabled = true;
+    etalonBox.classList.add("hide");
+    solBody.innerHTML = "";
+    limitsMsg.textContent = "";
+    limitsMsg.classList.add("hide");
+    scoreEl.textContent = "0 / 12";
+    scoreEl.classList.remove("is-done");
+    barEl.style.width = "0";
+    tab = "build";
+    setTab("build");
+    renderBoard();
+    renderPrompt();
+    renderForeign();
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+
+  loadDraft();
+  bindSlots();
+  setTab(tab);
+  renderBoard();
+  renderPrompt();
+  renderForeign();
+  replayHints();
+
+  tabBuild.addEventListener("click", function () { setTab("build"); });
+  tabOthers.addEventListener("click", function () { setTab("others"); });
+  document.getElementById("checkBtn").addEventListener("click", function () {
+    clearTimeout(saveTimer);
+    runChecks();
+  });
+  document.getElementById("hintBtn").addEventListener("click", function () {
+    if (hintsOpened >= HINTS.length) return;
+    appendHint(hintsOpened);
+    hintsOpened += 1;
+    honesty.textContent = "Открыты подсказки: " + hintsOpened + ". Это не штраф, но на защите объясните решение своими словами.";
+    if (hintsOpened >= 3) unlockReview("подсказки");
+    saveDraft();
+  });
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("dlBtn").addEventListener("click", function () {
+    const text = assembledText() || etalonPrompt();
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "l16_moy_promt.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  etalonBtn.addEventListener("click", function () {
+    fillSol();
+    etalonBox.classList.toggle("hide");
+  });
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+})();
+</script>
+</body>
+</html>

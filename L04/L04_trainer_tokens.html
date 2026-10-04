@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тренажёр · Занятие 4 · CSS-токены</title>
+  <style>
+    :root {
+      --tm-ink:        #111312;
+      --tm-green:      #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg:         #FFFFFF;
+      --tm-bg-alt:     #F4F6F3;
+      --tm-text:       #111312;
+      --tm-muted:      #6B706B;
+      --tm-border:     #E3E7E1;
+      --tm-radius:     18px;
+      --tm-radius-sm:  10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow:     0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg:    #F4F6F3;
+      --tm-code-text:  #111312;
+      --tm-ok:         #4E9C2E;
+      --tm-fail:       #C24545;
+      --tm-warn:       #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink:        #0F0F0F;
+      --tm-green:      #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg:         #0F0F0F;
+      --tm-bg-alt:     #17191A;
+      --tm-text:       #F2F4F1;
+      --tm-muted:      #9BA29B;
+      --tm-border:     #262A26;
+      --tm-shadow:     0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg:    #0B0C0B;
+      --tm-code-text:  #F2F4F1;
+      --tm-ok:         #8FD35F;
+      --tm-fail:       #E07A7A;
+      --tm-warn:       #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+    header.top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 34px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    header.top p { margin: 0; color: var(--tm-muted); font-size: 15px; }
+    .course-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+    .course-links a, a.pill {
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .course-links a.primary, a.pill.primary, .btn {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .brief, .ref, .status, .tests, .hints, .solution, .gloss, .teacher, .spec {
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    p, li { line-height: 1.45; font-size: 16px; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+    .spec h3 { font-size: 16px; margin: 16px 0 8px; }
+    .spec h3:first-child { margin-top: 0; }
+    .spec ol { margin: 0; padding-left: 22px; }
+    .spec li { margin-bottom: 10px; }
+    .ref-page {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .ref-page .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+    .ref-page .mid { padding: 16px 14px; }
+    .ref-page h3 { margin: 0 0 8px; font-size: 22px; }
+    .ref-page p { margin: 0 0 10px; color: var(--tm-muted); }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1fr 1fr; }
+    }
+
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks { grid-template-columns: 1fr 1fr; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .blocks-src, .blocks-dst {
+      min-width: 0;
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 16px;
+    }
+    .blocks-src h2, .blocks-dst h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .layout.is-blocks .pool {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .layout.is-blocks .chip { max-width: none; width: 100%; }
+
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      line-height: 1.45;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+      caret-color: var(--tm-text);
+    }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 0;
+      border-radius: 16px;
+      box-shadow: var(--tm-shadow);
+    }
+    .meter {
+      height: 8px;
+      background: var(--tm-border);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      font: inherit;
+      font-weight: 650;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      cursor: pointer;
+    }
+    button.ghost { background: var(--tm-bg-alt); color: var(--tm-text); }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: var(--tm-bg-alt);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .pill.ok { background: var(--tm-green-soft); color: var(--tm-ok); }
+    .test {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--tm-border);
+      font-size: 15px;
+    }
+    .test .hint { color: var(--tm-fail); display: block; margin-top: 4px; }
+    .hintbox {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--tm-green-soft);
+      border-radius: 12px;
+    }
+    .hintbox.open { display: block; }
+    .hintbox pre {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      margin: 0;
+    }
+    .locked #solBody { display: none; }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    .gloss dt { font-weight: 650; margin-top: 12px; font-size: 15px; }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; box-shadow: none; background: transparent; padding: 8px 0; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); }
+    .hide { display: none !important; }
+    .modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 20px;
+    }
+    .modes button {
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .modes button[aria-pressed="true"] {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 52px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .chip.is-picked {
+      outline: 3px solid var(--tm-green);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .page-frame {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .page-frame .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 12px;
+    }
+    .page-frame .mid { padding: 12px; }
+    .slot-lab {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 6px;
+      opacity: 0.85;
+    }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--tm-bg-alt);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .slot.is-error { border-color: var(--tm-fail); }
+    #solCode {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      padding: 14px;
+      border-radius: 12px;
+      overflow: auto;
+      border-left: 5px solid var(--tm-green);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Тема буфета</h1>
+        <p>Занятие 4 · CSS-переменные и тёмная тема</p>
+      </div>
+      <div>
+        <p id="scoreline">0 из 10 проверок</p>
+        <button type="button" class="ghost" id="themeBtn">Тема</button>
+      </div>
+    </header>
+    <nav class="course-links" aria-label="Курс">
+      <a href="../index.html">Все занятия</a>
+      <a href="L04_presentation.html">Презентация</a>
+      <a href="../L03/L03_presentation.html">Занятие 3</a>
+      <a href="../L05/L05_presentation.html">Занятие 5</a>
+    </nav>
+
+    <div class="modes" role="tablist" aria-label="Как решать">
+      <button type="button" id="modeCodeBtn" aria-pressed="true">1. Писать код</button>
+      <button type="button" id="modeBlocksBtn" aria-pressed="false">2. Собрать блоками</button>
+    </div>
+
+    <section class="brief spec">
+      <h2>ТЗ</h2>
+      <p>Заказ буфета «Северный пирог». Оформи страницу так, чтобы палитру можно было поменять одной правкой.</p>
+      <div id="specCode">
+        <h3>Как сделать кодом</h3>
+        <ol>
+          <li>Заведи в <code>:root</code> переменные: фон, фон карточки, текст, приглушённый текст, акцент, граница.</li>
+          <li>Ниже — ни одного цвета значением, только <code>var()</code>.</li>
+          <li>Шрифт и цвет текста задай один раз на <code>body</code>.</li>
+          <li>Карточка пирога: фон, рамка, скругление, отступ.</li>
+          <li>Цена: жирная, акцентным цветом.</li>
+          <li>Добавь тёмную тему через <code>html[data-theme="dark"]</code>.</li>
+        </ol>
+      </div>
+      <div id="specBlocks" class="hide">
+        <h3>Как сделать блоками</h3>
+        <p>Разметка уже готова. Собери CSS: токены, тёмная тема, body, карточка, цена. Лишние чипы — без двух дефисов, цвета значениями, <code>!important</code>.</p>
+      </div>
+    </section>
+
+    <section class="ref">
+      <h2>Эталон-цель</h2>
+      <p class="lead">Три карточки пирогов. Цена акцентом. Палитра в переменных — светлая и тёмная с теми же именами.</p>
+      <div class="ref-page">
+        <div class="bar">Северный пирог</div>
+        <div class="mid">
+          <h3>Рыбник — 90 ₽</h3>
+          <p>Карточка с рамкой и скруглением. Цена жирная.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <strong>Прогресс:</strong>
+      <span id="score">0 / 0</span>
+      · подсказок открыто: <span id="hintCount">0</span>/3
+      · <span id="badge" class="pill">ещё собираем</span>
+      <div class="meter"><span id="bar"></span></div>
+      <div class="row">
+        <button type="button" id="checkBtn">Проверить</button>
+        <button type="button" class="ghost" id="resetBtn">Сбросить</button>
+        <button type="button" class="ghost" id="saveBtn">Скачать страницу</button>
+      </div>
+      <p id="honesty" class="lead" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="layout">
+      <div id="paneCode">
+        <h2>Редактор</h2>
+        <textarea id="editor" spellcheck="false" aria-label="Код страницы"></textarea>
+      </div>
+      <div id="paneBlocks" class="blocks-board hide">
+        <div class="blocks-src">
+          <h2>Блоки кода</h2>
+        <p class="lead">Слева блоки CSS, справа слоты. Enter ставит чип в свободный слот.</p>
+          <div class="pool" id="blockPool" aria-label="Готовые фрагменты"></div>
+        </div>
+        <div class="blocks-dst">
+          <h2>Поля</h2>
+          <div class="page-frame">
+          <div class="bar">Стили страницы</div>
+          <div class="mid">
+            <span class="slot-lab">Токены :root</span>
+            <div class="slot" data-accept="root"></div>
+            <span class="slot-lab">Тёмная тема</span>
+            <div class="slot" data-accept="dark"></div>
+            <span class="slot-lab">Общие свойства body</span>
+            <div class="slot" data-accept="body"></div>
+            <span class="slot-lab">Карточка пирога</span>
+            <div class="slot" data-accept="card"></div>
+            <span class="slot-lab">Цена</span>
+            <div class="slot" data-accept="price"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div id="panePreview">
+        <h2>Результат</h2>
+        <iframe id="preview" title="Превью страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <section class="tests">
+      <h2>Самопроверка</h2>
+      <p class="lead">Проверки смотрят вычисленные стили в превью и способ записи в коде. Тёмную тему в превью не переключаем.</p>
+      <div id="testList"></div>
+    </section>
+
+    <section class="hints">
+      <h2>Подсказки</h2>
+      <p class="lead">Три подсказки. На демо — своими словами.</p>
+      <div class="row">
+        <button type="button" class="ghost" data-hint="0">1 — вопрос</button>
+        <button type="button" class="ghost" data-hint="1">2 — приём</button>
+        <button type="button" class="ghost" data-hint="2">3 — фрагмент</button>
+      </div>
+      <div class="hintbox" id="h0">Сколько раз в твоём файле встречается один и тот же цвет? Если больше одного — он просится в переменную. И второй вопрос: если сейчас поменять фон на тёмный, какие элементы останутся светлыми?</div>
+      <div class="hintbox" id="h1">Порядок работы: сначала блок <code>:root</code> с шестью переменными — фон, фон карточки, текст, приглушённый, акцент, граница. Потом <code>body</code> с <code>var()</code>. Потом <code>.card</code> и <code>.price</code> с <code>var()</code>. В самом конце — второй блок <code>html[data-theme="dark"]</code> с теми же именами и тёмными значениями.</div>
+      <div class="hintbox" id="h2">
+        <pre>:root {
+  --pie-bg:          #f4f6f3;
+  --pie-card:        #ffffff;
+  --pie-text:        #111312;
+  --pie-muted:       #6b706b;
+  --pie-accent-dark: #5fa22e;
+  --pie-border:      #e3e7e1;
+}
+html[data-theme="dark"] {
+  --pie-bg:          #0f0f0f;
+  --pie-card:        #17191a;
+  --pie-text:        #f2f4f1;
+  --pie-muted:       #9ba29b;
+  --pie-accent-dark: #7cc142;
+  --pie-border:      #262a26;
+}
+body {
+  background: var(--pie-bg);
+  color: var(--pie-text);
+}</pre>
+      </div>
+    </section>
+
+    <section class="solution locked" id="solutionBox">
+      <h2>Эталонное решение</h2>
+      <p id="solGate">Откроется, когда все проверки зелёные или открыты три подсказки.</p>
+      <div id="solBody" hidden>
+        <p><strong>Почему так:</strong> цвета живут в <code>:root</code> как <code>--pie-*</code>. Ниже только <code>var()</code> — иначе тёмная тема не переключит карточку. Второй набор в <code>html[data-theme="dark"]</code> обязан повторить те же имена. Без <code>!important</code> и без селекторов по <code>id</code>.</p>
+        <pre id="solCode"></pre>
+      </div>
+    </section>
+
+    <section class="gloss" id="glossary">
+      <h2>Глоссарий занятия</h2>
+      <dl>
+        <dt>CSS-переменная</dt>
+        <dd>Своё имя для значения: --pie-accent. Объявляется один раз, используется везде.</dd>
+        <dt>:root</dt>
+        <dd>Селектор корня документа. Место, где объявляют переменные.</dd>
+        <dt>var()</dt>
+        <dd>Подставить значение переменной: color: var(--pie-accent).</dd>
+        <dt>Тёмная тема</dt>
+        <dd>Второй набор тех же переменных в html[data-theme="dark"]. Правила ниже не дублируют.</dd>
+        <dt>Селектор по классу</dt>
+        <dd>.card — основной инструмент оформления. id для стилей не берём.</dd>
+        <dt>!important</dt>
+        <dd>Глушит каскад. На курсе не используем: сначала разбираем, почему правило не применилось.</dd>
+        <dt>Наследование</dt>
+        <dd>Цвет и шрифт с body переходят детям. Фон и рамка — нет.</dd>
+        <dt>Контраст</dt>
+        <dd>Для основного текста не ниже 4.5:1. Светлый акцент на белом не читается — берём --pie-accent-dark.</dd>
+      </dl>
+    </section>
+
+    <details class="teacher">
+      <summary>Карточка педагога</summary>
+      <ul>
+        <li><strong>Навык:</strong> :root токены --pie-*, var(), тёмная тема теми же именами, оформление классами.</li>
+        <li><strong>Норматив:</strong> 15–25 мин. Код или блоки. Scaffolding — образец.</li>
+        <li><strong>Типичные ошибки:</strong> pie-bg без двух дефисов; цвет значением на body; потерянная переменная в тёмном наборе; !important; #card1.</li>
+        <li><strong>Готово, когда:</strong> 10 зелёных и вслух: зачем имена в светлой и тёмной теме совпадают.</li>
+        <li><strong>Усложнение:</strong> :hover и :focus-visible у карточки — не входит в тесты.</li>
+        <li><strong>Поддержка:</strong> режим блоков; сначала :root, потом body, потом тёмная тема и сверка имён.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type="text/plain" id="starter"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Северный пирог</title>
+  <style>
+    /* твой код здесь: :root с переменными */
+
+    /* твой код здесь: html[data-theme="dark"] */
+
+    /* твой код здесь: body, .card, .price */
+  </style>
+</head>
+<body>
+  <h1>Северный пирог</h1>
+  <p class="muted">Школьный буфет. Домашняя выпечка каждый день.</p>
+  <ul>
+    <li class="card">Рыбник — <span class="price">90 ₽</span></li>
+    <li class="card">Брусничный пирог — <span class="price">70 ₽</span></li>
+    <li class="card">Калитка с картошкой — <span class="price">45 ₽</span></li>
+  </ul>
+</body>
+</html>
+</script>
+
+  <script type="text/plain" id="etalon"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Северный пирог</title>
+  <style>
+    :root {
+      --pie-bg:          #f4f6f3;
+      --pie-card:        #ffffff;
+      --pie-text:        #111312;
+      --pie-muted:       #6b706b;
+      --pie-accent-dark: #5fa22e;
+      --pie-border:      #e3e7e1;
+    }
+
+    html[data-theme="dark"] {
+      --pie-bg:          #0f0f0f;
+      --pie-card:        #17191a;
+      --pie-text:        #f2f4f1;
+      --pie-muted:       #9ba29b;
+      --pie-accent-dark: #7cc142;
+      --pie-border:      #262a26;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--pie-bg);
+      color: var(--pie-text);
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    h1 { color: var(--pie-accent-dark); }
+
+    .muted { color: var(--pie-muted); }
+
+    ul { list-style: none; padding-left: 0; }
+
+    .card {
+      background: var(--pie-card);
+      border: 1px solid var(--pie-border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .price {
+      font-weight: 700;
+      color: var(--pie-accent-dark);
+    }
+  </style>
+</head>
+<body>
+  <h1>Северный пирог</h1>
+  <p class="muted">Школьный буфет. Домашняя выпечка каждый день.</p>
+  <ul>
+    <li class="card">Рыбник — <span class="price">90 ₽</span></li>
+    <li class="card">Брусничный пирог — <span class="price">70 ₽</span></li>
+    <li class="card">Калитка с картошкой — <span class="price">45 ₽</span></li>
+  </ul>
+</body>
+</html>
+</script>
+
+  <script>
+    (function () {
+      const KEY = "wdc-l04-tokens-v1";
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      function fromPlain(id) {
+        return document.getElementById(id).textContent.replace(/^\n/, "").replace(/<\\\/script>/gi, "<" + "/script>");
+      }
+      const starter = fromPlain("starter");
+      const etalon = fromPlain("etalon");
+      const testList = document.getElementById("testList");
+      const scoreEl = document.getElementById("score");
+      const scoreline = document.getElementById("scoreline");
+      const bar = document.getElementById("bar");
+      const badge = document.getElementById("badge");
+      const honesty = document.getElementById("honesty");
+      const hintCountEl = document.getElementById("hintCount");
+      const solBody = document.getElementById("solBody");
+      const solGate = document.getElementById("solGate");
+      const solCode = document.getElementById("solCode");
+      const solutionBox = document.getElementById("solutionBox");
+      solCode.textContent = etalon;
+
+      const openedHints = new Set();
+      let debounceId = 0;
+      let lastPassed = 0;
+      const TOTAL = 10;
+      const MODE_KEY = "wdc-l04-mode-v1";
+      let mode = "code";
+      let picked = null;
+      const BLOCKS = [
+        { id: "root-ok", accept: "root", label: "Токены в :root", show: ":root { --pie-… }",
+          html: ':root {\n      --pie-bg:          #f4f6f3;\n      --pie-card:        #ffffff;\n      --pie-text:        #111312;\n      --pie-muted:       #6b706b;\n      --pie-accent-dark: #5fa22e;\n      --pie-border:      #e3e7e1;\n    }' },
+
+        { id: "root-bad", accept: "none", label: "Токены без двух дефисов", show: ":root { pie-bg: … }",
+          html: ':root {\n      pie-bg:   #f4f6f3;\n      pie-card: #ffffff;\n      pie-text: #111312;\n    }' },
+
+        { id: "dark-ok", accept: "dark", label: "Тёмная тема: те же имена", show: "html[data-theme=\"dark\"]",
+          html: 'html[data-theme="dark"] {\n      --pie-bg:          #0f0f0f;\n      --pie-card:        #17191a;\n      --pie-text:        #f2f4f1;\n      --pie-muted:       #9ba29b;\n      --pie-accent-dark: #7cc142;\n      --pie-border:      #262a26;\n    }' },
+
+        { id: "dark-bad", accept: "none", label: "Тёмная тема: правила продублированы", show: "html[data-theme] body { … }",
+          html: 'html[data-theme="dark"] body { background: #0f0f0f; color: #f2f4f1; }\n    html[data-theme="dark"] .card { background: #17191a; }' },
+
+        { id: "body-ok", accept: "body", label: "body: шрифт и цвет через var()", show: "body { var(--pie-…) }",
+          html: 'body {\n      font-family: Arial, Helvetica, sans-serif;\n      background: var(--pie-bg);\n      color: var(--pie-text);\n      line-height: 1.5;\n      padding: 24px;\n    }' },
+
+        { id: "body-bad", accept: "none", label: "body: цвета значениями", show: "body { background: #f4f6f3 }",
+          html: 'body {\n      font-family: Arial, Helvetica, sans-serif;\n      background: #f4f6f3;\n      color: #111312;\n      padding: 24px;\n    }' },
+
+        { id: "card-ok", accept: "card", label: "Карточка через var()", show: ".card { var(--pie-card) }",
+          html: '.card {\n      background: var(--pie-card);\n      border: 1px solid var(--pie-border);\n      border-radius: 14px;\n      padding: 16px;\n      margin-bottom: 12px;\n    }' },
+
+        { id: "card-bad", accept: "none", label: "Карточка по id", show: "#card1 { … }",
+          html: '#card1 {\n      background: var(--pie-card);\n      border: 1px solid var(--pie-border);\n      padding: 16px;\n    }' },
+
+        { id: "price-ok", accept: "price", label: "Цена: жирная, акцентная", show: ".price { font-weight: 700 }",
+          html: '.price {\n      font-weight: 700;\n      color: var(--pie-accent-dark);\n    }' },
+
+        { id: "price-bad", accept: "none", label: "Цена с !important", show: ".price { … !important }",
+          html: '.price {\n      font-weight: 700 !important;\n      color: #5fa22e !important;\n    }' }
+      ];
+
+      const PAGE_MARKUP = "  <h1>Северный пирог</h1>\n  <p class=\"muted\">Школьный буфет. Домашняя выпечка каждый день.</p>\n  <ul>\n    <li class=\"card\">Рыбник — <span class=\"price\">90 ₽</span></li>\n    <li class=\"card\">Брусничный пирог — <span class=\"price\">70 ₽</span></li>\n    <li class=\"card\">Калитка с картошкой — <span class=\"price\">45 ₽</span></li>\n  </ul>";
+
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+
+      function slotHtml(accept) {
+        const chip = document.querySelector('#paneBlocks .slot[data-accept="' + accept + '"] .chip');
+        if (!chip) return "";
+        const item = findBlock(chip.dataset.id);
+        return item ? item.html : "";
+      }
+
+      function htmlFromBlocks() {
+        return "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Северный пирог</title>\n  <style>\n    " +
+          slotHtml("root") + "\n\n    " +
+          slotHtml("dark") + "\n\n    " +
+          slotHtml("body") + "\n\n    " +
+          slotHtml("card") + "\n\n    " +
+          slotHtml("price") + "\n  </style>\n</head>\n<body>\n" +
+          PAGE_MARKUP + "\n</body>\n</html>";
+      }
+
+      function flashNoSlot() {
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.classList.add("is-error");
+          setTimeout(function () { slot.classList.remove("is-error"); }, 400);
+        });
+      }
+
+      function placeInMatchingSlot(chip) {
+        const item = findBlock(chip.dataset.id);
+        if (!item) return;
+        let target = null;
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          if (target) return;
+          if (slot.dataset.accept === item.accept && !slot.querySelector(".chip")) target = slot;
+        });
+        if (target) placeChip(target, chip);
+        else flashNoSlot();
+      }
+
+      function makeChip(item, uid) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.tabIndex = 0;
+        b.dataset.id = item.id;
+        b.dataset.uid = uid;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (picked === b) {
+            b.classList.remove("is-picked");
+            picked = null;
+            return;
+          }
+          document.querySelectorAll(".chip.is-picked").forEach(function (c) { c.classList.remove("is-picked"); });
+          picked = b;
+          b.classList.add("is-picked");
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          placeInMatchingSlot(b);
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", uid);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        b.addEventListener("dragover", function (e) { e.preventDefault(); });
+        b.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slot = b.closest(".slot");
+          if (picked && slot) {
+            placeChip(slot, picked);
+            return;
+          }
+          if (picked && picked.parentElement !== document.getElementById("blockPool")) {
+            document.getElementById("blockPool").appendChild(picked);
+            picked.classList.remove("is-picked");
+            picked = null;
+            editor.value = htmlFromBlocks();
+            previewDoc();
+          }
+        });
+        return b;
+      }
+
+      function fillBlocks() {
+        const pool = document.getElementById("blockPool");
+        pool.innerHTML = "";
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.innerHTML = "";
+        });
+        shuffle(BLOCKS).forEach(function (item, i) {
+          pool.appendChild(makeChip(item, "b" + i + item.id));
+        });
+      }
+
+      function placeChip(slot, chip) {
+        const old = slot.querySelector(".chip");
+        if (old) document.getElementById("blockPool").appendChild(old);
+        slot.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        editor.value = htmlFromBlocks();
+        previewDoc();
+      }
+
+      function bindBlocks() {
+        const pool = document.getElementById("blockPool");
+        const pane = document.getElementById("paneBlocks");
+        function returnToPool() {
+          if (!picked || picked.parentElement === pool) return;
+          pool.appendChild(picked);
+          picked.classList.remove("is-picked");
+          picked = null;
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+        pool.addEventListener("click", returnToPool);
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          returnToPool();
+        });
+        pane.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (picked) placeChip(slot, picked);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(slot, picked);
+          });
+        });
+      }
+
+      function setMode(next) {
+        mode = next;
+        const isCode = next === "code";
+        document.getElementById("modeCodeBtn").setAttribute("aria-pressed", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-pressed", String(!isCode));
+        document.getElementById("paneCode").classList.toggle("hide", !isCode);
+        document.getElementById("paneBlocks").classList.toggle("hide", isCode);
+        document.querySelector(".layout").classList.toggle("is-blocks", !isCode);
+        document.getElementById("specCode").classList.toggle("hide", !isCode);
+        document.getElementById("specBlocks").classList.toggle("hide", isCode);
+        try { localStorage.setItem(MODE_KEY, next); } catch (e) {}
+        if (isCode) {
+          const hasChip = !!document.querySelector("#paneBlocks .slot .chip");
+          if (hasChip) {
+            editor.value = htmlFromBlocks();
+          } else {
+            try { editor.value = localStorage.getItem(KEY) || starter; } catch (e) { editor.value = starter; }
+          }
+          previewDoc();
+        } else {
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+      }
+
+      function previewDoc() {
+        const baseHref = new URL("./", window.location.href).href;
+        let html = editor.value;
+        if (/<head>/i.test(html)) {
+          html = html.replace(/<head>/i, '<head><base href="' + baseHref + '">');
+        }
+        preview.srcdoc = html;
+        if (mode === "code") {
+          try { localStorage.setItem(KEY, editor.value); } catch (e) {}
+        }
+      }
+
+      function schedulePreview() {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(previewDoc, 280);
+      }
+
+      editor.addEventListener("input", schedulePreview);
+
+      function rgbOfToken(win, doc, name) {
+        const probe = doc.createElement("span");
+        probe.style.color = "var(" + name + ")";
+        doc.body.appendChild(probe);
+        const rgb = win.getComputedStyle(probe).color;
+        probe.remove();
+        return rgb;
+      }
+
+      function uniquePieVars(src) {
+        const re = /--pie-[a-z-]+\s*:/g;
+        const set = {};
+        let m;
+        while ((m = re.exec(src))) {
+          set[m[0].replace(/\s*:$/, "")] = true;
+        }
+        return Object.keys(set);
+      }
+
+      function namesIn(block) {
+        const re = /--pie-[a-z-]+/g;
+        const set = {};
+        let m;
+        while ((m = re.exec(block))) set[m[0]] = true;
+        return Object.keys(set).sort().join(",");
+      }
+
+      function testsFor(doc, src, win) {
+        function check(fn) {
+          try { return !!fn(); } catch (e) { return false; }
+        }
+        const rootMatch = src.match(/:root\s*\{[\s\S]*?\}/);
+        const darkMatch = src.match(/html\[data-theme\s*=\s*["']dark["']\]\s*\{[\s\S]*?\}/);
+        const card = doc.querySelector(".card");
+        const price = doc.querySelector(".price");
+        return [
+          {
+            ok: check(function () { return uniquePieVars(src).length >= 6; }),
+            title: "Шесть токенов заведено",
+            hint: "Переменная начинается с двух дефисов: --pie-bg, а не pie-bg. Без них это не переменная, и браузер молча её проигнорирует"
+          },
+          {
+            ok: check(function () {
+              const bg = win.getComputedStyle(doc.body).backgroundColor;
+              const token = rgbOfToken(win, doc, "--pie-bg");
+              return bg === token && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent";
+            }),
+            title: "Фон страницы из токена",
+            hint: "У body фон должен быть var(--pie-bg). Если написать цвет значением, тёмная тема его не переключит"
+          },
+          {
+            ok: check(function () {
+              const c = win.getComputedStyle(doc.body).color;
+              const token = rgbOfToken(win, doc, "--pie-text");
+              return c === token && !!c;
+            }),
+            title: "Цвет текста из токена",
+            hint: "color у body — тоже var(). Задай его один раз здесь: он наследуется всеми элементами внутри"
+          },
+          {
+            ok: check(function () {
+              if (!card) return false;
+              const st = win.getComputedStyle(card);
+              const bg = st.backgroundColor;
+              const notClear = bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent";
+              const bw = parseFloat(st.borderTopWidth);
+              const rad = parseFloat(st.borderTopLeftRadius || st.borderRadius);
+              return notClear && bw > 0 && rad > 0;
+            }),
+            title: "Карточка оформлена",
+            hint: "Карточке нужны три вещи: фон, рамка 1px solid и скругление border-radius. Проверь, что правило вообще применилось: если его нет в DevTools, не совпал селектор"
+          },
+          {
+            ok: check(function () {
+              if (!card) return false;
+              const bg = win.getComputedStyle(card).backgroundColor;
+              const token = rgbOfToken(win, doc, "--pie-card");
+              return bg === token && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent";
+            }),
+            title: "Фон карточки из токена",
+            hint: "Фон карточки написан значением. Замени на var(--pie-card) — иначе в тёмной теме карточка останется белой"
+          },
+          {
+            ok: check(function () {
+              if (!price) return false;
+              const fw = win.getComputedStyle(price).fontWeight;
+              const n = parseInt(fw, 10);
+              return fw === "bold" || (!isNaN(n) && n >= 600);
+            }),
+            title: "Цена выделена",
+            hint: "font-weight: 700 у класса .price. Тег <b> для этого не нужен: выделение цены — оформление, а не смысл"
+          },
+          {
+            ok: check(function () {
+              if (!price) return false;
+              const c = win.getComputedStyle(price).color;
+              const token = rgbOfToken(win, doc, "--pie-accent-dark");
+              return c === token;
+            }),
+            title: "Цена акцентным цветом",
+            hint: "Возьми var(--pie-accent-dark), а не светлый акцент: светло-зелёный на белом плохо читается"
+          },
+          {
+            ok: check(function () { return /html\[data-theme\s*=\s*["']dark["']\]/.test(src); }),
+            title: "Тёмная тема объявлена",
+            hint: "Тёмная тема — это второй набор тех же переменных в селекторе html[data-theme=\"dark\"]. Правила ниже переписывать не нужно"
+          },
+          {
+            ok: check(function () {
+              const light = namesIn(rootMatch ? rootMatch[0] : "");
+              const dark = namesIn(darkMatch ? darkMatch[0] : "");
+              return light.length > 0 && light === dark;
+            }),
+            title: "Ни одна переменная не потеряна",
+            hint: "В тёмной теме не хватает переменной из светлой. Из-за этого один элемент останется в старом цвете — обычно это тёмный текст на тёмном фоне. Пересчитай имена в обоих блоках"
+          },
+          {
+            ok: check(function () {
+              return !/!important/.test(src) && !/#[a-z][\w-]*\s*\{/i.test(src);
+            }),
+            title: "Каскад чистый",
+            hint: "!important и селекторы по id перебивают всё и делают стили неисправимыми. Оформление — классами; если правило не применилось, ищи причину в DevTools, а не глуши её"
+          }
+        ];
+      }
+
+      function maybeUnlock(done) {
+        const unlocked = done || openedHints.size >= 3;
+        if (!unlocked) return;
+        solBody.hidden = false;
+        solutionBox.classList.remove("locked");
+        solGate.textContent = done
+          ? "Эталон открыт: все проверки пройдены."
+          : "Эталон открыт: использованы три подсказки.";
+      }
+
+      function renderTests(results) {
+        testList.innerHTML = "";
+        let passed = 0;
+        results.forEach(function (t) {
+          if (t.ok) passed += 1;
+          const div = document.createElement("div");
+          div.className = "test";
+          div.textContent = (t.ok ? "✅ " : "❌ ") + t.title;
+          if (!t.ok) {
+            const hint = document.createElement("span");
+            hint.className = "hint";
+            hint.textContent = t.hint;
+            div.appendChild(hint);
+          }
+          testList.appendChild(div);
+        });
+        lastPassed = passed;
+        const total = results.length;
+        scoreEl.textContent = passed + " / " + total;
+        scoreline.textContent = passed + " из " + total + " проверок";
+        bar.style.width = (passed / total * 100) + "%";
+        const done = passed === total;
+        badge.textContent = done ? "Задача сдана" : "ещё собираем";
+        badge.className = "pill" + (done ? " ok" : "");
+        maybeUnlock(done);
+        return done;
+      }
+
+      function run() {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        clearTimeout(debounceId);
+        const source = editor.value;
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const doc = preview.contentDocument;
+          const win = preview.contentWindow;
+          if (!doc || !doc.body || !win) {
+            renderTests([{ ok: false, title: "Документ не разобрался", hint: "Проверьте незакрытые теги и скобки в style." }]);
+            return;
+          }
+          renderTests(testsFor(doc, source, win));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(finish, 60);
+        });
+        previewDoc();
+        setTimeout(function () { if (!finished) finish(); }, 1500);
+      }
+
+      document.getElementById("checkBtn").addEventListener("click", run);
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!window.confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        if (mode === "blocks") {
+          fillBlocks();
+          editor.value = htmlFromBlocks();
+        } else {
+          editor.value = starter;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+        }
+        previewDoc();
+        testList.innerHTML = "";
+        scoreEl.textContent = "0 / 0";
+        scoreline.textContent = "0 из " + TOTAL + " проверок";
+        bar.style.width = "0";
+        badge.textContent = "ещё собираем";
+        badge.className = "pill";
+      });
+      document.getElementById("saveBtn").addEventListener("click", function () {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "l04-tokens.html";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const html = document.documentElement;
+        html.setAttribute("data-theme", html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+      document.querySelectorAll("[data-hint]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const n = btn.getAttribute("data-hint");
+          openedHints.add(n);
+          document.getElementById("h" + n).classList.add("open");
+          hintCountEl.textContent = String(openedHints.size);
+          honesty.textContent = openedHints.size
+            ? "Открыты подсказки: " + Array.from(openedHints).map(function (x) { return Number(x) + 1; }).join(", ") + "."
+            : "";
+          maybeUnlock(lastPassed === TOTAL);
+        });
+      });
+
+      fillBlocks();
+      bindBlocks();
+      document.getElementById("modeCodeBtn").addEventListener("click", function () { setMode("code"); });
+      document.getElementById("modeBlocksBtn").addEventListener("click", function () { setMode("blocks"); });
+      try {
+        editor.value = localStorage.getItem(KEY) || starter;
+      } catch (e) {
+        editor.value = starter;
+      }
+      try {
+        const savedMode = localStorage.getItem(MODE_KEY);
+        if (savedMode === "blocks" || savedMode === "code") mode = savedMode;
+      } catch (e) {}
+      setMode(mode);
+    })();
+  </script>
+</body>
+</html>

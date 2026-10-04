@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 22. Итоговый проект: доведение до MVP</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 22</strong>
+      <span>Итоговый проект: доведение до MVP</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Через час я подойду, открою вашу ссылку на своём устройстве и просто попользуюсь. Три минуты, восемь действий.» -->
+        <p class="tm-eyebrow">►► Модуль 9 · Занятие 22</p>
+        <h1>Доведение до MVP</h1>
+        <p>Сегодня контрольная точка. Продукт должен работать целиком</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L22_checklist.html">►► К чек-листу</a>
+          <a class="tm-btn tm-btn--primary" href="../L21/L21_presentation.html">►► Занятие 21</a>
+          <a class="tm-btn tm-btn--primary" href="../L23/L23_presentation.html">►► Занятие 23</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Панель, которая забывает, задачу пользователя не решает. Каким бы красивым ни был интерфейс.» -->
+        <p class="tm-eyebrow">►► Проверим</p>
+        <h2>Закрыл вкладку — вернулся вечером</h2>
+        <p>Пусто. Второй раз он заполнять не станет — он просто больше не откроет ваш сайт</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Ключа нет — вернётся `null`. Не пустая строка и не ошибка. Проверять надо именно на `null`.» -->
+        <p class="tm-eyebrow">►► Хранилище браузера</p>
+        <h2>Что умеет и чего не умеет</h2>
+        <ul class="tm-list">
+          <li><strong>Умеет:</strong> переживать закрытие, работать без сети, отдавать мгновенно</li>
+          <li><strong>Не умеет:</strong> хранить не-строки, переноситься между устройствами, всегда быть доступным</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">localStorage.getItem("нет")  // null</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Смотрите в DevTools → Application. Это самое полезное место при отладке сохранения.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>Массив без <code>JSON.stringify</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>В хранилище попадёт <code>"[object Object],[object Object]"</code>. Ошибки не будет — данные испортятся тихо</p>
+          <pre class="tm-code"><span class="hl">localStorage.setItem("items", items);</span></pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Одна функция делает и то и другое. Перерисовку не забывают — без неё не видно. Значит, и сохранение не забудут.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Две точки в коде</h2>
+        <ul class="tm-list">
+          <li><strong>Сохранение</strong> — после каждого изменения.</li>
+          <li><strong>Восстановление</strong> — один раз при загрузке, до отрисовки</li>
+        </ul>
+        <pre class="tm-code">function update() {
+  renderList();
+<span class="hl">  save();</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Данные из хранилища такие же чужие, как ответ сервиса. Кто их туда положил — уже неважно.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>Защитное чтение</h2>
+        <p>Три уровня:</p>
+        <ul class="tm-list">
+          <li>хранилище может быть недоступно</li>
+          <li>строка может быть испорчена</li>
+          <li>данные могут быть не той формы</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">if (!Array.isArray(data)) return [];</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Без `try/catch` — пустая сломанная страница. С ним — пустой список и предупреждение в консоли. Функция чтения не падает никогда.» -->
+        <p class="tm-eyebrow">►► Смотрим</p>
+        <h2>Портим данные руками</h2>
+        <p>DevTools → Application → стереть скобку → обновить</p>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «И именно там страница чаще всего и падает: ключа нет, `getItem` вернул `null`.» -->
+        <p class="tm-eyebrow">►► Обязательно</p>
+        <h2><span class="hl">Приватное</span> окно</h2>
+        <p>В вашем браузере хранилище уже заполнено. Первый визит проверяется только там</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Если у вас это занимает час, значит цвета вписаны прямо в правила. Сегодня хороший день это выяснить.» -->
+        <p class="tm-eyebrow">►► Тёмная тема</p>
+        <h2>Те же имена, другие значения</h2>
+        <p>Переопределяем токены под <code>html[data-theme="dark"]</code>. Правила ниже <strong>не меняются вообще</strong></p>
+        <pre class="tm-code"><span class="hl">html[data-theme="dark"] {</span>
+  --bg: #14171A;
+  --ink: #ECEFEA;
+  --accent: #8FD456;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Иначе страница мигнёт белым. Покажу — это заметно.» -->
+        <p class="tm-eyebrow">►► Порядок при загрузке</p>
+        <h2>Тема — до отрисовки</h2>
+        <ul class="tm-list">
+          <li>1 применить тему</li>
+          <li>2 прочитать данные</li>
+          <li>3 положить в массив</li>
+          <li>4 отрисовать</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Анимация — акцент. Когда двигается всё, не выделяется ничто.» -->
+        <p class="tm-eyebrow">►► Микроанимации</p>
+        <h2>Три штуки, 120–250 мс</h2>
+        <ul class="tm-list">
+          <li>Только <code>transform</code> и <code>opacity</code></li>
+          <li><code>transition</code> в базовом правиле, не в <code>:hover</code></li>
+          <li><code>prefers-reduced-motion</code> обязателен</li>
+        </ul>
+        <pre class="tm-code">.card {
+<span class="hl">  transition: transform 160ms ease;</span>
+}
+.card:hover { transform: translateY(-2px); }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Наведите и отведите курсор. Разница видна сразу.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2><code>transition</code> внутри <code>:hover</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Туда плавно, обратно рывком. Плюс <code>all</code> и 500 мс — на школьной машине подтормаживает</p>
+          <pre class="tm-code">.card:hover {
+<span class="hl">  transition: all 500ms ease;</span>
+  transform: translateY(-10px);
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Ни одно из восьми не про код и не про красоту. Просто попользоваться.» -->
+        <p class="tm-eyebrow">►► Контрольная точка</p>
+        <h2>Сценарий приёмки: <span class="hl">восемь</span> действий</h2>
+        <p>открыть в приватном окне · добавить · пустая форма · перезагрузить · переключить тему · Offline · 320 px · консоль</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Первым делом проверьте в консоли, что массив наполняется. Сохранять нечего, пока сохранять нечего.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 50 минут</h2>
+        <ul class="tm-list">
+          <li>сохранение и защищённое чтение</li>
+          <li>тёмная тема с сохранением</li>
+          <li>три микроанимации</li>
+          <li>второй рефакторинг</li>
+          <li>пройти сценарий приёмки самому</li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L22_checklist.html">►► К чек-листу</a>
+          <a class="tm-btn tm-btn--ghost" href="../L21/L21_presentation.html">►► Занятие 21</a>
+          <a class="tm-btn tm-btn--ghost" href="../L23/L23_presentation.html">►► Занятие 23</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Прогоните сценарий сами за двадцать минут до конца. Это самое полезное, что можно сделать в последние минуты.» -->
+        <p class="tm-eyebrow">►► Сделано, если</p>
+        <h2>Девять пунктов приёмки</h2>
+        <div class="criterion">
+          <ul class="tm-list">
+            <li>запись переживает перезагрузку</li>
+            <li>сохраняется каждое изменение</li>
+            <li>читаемый JSON, ключ с версией</li>
+            <li>приватное окно работает</li>
+            <li>испорченные данные не роняют</li>
+            <li>тема сохраняется и не мигает</li>
+            <li>три анимации + <code>prefers-reduced-motion</code></li>
+            <li>второй рефакторинг</li>
+            <li><strong>сценарий приёмки пройден</strong></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Это не поражение. Проект из четырёх работающих возможностей защищается; из десяти начатых — нет. И решение принимается сегодня, а не за день до защиты.» -->
+        <p class="tm-eyebrow">►► Если MVP не достигнут</p>
+        <h2>Сокращаем, а не догоняем</h2>
+        <ul class="tm-list">
+          <li>Вычеркнуть вторую часть backlog целиком</li>
+          <li>упростить обязательное до минимума</li>
+          <li>несделанное — в «известные ограничения» README</li>
+        </ul>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 22</h3>
+      <dl>
+        <dt>Точка сохранения</dt>
+        <dd>Место в коде, откуда вызывается запись состояния: сразу после каждого изменения данных. Надёжнее всего — внутри одной функции вместе с перерисовкой.</dd>
+        <dt>Точка восстановления</dt>
+        <dd>Единственное место, где сохранённое читается: при загрузке страницы, после применения темы и до отрисовки.</dd>
+        <dt>Сериализация</dt>
+        <dd>Превращение объекта или массива в строку через <code>JSON.stringify</code> для записи в хранилище; обратное превращение — <code>JSON.parse</code>.</dd>
+        <dt>Защитное чтение</dt>
+        <dd>Чтение из хранилища с тремя уровнями проверки: доступность хранилища, целостность строки, форма разобранных данных. Функция чтения возвращает данные или пустой массив, но никогда не роняет страницу.</dd>
+        <dt><code>Array.isArray</code></dt>
+        <dd>Проверка, что значение является массивом. Нужна после <code>JSON.parse</code>: испорченная строка может разобраться в число или объект без всякой ошибки.</dd>
+        <dt>Версия ключа хранилища</dt>
+        <dd>Суффикс вида <code>-v1</code> в имени ключа. Меняется, когда новая структура данных несовместима со старой; при совместимых изменениях вместо смены версии подставляют значение по умолчанию.</dd>
+        <dt>Значение по умолчанию</dt>
+        <dd>То, что подставляется вместо отсутствующего поля при чтении старых данных. Позволяет добавлять необязательные поля, не меняя версию ключа.</dd>
+        <dt>Первый визит</dt>
+        <dd>Состояние, когда пользователь открывает панель впервые и в хранилище ничего нет. Проверяется в приватном окне браузера; именно здесь чаще всего падает непроверенное чтение.</dd>
+        <dt>Микроанимация</dt>
+        <dd>Короткое изменение вида элемента в ответ на действие: наведение, нажатие, появление. Длительность 120–250 мс, анимируются только <code>transform</code> и <code>opacity</code>, <code>transition</code> пишется в базовом правиле.</dd>
+        <dt>MVP-приёмка</dt>
+        <dd>Сценарий из восьми действий, который посторонний человек выполняет по публичной ссылке: открыть, добавить, ошибиться, перезагрузить, переключить тему, отключить сеть, посмотреть на узком экране, посмотреть консоль.</dd>
+        <dt>Сокращение объёма</dt>
+        <dd>Реакция на недостигнутый MVP: вычеркнуть вторую часть backlog, упростить обязательные задачи, несделанное честно записать в «известные ограничения» README. Не догонять, а сокращать.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

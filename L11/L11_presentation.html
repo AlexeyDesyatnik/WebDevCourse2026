@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 11. Компоненты и валидация форм</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 11</strong>
+      <span>Компоненты и валидация форм</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 17</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Сегодня много не про код, а про то, что вы пишете человеку» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 4 · ЗАНЯТИЕ 11</p>
+        <h1>Компоненты и валидация форм</h1>
+        <p class="lead">Занятие 11 из 24. Форма перестаёт принимать мусор и начинает объяснять, что не так.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L11_trainer_validate.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L10/L10_presentation.html">►► Занятие 10</a>
+          <a class="tm-btn tm-btn--ghost" href="../L12/L12_presentation.html">►► Занятие 12</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Форма работает. Просто проверять её никто не научил» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Я не знаю, кому отдавать пирог»</h2>
+        <p>Марина Петровна с распечаткой: заявки с пустым именем, «ко скольки — завтра». Форма принимает всё подряд</p>
+      </section>
+
+      <section class="slide">
+        <!-- «На защите могут спросить: а если отключить JavaScript? Ответ вы теперь знаете» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Две проверки, две задачи</h2>
+        <ul class="tm-list">
+          <li><strong>В браузере</strong> — помочь человеку не ошибиться</li>
+          <li><strong>На сервере</strong> — не пустить плохие данные в систему</li>
+          <li>Одна другую <strong>не заменяет</strong></li>
+          <li>Клиентскую можно обойти через DevTools — и это нормально</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Пишите preventDefault сразу. Тогда ошибка в коде ниже не перезагрузит страницу» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Перехватываем отправку</h2>
+        <ul class="tm-list">
+          <li>Событие <code>submit</code> — на <strong>форме</strong>, не на кнопке</li>
+          <li><code>preventDefault()</code> первой строкой</li>
+          <li>Дальше всё в твоих руках</li>
+        </ul>
+        <pre class="tm-code">form.addEventListener("submit", (event) =&gt; {
+<span class="hl">  event.preventDefault();</span>
+  // наша проверка
+});</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Мышью работает, с клавиатуры нет. Сейчас покажу» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Обработчик на кнопке</h2>
+        <p>Форму отправляют тремя способами: мышью, Enter из поля, Enter на кнопке. Событие <code>submit</code> возникает во всех трёх. <code>click</code> — не всегда</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Пропустит Enter из поля</p>
+          <pre class="tm-code">btn.addEventListener("click", (event) =&gt; {
+  event.preventDefault();
+});</pre>
+        </div>
+        <p><strong>Правило: форма — <code>submit</code>, не кнопка — <code>click</code></strong></p>
+      </section>
+
+      <section class="slide">
+        <!-- «Возвращаем текст — он сразу готов к показу. Одна проверка отвечает на два вопроса» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Правила проверки решаются до кода</h2>
+        <ul class="tm-list">
+          <li>Обязательно ли поле?</li>
+          <li>Каким должно быть значение?</li>
+          <li>Что сказать, если не так?</li>
+        </ul>
+        <p>Функция проверки возвращает <strong>текст ошибки или пустую строку</strong> — не <code>true</code>/<code>false</code></p>
+        <pre class="tm-code">function checkName(value) {
+<span class="hl">  if (value.trim() === "") return "Напиши имя";</span>
+  return "";
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас введу три пробела и отправлю. Смотрите» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Забыть <code>.trim()</code></h2>
+        <p>Три пробела — не пустая строка. Поле считается заполненным, заявка уходит без имени</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Пробелы пройдут</p>
+          <pre class="tm-code">if (value === "") {
+  return "Напиши имя";
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>Сообщение об ошибке — это <span class="hl">инструкция</span>, а не сигнал тревоги</h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверка простая: дайте форму соседу. Не понял, что исправить — сообщение плохое» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Хорошее сообщение</h2>
+        <ul class="tm-list">
+          <li>«Ошибка» → «Напиши имя — как к тебе обращаться?»</li>
+          <li>«Некорректный формат» → «Класс пишется как 9А или 11Б»</li>
+          <li>«Значение вне диапазона» → «От 1 до 5 штук за раз»</li>
+        </ul>
+        <p>Говори, <strong>что делать</strong>, а не что не так. Дай пример. Без крика</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Скрипт меняет атрибут, вид задаёт CSS. Одно изменение — два результата» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Доступность: четыре строки</h2>
+        <ul class="tm-list">
+          <li><code>aria-describedby</code> — в разметке, один раз</li>
+          <li><code>aria-invalid</code> — из скрипта, когда ошибка</li>
+          <li><code>removeAttribute</code> — когда исправлено</li>
+          <li><code>.focus()</code> на первое неверное поле</li>
+        </ul>
+        <pre class="tm-code">errorBox.textContent = message;
+<span class="hl">input.setAttribute("aria-invalid", "true");</span>
+// и в CSS:
+input[aria-invalid="true"] { border-color: var(--err); }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Подумайте, как каждый вариант ощущается человеком» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Когда проверять: при вводе, при уходе из поля или при отправке?</h2>
+        <p>Обсуждаем вслух. У каждого варианта есть свои последствия</p>
+      </section>
+
+      <section class="slide">
+        <!-- «До первой отправки молчим. После — сразу убираем сообщение, как только поле стало верным» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Момент проверки</h2>
+        <ul class="tm-list">
+          <li>При каждом нажатии — ошибка вспыхивает, пока человек печатает</li>
+          <li><strong>При отправке</strong> — он сказал «готово», мы честно ответили</li>
+          <li><strong>И при исправлении</strong> — но только после первой отправки</li>
+        </ul>
+        <pre class="tm-code">let wasSubmitted = false;
+<span class="hl">if (!wasSubmitted) return;</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверяем все поля, показываем все сообщения, фокус — в первое неверное» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Показать только первую ошибку</h2>
+        <p>Человек с тремя ошибками отправит форму три раза. С каждым разом раздражаясь сильнее</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <pre class="tm-code">if (message !== "") {
+  showError(input, errorBox, message);
+  return;   // выход после первой
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Знакомая структура — массив объектов с занятия 9. Только про поля вместо пирогов» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Шесть полей без шести копий</h2>
+        <ul class="tm-list">
+          <li>Повторяющееся описываем <strong>данными</strong></li>
+          <li>Обрабатываем одним циклом</li>
+          <li>Добавилось поле — одна строка в массив и одна функция</li>
+        </ul>
+        <pre class="tm-code">const FIELDS = [
+<span class="hl">  { input: "#name", error: "#nameError", check: checkName },</span>
+  { input: "#cls",  error: "#clsError",  check: checkClass }
+];</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Рефакторить можно только то, что уже работает и что вы понимаете. Обратный порядок не годится» -->
+        <p class="tm-eyebrow">►► ЗАЧЕМ</p>
+        <h2>Рефакторинг</h2>
+        <ul class="tm-list">
+          <li>Переписать так, чтобы стало понятнее, а работало <strong>точно так же</strong></li>
+          <li>Не добавляет возможностей и не чинит ошибки</li>
+          <li>Порядок: сначала работает → потом сокращаем → потом проверяем, что не сломалось</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Перед сдачей — семь сценариев из задания. Особенно Enter из поля и три пробела» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Перехватываешь отправку формы предзаказа</li>
+          <li>Проверяешь шесть полей, показываешь все ошибки сразу</li>
+          <li><code>aria-invalid</code> и фокус в первое неверное</li>
+          <li>Собираешь повторы в цикл</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> Enter из поля тоже работает, три пробела не проходят, все ошибки видны сразу, сообщения объясняют, что исправить</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L11_trainer_validate.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сначала пишете сами и добиваетесь, чтобы работало. Потом просите сократить. Обратный порядок не годится» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: убери повторы, не меняя поведения</h2>
+        <pre class="tm-code">Ты помогаешь провести рефакторинг кода начинающего разработчика.
+Контекст: страница школьного буфета, проверка формы предзаказа. Чистый JavaScript, без библиотек. Ученик знает: функции, массивы объектов, filter/map/find, addEventListener, делегирование, textContent, classList. Не знает: классы, модули, асинхронность.
+Задача: в моём коде повторяются одинаковые куски для разных полей формы. Предложи, как убрать повторы, сохранив поведение абсолютно тем же.
+Ограничения: не меняй тексты сообщений об ошибках; не убирай preventDefault, .trim(), aria-invalid и постановку фокуса; не предлагай библиотеки, классы, модули и встроенную браузерную валидацию вместо моей; не сокращай так, чтобы стало непонятно четырнадцатилетнему; пиши по-русски.
+Формат ответа: сначала список того, что именно повторяется, — не больше четырёх пунктов. Потом переписанный код. Потом таблица: что было, что стало, что при этом не изменилось в поведении.
+Критерии проверки: поведение идентично исходному; все проверки на месте; количество строк уменьшилось; код читается без дополнительных объяснений.
+
+Вот мой код:
+[вставь сюда свою валидацию]</pre>
+        <p><strong>Проверить руками:</strong> поведение то же · <code>preventDefault</code>, <code>.trim()</code>, <code>aria-invalid</code> на месте · не подменила на браузерную проверку · тексты сообщений не изменились · можешь объяснить каждую строку · стало ли понятнее</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 11</h3>
+      <dl>
+        <dt>Валидация</dt>
+        <dd>Проверка введённых данных до того, как их принять.</dd>
+        <dt>Клиентская проверка</dt>
+        <dd>Проверка в браузере. Помогает человеку не ошибиться. Её можно обойти, поэтому она не защищает.</dd>
+        <dt>Серверная проверка</dt>
+        <dd>Проверка на сервере. Защищает систему от плохих данных. Клиентскую не заменяет и не заменяется ею.</dd>
+        <dt>Событие submit</dt>
+        <dd>Попытка отправить форму. Возникает при всех способах отправки, включая Enter из поля.</dd>
+        <dt>preventDefault</dt>
+        <dd>Отмена стандартного поведения браузера. Для формы — отмена отправки и перезагрузки страницы.</dd>
+        <dt>.trim()</dt>
+        <dd>Обрезка пробелов по краям строки. Обязательна перед проверкой текстового поля.</dd>
+        <dt>Функция проверки</dt>
+        <dd>Принимает значение, возвращает текст ошибки или пустую строку.</dd>
+        <dt>Регулярное выражение</dt>
+        <dd>Шаблон для проверки текста. .test(строка) возвращает true, если строка подходит.</dd>
+        <dt>Сообщение об ошибке</dt>
+        <dd>Текст рядом с полем, объясняющий, что исправить. Не «ошибка», а инструкция.</dd>
+        <dt>aria-describedby</dt>
+        <dd>Атрибут в разметке: указывает id элемента, который описывает поле.</dd>
+        <dt>aria-invalid</dt>
+        <dd>Атрибут из скрипта: сообщает программе чтения, что поле заполнено неверно. Снимается при исправлении.</dd>
+        <dt>.focus()</dt>
+        <dd>Установка курсора в поле. Ставится в первое неверное поле после неудачной отправки.</dd>
+        <dt>form.reset()</dt>
+        <dd>Возврат всех полей формы к исходным значениям.</dd>
+        <dt>Рефакторинг</dt>
+        <dd>Переписывание кода так, чтобы он стал понятнее, а работал точно так же. Поведение не меняется.</dd>
+        <dt>Массив описаний</dt>
+        <dd>Данные о однотипных объектах (полях формы), позволяющие обработать их одним циклом вместо копий кода.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

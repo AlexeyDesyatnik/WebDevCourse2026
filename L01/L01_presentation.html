@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 1. Введение в веб-разработку. Архитектура интернета</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 1</strong>
+      <span>Введение в веб-разработку. Архитектура интернета</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 14</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Начинаем. Через 24 занятия у каждого будет свой сайт по публичной ссылке. Сегодня разбираемся, как эти ссылки вообще работают» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 1 · ЗАНЯТИЕ 1</p>
+        <h1>Что происходит, когда ты открываешь сайт</h1>
+        <p class="lead">Веб-разработка: создание современных сайтов с HTML, CSS, JavaScript и ИИ. Занятие 1 из 24.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L01_trainer_devtools.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../projects/index.html">►► Темы Dashboard</a>
+          <a class="tm-btn tm-btn--ghost" href="../L02/L02_presentation.html">►► Занятие 2</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Поднимите руку, кто хоть раз задумывался, что происходит между Enter и картинкой. Вот сегодня и заглянем» -->
+        <p class="tm-eyebrow">►► КРЮЧОК</p>
+        <h2>Полсекунды, в которые ты не заглядывал</h2>
+        <p>Ты нажал Enter. Через полсекунды страница на экране. Откуда она взялась? На твоём компьютере её не было. Значит, за это время кто-то что-то у кого-то попросил.</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Запомните направление: сервер сам первым не заговорит. Он всегда отвечает» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Двое: тот, кто просит, и тот, кто хранит</h2>
+        <ul class="tm-list">
+          <li><strong>Клиент</strong> — твой браузер. Просит и рисует.</li>
+          <li><strong>Сервер</strong> — компьютер, который хранит файлы и отдаёт их.</li>
+          <li>Клиент спрашивает — сервер отвечает. Никогда наоборот</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Имя и машина — не одно и то же. Сайт может переехать на другой сервер, а адрес останется прежним» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Как браузер находит нужный сервер</h2>
+        <ul class="tm-list">
+          <li>У каждого сервера есть числовой адрес.</li>
+          <li>Людям дали имена: <code>school.ru</code>.</li>
+          <li><strong>DNS</strong> переводит имя в число — как телефонная книга.</li>
+          <li>Это происходит до основного запроса, за миллисекунды</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас я открою это у себя в браузере, и вы увидите то же самое живьём» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Разговор клиента и сервера словами</h2>
+        <p>Так выглядит запрос и ответ, если записать их текстом. <code>GET</code> — «дай». <code>200 OK</code> — «держи, всё в порядке»</p>
+        <pre class="tm-code">Request URL: https://example.ru/index.html
+Request Method: GET
+<span class="hl">Status Code: 200 OK</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «404 — не поломка вашего компьютера. Это честный ответ живого сервера: такой страницы у меня нет» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Четыре кода, которых хватит</h2>
+        <ul class="tm-list">
+          <li><strong>200</strong> — всё в порядке</li>
+          <li><strong>404</strong> — такой страницы нет</li>
+          <li><strong>403</strong> — есть, но тебе нельзя</li>
+          <li><strong>500</strong> — у сервера самого что-то сломалось</li>
+        </ul>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды, ничего не говорим) -->
+        <h2>Страница — это не картинка. Это <span class="hl">текст</span>, который можно открыть</h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Вот эта строка с addEventListener — единственное, что отличает живую кнопку от нарисованной» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Три слоя одной страницы</h2>
+        <p>HTML — скелет. CSS — одежда. JavaScript — мышцы. Убери одежду — некрасиво. Убери мышцы — не шевелится. Убери скелет — нет ничего</p>
+        <pre class="tm-code">&lt;h1&gt;Сколько раз нажали&lt;/h1&gt;
+&lt;p id="out"&gt;Пока ни разу&lt;/p&gt;
+<span class="hl">&lt;button id="btn" type="button"&gt;Нажми меня&lt;/button&gt;</span>
+&lt;script&gt;
+  const btn = document.getElementById("btn");
+  const out = document.getElementById("out");
+  let count = 0;
+  btn.addEventListener("click", () =&gt; {
+    count = count + 1;
+    out.textContent = "Нажатий: " + count;
+  });
+&lt;/script&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Если увидите такое в интернете — вы попали в 2004 год. Оформление живёт только в CSS» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Оформление тегами</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Так делали двадцать лет назад. Сегодня это ломается на телефоне, мешает чтению вслух и не даёт сделать тёмную тему</p>
+          <pre class="tm-code">&lt;font color="red"&gt;Текст&lt;/font&gt;
+&lt;table&gt;&lt;tr&gt;&lt;td&gt;колонка&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Не выкрикиваем. Подумайте десять секунд, потом спрошу троих» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Сайт открылся голым текстом со ссылками. Какой слой не доехал?</h2>
+        <ul class="tm-list">
+          <li>HTML</li>
+          <li>CSS</li>
+          <li>JavaScript</li>
+        </ul>
+        <p class="muted">Обсуждаем вслух, ответ не показываем сразу</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверка пароля — backend. Всегда. Потому что код в браузере может изменить любой, у кого есть F12» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Две стороны профессии</h2>
+        <ul class="tm-list">
+          <li><strong>Frontend</strong> — всё в браузере: вёрстка, оформление, поведение. Этому учит курс.</li>
+          <li><strong>Backend</strong> — всё на сервере: данные, пароли, расчёты.</li>
+          <li>Граница — где выполняется код</li>
+        </ul>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Убираем слайды, работаем в браузере» -->
+        <h2>Сейчас <span class="hl">откроем</span> чужой сайт и посмотрим, из чего он сделан</h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Тренажёр открываете по ссылке внизу. Карту можно на бумаге — формат неважен» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Разложи 14 карточек по сторонам: клиент или сервер</li>
+          <li>Ответь на 4 вопроса про DevTools</li>
+          <li>Заполни ментальную карту</li>
+          <li>Разбери один сайт по карточке</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> карта заполнена целиком, разбор сделан по реальному сайту, ты можешь объяснить любую строку своей карты вслух</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L01_trainer_devtools.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Пользоваться ИИ можно всем и везде. Но объяснять придётся самому — и на защите тоже. Это правило вводим сегодня и не меняем до конца курса» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: три аналогии «клиент и сервер»</h2>
+        <pre class="tm-code">Ты объясняешь устройство интернета подростку 14 лет, который никогда не писал код.
+Задача: придумай три разные аналогии для пары "клиент и сервер". Аналогии должны быть из повседневной жизни школьника — не из мира техники.
+Ограничения: никаких технических терминов внутри самой аналогии; каждая аналогия не длиннее трёх предложений; не используй сравнение с рестораном и с почтой — они уже разобраны на занятии.
+Формат ответа: нумерованный список из трёх пунктов. В каждом пункте сначала аналогия, потом отдельной строкой — в чём она НЕ работает, где сравнение ломается.
+Критерии проверки: аналогия понятна без дополнительных объяснений; в ней ясно, кто просит и кто отдаёт; указано ограничение аналогии.</pre>
+        <p><strong>Проверить руками:</strong> роли различимы · понятно, кто просит · нет техтерминов внутри аналогии · есть строка про ограничение · понял бы одноклассник · нет фактической ошибки</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 1</h3>
+      <dl>
+        <dt>Клиент</dt>
+        <dd>Тот, кто просит: твой браузер. Отправляет запрос и ждёт ответ.</dd>
+        <dt>Сервер</dt>
+        <dd>Компьютер, который хранит файлы сайта и отдаёт их по запросу. Работает круглосуточно.</dd>
+        <dt>Запрос</dt>
+        <dd>Сообщение браузера серверу: «дай мне вот это».</dd>
+        <dt>Ответ</dt>
+        <dd>То, что сервер присылает обратно: файлы или сообщение об ошибке.</dd>
+        <dt>HTTP</dt>
+        <dd>Правила, по которым браузер и сервер разговаривают.</dd>
+        <dt>HTTPS</dt>
+        <dd>Тот же HTTP, но разговор зашифрован: посторонний в сети его не прочитает.</dd>
+        <dt>Код ответа</dt>
+        <dd>Трёхзначное число в начале ответа сервера. 200 — всё в порядке, 404 — нет такой страницы, 403 — нельзя, 500 — сломалось у сервера.</dd>
+        <dt>DNS</dt>
+        <dd>Служба, превращающая имя сайта в числовой адрес сервера. Телефонная книга интернета.</dd>
+        <dt>IP-адрес</dt>
+        <dd>Числовой адрес компьютера в сети.</dd>
+        <dt>Домен</dt>
+        <dd>Имя сайта словами, например school.ru.</dd>
+        <dt>HTML</dt>
+        <dd>Язык разметки: структура и смысл страницы. Скелет.</dd>
+        <dt>CSS</dt>
+        <dd>Язык оформления: цвета, размеры, раскладка. Одежда.</dd>
+        <dt>JavaScript</dt>
+        <dd>Язык поведения: реакция на действия пользователя. Мышцы.</dd>
+        <dt>Frontend</dt>
+        <dd>Всё, что происходит в браузере. Этому учит курс.</dd>
+        <dt>Backend</dt>
+        <dd>Всё, что происходит на сервере: данные, пароли, расчёты.</dd>
+        <dt>Fullstack</dt>
+        <dd>Разработчик, который умеет и то и другое.</dd>
+        <dt>DevTools</dt>
+        <dd>Инструменты разработчика внутри браузера. Открываются клавишей F12.</dd>
+        <dt>Консоль</dt>
+        <dd>Вкладка DevTools, куда браузер пишет ошибки.</dd>
+        <dt>Ментальная карта</dt>
+        <dd>Схема, где в центре главное понятие, а от него расходятся связанные.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

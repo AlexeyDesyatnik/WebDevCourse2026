@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 4. CSS3: селекторы, каскад, переменные</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 4</strong>
+      <span>CSS3: селекторы, каскад, переменные</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Три занятия страница была честной и некрасивой. Сегодня начинаем второй слой» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 3 · ЗАНЯТИЕ 4</p>
+        <h1>CSS3: селекторы, каскад, переменные</h1>
+        <p class="lead">Занятие 4 из 24. Начинается модуль оформления.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L04_trainer_tokens.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L03/L03_presentation.html">►► Занятие 3</a>
+          <a class="tm-btn tm-btn--ghost" href="../L05/L05_presentation.html">►► Занятие 5</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Заказчик прав. И это не вопрос вкуса: непонятно, что важно, а что нет» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Похоже на объявление, которое повесили на дверь»</h2>
+        <p>Марина Петровна посмотрела работу и сказала именно так. Разметка верная — вида нет</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Запомните три слова. Дальше весь модуль будем говорить именно ими» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Три части правила</h2>
+        <ul class="tm-list">
+          <li><strong>Селектор</strong> — кому</li>
+          <li><strong>Свойство</strong> — что меняем</li>
+          <li><strong>Значение</strong> — на что</li>
+        </ul>
+        <p>Пара «свойство: значение» — объявление. Точка с запятой после каждого</p>
+        <pre class="tm-code">.card {
+<span class="hl">  background: #ffffff;</span>
+  padding: 16px;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Имя класса описывает роль, а не вид. `.card--hit`, а не `.green-border`» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Три селектора</h2>
+        <ul class="tm-list">
+          <li><code>p</code> — по тегу, всем абзацам</li>
+          <li><code>.price</code> — по классу, основной инструмент</li>
+          <li><code>#form</code> — по <code>id</code>, одному элементу</li>
+        </ul>
+        <p><strong>Правило курса:</strong> оформление — классами. <code>id</code> — для JavaScript и <code>label for</code></p>
+        <pre class="tm-code">ul { list-style: none; }
+<span class="hl">.card { padding: 16px; }</span>
+#order { background: #edf7e4; }</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>CSS не выполняется сверху вниз. Он <span class="hl">соревнуется</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «У элемента с классом и `id` победит красный. Сейчас покажу это в DevTools» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Каскад: кто побеждает</h2>
+        <ul class="tm-list">
+          <li>По специфичности: тег &lt; класс &lt; <code>id</code> &lt; <code>style</code> в теге</li>
+          <li>При равной — побеждает написанное <strong>ниже</strong></li>
+          <li>Соревнование идёт <strong>по каждому свойству отдельно</strong></li>
+        </ul>
+        <pre class="tm-code">p        { color: black; }
+.note    { color: gray; }
+<span class="hl">#warning { color: red; }</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Вот ваш главный инструмент до конца модуля. Не угадывать, а смотреть» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Перечёркнутое правило — это ответ</h2>
+        <p>В DevTools, панель Styles: правила идут от победителя к проигравшим. Проигравшие перечёркнуты</p>
+        <p><strong>Последовательность на весь курс:</strong> не работает стиль → DevTools → выдели элемент → прочитай применённые и перечёркнутые</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Это не запрет. Это требование понимать, что именно вы перебиваете» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>!important</code> вместо разбора</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Сработает. И после этого переопределить цвет нельзя ничем, кроме второго <code>!important</code>. Через месяц весь файл такой</p>
+          <p><strong>Правило курса:</strong> <code>!important</code> не используется без объяснения педагогу</p>
+          <pre class="tm-code">.price { color: #5fa22e !important; }
+.card .price { color: #111312; }</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Разница принципиальная, и она сэкономит вам часы» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Правила нет в DevTools или оно есть, но перечёркнуто — в чём разница?</h2>
+        <p>Обсуждаем вслух. Это два разных диагноза с разным лечением</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Одна строка на `body` — и оформлен весь текст. А поля формы придётся вернуть в строй отдельно» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Наследование</h2>
+        <ul class="tm-list">
+          <li>Наследуются свойства текста: цвет, шрифт, размер, межстрочный</li>
+          <li>Не наследуются: отступы, рамки, фон, размеры</li>
+          <li>Значит, общее задают один раз на <code>body</code></li>
+        </ul>
+        <p>Исключение: поля формы и кнопки шрифт не наследуют</p>
+        <pre class="tm-code">body { font-family: Arial, sans-serif; }
+<span class="hl">input, button { font-family: inherit; }</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Вот ради этой проблемы и придумали то, что будет на следующем слайде» -->
+        <p class="tm-eyebrow">►► КРЮЧОК</p>
+        <h2>«Слишком яркий, сделайте потемнее»</h2>
+        <p>Твой зелёный встречается в файле пять раз: заголовок, цена, рамка хита, кнопка, ссылка. Найдёшь все пять? А если их двадцать?</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас поменяю одну строку — и увидите, что изменится на всей странице» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Переменные: значение с именем</h2>
+        <ul class="tm-list">
+          <li>Объявляем в <code>:root</code> — оттуда видно всей странице</li>
+          <li><strong>Два дефиса в начале обязательны</strong></li>
+          <li>Подставляем через <code>var(--имя)</code></li>
+          <li>Имя по роли, а не по цвету</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">:root {</span>
+<span class="hl">  --pie-accent: #7cc142;</span>
+}
+h1 { color: var(--pie-accent); }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Тёмная тема — требование вашего итогового ТЗ. Вы почти закрыли его на четвёртом занятии» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Тёмная тема — это десять строк</h2>
+        <p>Второй набор тех же переменных. Правила ниже не трогаем вообще: они обращаются по имени, а не по значению</p>
+        <pre class="tm-code">html[data-theme="dark"] {
+<span class="hl">  --pie-bg:   #0f0f0f;</span>
+<span class="hl">  --pie-text: #f2f4f1;</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Самая частая ошибка первой тёмной темы. Закончили набор — пересчитайте имена в обоих блоках» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Забыть переменную в тёмном наборе</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Ничего не сломается. Просто один элемент останется в старом цвете — обычно это тёмный текст на тёмном фоне</p>
+          <pre class="tm-code">html[data-theme="dark"] {
+  --pie-bg:   #0f0f0f;
+  --pie-card: #17191a;
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Порядок работы: сначала палитра, потом правила. Не наоборот» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Заводишь палитру буфета в <code>:root</code></li>
+          <li>Оформляешь карточки, цены, форму</li>
+          <li>Добавляешь тёмную тему</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> ниже <code>:root</code> нет цветов значениями, в тёмном наборе те же имена, текст читается в обеих темах, <code>!important</code> нет</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L04_trainer_tokens.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L03/L03_presentation.html">►► Занятие 3</a>
+          <a class="tm-btn tm-btn--ghost" href="../L05/L05_presentation.html">►► Занятие 5</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольная проверка: спросите у модели контраст текста к фону, потом измерьте инструментом в DevTools. Посмотрим, у скольких сойдётся» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: палитра и тёмная тема</h2>
+        <pre class="tm-code">Ты подбираешь цветовую палитру для учебного веб-проекта.
+Контекст: страница школьного буфета «Северный пирог» — северная домашняя выпечка, аудитория 13–18 лет. Стек: только HTML и CSS, без библиотек. Палитра будет задана CSS-переменными в :root.
+Задача: предложи палитру из шести цветов — фон страницы, фон карточки, основной текст, приглушённый текст, акцент, граница. Плюс второй набор тех же шести для тёмной темы.
+Ограничения: цвета в шестнадцатеричном формате; имена переменных с префиксом --pie- и по роли, а не по цвету; контраст основного текста к фону не ниже 4.5:1; акцентный цвет один и тот же в обеих темах или почти тот же; никаких градиентов и никаких библиотек.
+Формат ответа: готовый блок CSS с двумя селекторами — :root и html[data-theme="dark"]. Ниже — таблица: переменная, светлое значение, тёмное значение, где применяется.
+Критерии проверки: имена переменных совпадают в обоих наборах; ни одна переменная не потеряна во втором наборе; указан контраст текста к фону для каждой темы.</pre>
+        <p><strong>Проверить руками:</strong> имена совпадают в обоих наборах · все шесть на месте · текст читается · имена по роли · нет лишнего · можешь объяснить каждую</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 4</h3>
+      <dl>
+        <dt>CSS</dt>
+        <dd>Язык оформления. Задаёт, как выглядит то, что размечено в HTML.</dd>
+        <dt>Правило CSS</dt>
+        <dd>Селектор плюс набор объявлений в фигурных скобках.</dd>
+        <dt>Селектор</dt>
+        <dd>Указание, к каким элементам применить правило.</dd>
+        <dt>Свойство</dt>
+        <dd>Что меняем: <code>color</code>, <code>font-size</code>, <code>background</code>, <code>padding</code>.</dd>
+        <dt>Значение</dt>
+        <dd>На что меняем: <code>#7cc142</code>, <code>24px</code>, <code>700</code>.</dd>
+        <dt>Объявление</dt>
+        <dd>Пара «свойство: значение». Заканчивается точкой с запятой всегда, включая последнее.</dd>
+        <dt>Селектор по тегу</dt>
+        <dd><code>p { … }</code>: применится ко всем абзацам страницы.</dd>
+        <dt>Селектор по классу</dt>
+        <dd><code>.card { … }</code>: применится к элементам с <code>class="card"</code>. Основной инструмент оформления.</dd>
+        <dt>Селектор по идентификатору</dt>
+        <dd><code>#form { … }</code>: применится к одному элементу с <code>id="form"</code>. Для оформления не используем.</dd>
+        <dt>Модификатор</dt>
+        <dd>Дополнительный класс, меняющий одну деталь базового: <code>class="card card--hit"</code>.</dd>
+        <dt>Каскад</dt>
+        <dd>Порядок, в котором браузер решает, какое из конкурирующих правил применить.</dd>
+        <dt>Специфичность</dt>
+        <dd>«Вес» селектора. Чем конкретнее селектор, тем выше шанс победить: тег &lt; класс &lt; <code>id</code> &lt; атрибут <code>style</code>.</dd>
+        <dt>Перечёркнутое правило</dt>
+        <dd>В панели Styles: правило, проигравшее в каскаде. Главная подсказка при отладке.</dd>
+        <dt>!important</dt>
+        <dd>Способ протолкнуть объявление вперёд всех. Признак того, что каскад не разобран. На курсе — только с объяснением педагогу.</dd>
+        <dt>Наследование</dt>
+        <dd>Часть свойств переходит от родителя к детям. Наследуются свойства текста, не наследуются отступы, рамки и фон.</dd>
+        <dt>inherit</dt>
+        <dd>Значение «возьми у родителя». Нужно полям формы и кнопкам, которые шрифт не наследуют.</dd>
+        <dt>CSS-переменная (токен)</dt>
+        <dd>Своё имя для значения: <code>--pie-accent: #7cc142</code>. Объявляется один раз, используется везде.</dd>
+        <dt>:root</dt>
+        <dd>Селектор корня документа, то есть тега <code>&lt;html&gt;</code>. Место, где объявляют переменные.</dd>
+        <dt>var()</dt>
+        <dd>Способ подставить значение переменной: <code>color: var(--pie-accent)</code>.</dd>
+        <dt>data-атрибут</dt>
+        <dd>Собственный атрибут разработчика. Браузер его не трактует, но по нему можно писать селекторы и читать из JavaScript.</dd>
+        <dt>Тёмная тема</dt>
+        <dd>Второй набор значений тех же переменных в селекторе <code>html[data-theme="dark"]</code>. Правила при этом не дублируются.</dd>
+        <dt>Контраст</dt>
+        <dd>Разница яркости текста и фона. Для основного текста должен быть не ниже 4.5:1.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

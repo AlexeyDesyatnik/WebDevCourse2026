@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 16. Vibe Coding: Prompt Engineering</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 16</strong>
+      <span>Vibe Coding: Prompt Engineering</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 17</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Четырнадцать занятий я давал вам промпт готовым. Больше не даю — ни сегодня, ни на защите. Собирать будете сами.» -->
+        <p class="tm-eyebrow">►► Модуль 7 · Занятие 16</p>
+        <h1>Vibe Coding: Prompt Engineering</h1>
+        <p>С сегодняшнего дня готовых промптов не выдают</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L16_trainer_prompts.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--primary" href="../L15/L15_presentation.html">►► Занятие 15</a>
+          <a class="tm-btn tm-btn--primary" href="../L17/L17_presentation.html">►► Занятие 17</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас отправлю оба при вас. Ответы не заготовлены. Смотрим, что придёт.» -->
+        <p class="tm-eyebrow">►► Смотрим вживую</p>
+        <h2>Два запроса, один вопрос</h2>
+        <pre class="tm-code"><span class="hl">сделай иконку пирога для сайта</span></pre>
+        <p>↔ пятнадцать строк с контекстом, ограничениями и критериями</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Модель не видит ваш проект. Всё, чего вы не сказали, она достроит сама — и достроит про средний сайт вообще, а не про ваш.» -->
+        <p class="tm-eyebrow">►► Главное правило</p>
+        <h2>Качество ответа = снятая неопределённость</h2>
+        <p>Не длина запроса. Не вежливость. Не «ты профессиональный дизайнер». Только то, сколько неизвестного вы убрали из вопроса</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Порядок не декоративный. Контекст первым, потому что он меняет смысл всего остального.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Пять блоков промпта</h2>
+        <ul class="tm-list">
+          <li><strong>Контекст</strong> — где мы</li>
+          <li><strong>Задача</strong> — одно действие</li>
+          <li><strong>Ограничения</strong> — чего быть не должно</li>
+          <li><strong>Формат</strong> — в каком виде</li>
+          <li><strong>Критерии</strong> — как проверю</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас уберу один блок и отправлю заново. Смотрите, что именно сломается. Каждый блок закрывает свою дыру.» -->
+        <p class="tm-eyebrow">►► Проверка блоков</p>
+        <h2>Убираем по одному</h2>
+        <ul class="tm-list">
+          <li>Убрали контекст → ответ про чужой проект</li>
+          <li>Убрали ограничения → библиотеки и лишняя длина</li>
+          <li>Убрали формат → два экрана пояснений</li>
+          <li>Убрали критерии → нечем проверить</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Семь строк. Контекст не обязан быть длинным — он обязан быть точным.» -->
+        <p class="tm-eyebrow">►► Понятие 2</p>
+        <h2>Контекст: чего модель знать не может</h2>
+        <p>Стек и чего в проекте нет · имена файлов, массива, функций · структура данных · палитра · для кого результат</p>
+        <pre class="tm-code">Данные лежат в файле script.js в массиве PIES; каждый объект:
+<span class="hl">{ id, name, price, kind, left, hit }</span>
+где kind — "сладкое" или "солёное", left — сколько штук осталось.
+Карточки рисуются функцией renderCards(list) в блок с классом .list.</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «"Не используй reduce" не делает ответ примитивным. Оно делает его пригодным для сдачи: вы сможете его объяснить.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>Ограничения: рамка, а не помеха</h2>
+        <p>Числом, а не словом: «не длиннее 15 строк». Правилами курса: <code>const</code>/<code>let</code>, <code>addEventListener</code>. Уровнем: «не использовать приёмы, которых не было на занятиях»</p>
+      </section>
+
+      <section class="slide">
+        <!-- «"Современно" модель поймёт как "на фреймворке". Вы получите вот эту строку в консоли.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>Ограничения-пожелания</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>«Сделай нормально и по-современному, как принято в индустрии» — под это подходит и правильный ответ, и код на фреймворке</p>
+          <pre class="tm-code"><span class="hl">Uncaught SyntaxError: Cannot use import statement outside a module</span></pre>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Один вопрос к каждой строке вашего промпта. Отвечает "нет" — вычёркивайте.» -->
+        <h2>Можно проверить действием или <span class="hl">числом</span>?</h2>
+        <p>Да → это ограничение. Нет → это пожелание, и в промпте ему не место</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Записанный до отправки критерий спорит с соблазном засчитать красивый, но негодный ответ.» -->
+        <p class="tm-eyebrow">►► Понятие 4</p>
+        <h2>Критерии: промпт, который проверяет сам себя</h2>
+        <p>Формула: <strong>что делаю → что должно получиться</strong>. «Уменьшаю до 24 px → силуэт узнаётся». И всегда последним: «могу объяснить каждую строку»</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Модель не видит ваш экран. Для неё эти три сообщения одинаковы.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>«не работает»</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Три сообщения подряд, ноль информации, четыре версии кода, которые вы не читали, двадцать минут потеряно</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Третью строку забывают чаще всего — и модель переписывает заодно то, что уже работало.» -->
+        <p class="tm-eyebrow">►► Как уточнять</p>
+        <h2>Три вещи в уточнении</h2>
+        <ul class="tm-list">
+          <li>что именно не так (дословно из консоли)</li>
+          <li>какое ограничение нарушено</li>
+          <li>что оставить как есть</li>
+        </ul>
+        <pre class="tm-code">Ты использовал reduce, а я его запрещал.
+Перепиши через filter и map.
+<span class="hl">Имя функции не меняй.</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Кто скажет, почему нельзя просто попробовать десять раз? Подсказка: что вы будете сдавать в конце?» -->
+        <p class="tm-eyebrow">►► Правило</p>
+        <h2>Три попытки — и стоп</h2>
+        <p>После третьего уточнения: читать код руками или дробить задачу. Почему?</p>
+        <p class="muted">Обсуждаем вслух, ответ не показываем сразу</p>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Вот это сэкономит вам занятие 21. Пятнадцать минут разговора вместо двух занятий переделок.» -->
+        <h2>Не «напиши код», а «обсудим <span class="hl">структуру</span>»</h2>
+        <p>Ценность ИИ — в разговоре о том, из чего состоит проект, <strong>до</strong> написания кода</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Заглавными — единственный раз за курс. Это самое нарушаемое ограничение: модель обожает выдать код вместо плана.» -->
+        <p class="tm-eyebrow">►► Архитектурный разговор</p>
+        <h2>Три уровня по порядку</h2>
+        <ul class="tm-list">
+          <li>какие блоки видит пользователь</li>
+          <li>какие данные и где хранятся</li>
+          <li>на какие функции разбивается логика</li>
+        </ul>
+        <pre class="tm-code">[ОГРАНИЧЕНИЯ]
+<span class="hl">- НЕ ПИШИ КОД. Только структура словами</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Бланк заполняем на бумаге. Промпт, набранный сразу в чате, всегда выходит короче и слабее — проверено.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 45 минут</h2>
+        <ul class="tm-list">
+          <li>заполнить бланк промпта <strong>на бумаге</strong></li>
+          <li>отправить короткий и полный запрос</li>
+          <li>заполнить протокол сравнения</li>
+          <li>вставить результат в проект</li>
+          <li>записать структуру своего Dashboard</li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L16_trainer_prompts.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сдаётся только то, что ты можешь объяснить. Раньше это напоминал я. С сегодняшнего дня это строка в вашем собственном запросе.» -->
+        <p class="tm-eyebrow">►► Правило курса</p>
+        <h2>Теперь вы вписываете его сами</h2>
+        <p>Последний критерий каждого промпта: «Я могу пересказать своими словами, что делает каждая строка»</p>
+        <pre class="tm-code">[КОНТЕКСТ]
+Кто я и что за проект: ...
+Стек и чего в проекте нет: ...
+Что уже написано и как называется: ...
+Для кого результат: ...
+
+[ЗАДАЧА]
+Одно действие, глаголом: ...
+
+[ОГРАНИЧЕНИЯ]
+- технологии: ...
+- объём (числом): ...
+- правила курса: const/let, addEventListener, без float
+- уровень: не использовать приёмы, которых не было на занятиях
+- чего не выдумывать: ...
+
+[ФОРМАТ ОТВЕТА]
+...
+Если данных не хватает — не пиши код, задай не больше трёх вопросов.
+
+[КРИТЕРИИ ПРОВЕРКИ]
+1. (действие) → (что должно получиться)
+2. ...
+<span class="hl">3. Я могу пересказать своими словами, что делает каждая строка.</span></pre>
+        <p><strong>Проверить руками:</strong> каждый свой критерий действием · нарушенные ограничения · имена из твоего проекта · существование методов · границы · объяснимость каждой строки</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L16_trainer_prompts.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L17/L17_presentation.html">►► Занятие 17</a>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 16</h3>
+      <dl>
+        <dt>Промпт</dt>
+        <dd>Текст задачи для ИИ-модели, устроенный так, чтобы ответ можно было использовать без переделки. На курсе состоит из пяти блоков в фиксированном порядке.</dd>
+        <dt>Контекст</dt>
+        <dd>Блок промпта, где сказано то, чего модель о твоём проекте знать не может: стек, что уже написано, имена файлов и данных, палитра, для кого результат.</dd>
+        <dt>Задача</dt>
+        <dd>Блок промпта с одним действием, сформулированным глаголом. Не «помоги с меню», а «напиши функцию, которая возвращает новый массив, отсортированный по цене».</dd>
+        <dt>Ограничения</dt>
+        <dd>Блок промпта, задающий границы ответа: технологии, объём числом, правила курса, уровень сложности, чего не выдумывать. Ограничение обязано быть проверяемым действием или числом.</dd>
+        <dt>Формат ответа</dt>
+        <dd>Блок промпта, описывающий вид результата: один блок кода без пояснений, три варианта строками, таблица, список из пяти пунктов. Сюда же входит просьба задать уточняющие вопросы вместо кода, если данных не хватает.</dd>
+        <dt>Критерии проверки</dt>
+        <dd>Блок промпта, где заранее записано, каким должен быть годный ответ. Формула: что делаю → что должно получиться. Проверяются руками, а не вопросом к модели.</dd>
+        <dt>Пожелание</dt>
+        <dd>Формулировка, которая выглядит как требование, но не проверяется: «красиво», «современно», «нормально», «качественно». В промпте бесполезна и часто вредна.</dd>
+        <dt>Итерация</dt>
+        <dd>Уточнение промпта после неподходящего ответа. Содержит три вещи: что именно не так, какое ограничение нарушено, что оставить как есть.</dd>
+        <dt>Правило трёх попыток</dt>
+        <dd>Договорённость курса: если после третьего уточнения результата нет, работа с моделью прекращается — код читается руками или задача дробится на две поменьше.</dd>
+        <dt>Архитектурный разговор</dt>
+        <dd>Обсуждение с моделью структуры проекта до написания кода, по трём уровням: блоки интерфейса → данные → функции. Обязательное ограничение: «НЕ ПИШИ КОД, только структура словами».</dd>
+        <dt>MVP</dt>
+        <dd>Минимальный работающий продукт: то, что останется от плана, если вычеркнуть половину пунктов, и что при этом всё ещё можно показать как готовое.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

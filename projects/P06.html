@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P06. «Банк добрых дел» — волонтёрская панель</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn):not(.jump) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn):not(.jump) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover { color: #111312; }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill {
+      display: inline-block;
+      width: fit-content;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: #111312;
+      border-color: var(--tm-green);
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    .theme-grid {
+      display: grid;
+      gap: 12px;
+    }
+    @media (min-width: 720px) {
+      .theme-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .theme-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      padding: 18px 20px;
+      box-shadow: var(--tm-shadow);
+    }
+    html[data-theme="dark"] .theme-link { background: var(--tm-bg-alt); }
+    .theme-link:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .theme-link .num {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      margin-bottom: 6px;
+    }
+    html[data-theme="dark"] .theme-link .num { color: var(--tm-green); }
+    .theme-link strong { display: block; font-size: 18px; margin-bottom: 4px; }
+    .theme-link span.desc { color: var(--tm-muted); font-size: 15px; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 420px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="index.html">Витрина тем</a>
+      <a class="tm-btn tm-btn--ghost" href="tz.html">ТЗ программы</a>
+      <a class="tm-btn tm-btn--primary" href="../L20/L20_presentation.html">Занятие 20</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► P06 · высокий</p>
+    <h1>P06. «Банк добрых дел» — волонтёрская панель</h1>
+    <p class="lead">Это ТЗ вашей темы. Сначала закройте обязательное из ТЗ программы, затем идите по спринтам занятий 20–23.</p>
+    <nav class="jumps" aria-label="Разделы">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#stories">Истории</a>
+        <a class="jump" href="#mvp">MVP</a>
+        <a class="jump" href="#coverage">Покрытие ТЗ</a>
+        <a class="jump" href="#screens">Экраны</a>
+        <a class="jump" href="#data">Данные</a>
+        <a class="jump" href="#sprints">Спринты</a>
+        <a class="jump" href="#pitfalls">Камни</a>
+        <a class="jump" href="#demo">Демо</a>
+      </nav>
+    <p class="tm-pill">высокий</p>
+    <section class="tm-card" id="passport">
+<h2>Паспорт темы</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Сложность</td><td><strong>высокий</strong></td></tr><tr><td>На кого</td><td>16–18 лет или сильная пара; нужны часы, записи на акцию, итог влияния</td></tr><tr><td>Легенда</td><td>Волонтёрский отряд «Тёплая парта» помогает младшим с учёбой и собирает книги. Координатору нужно видеть акции, запись участников, закрытые часы и витрину книг, которые отряд рекомендует младшим (открытый книжный API). Заказчик — педагог-организатор, отчёт в конце четверти.</td></tr><tr><td>Аудитория</td><td>Волонтёры 13–18 и координатор</td></tr><tr><td>Проблема</td><td>Часы считают в таблице Excel, запись — в чате, книги — «потом пришлю ссылку»</td></tr></tbody></table></div>
+<p>Отличие: <strong>запись на событие + суммирование часов + внешний книжный поиск</strong>. Социально значимый контекст.</p>
+</section>
+<section class="tm-card" id="stories">
+<h2>Пользовательские истории</h2>
+<ol><li>Я как координатор, хочу создать акцию (название, дата, слоты).</li><li>Я как волонтёр, хочу записаться на акцию своим именем и классом.</li><li>Я как координатор, хочу отметить часы по акции.</li><li>Я как волонтёр, хочу видеть сумму моих часов (фильтр по имени).</li><li>Я как волонтёр, хочу найти книгу в Open Library и добавить в витрину «младшим почитать».</li><li>Я как гость, хочу понять, сколько часов отряд закрыл всего.</li><li>Я как координатор, хочу не принять запись без имени.</li><li>Я как координатор, хочу работу без сети с локальным списком книг.</li><li>Я как педагог, хочу тёмную тему и сохранение.</li></ol>
+</section>
+<section class="tm-card" id="mvp">
+<h2>MVP-граница</h2>
+<p><strong>Обязательно:</strong> акции, запись, сумма часов (всего и/или по имени), поиск книги + витрина, фолбэк книг, формы, тема, адаптив.</p>
+<p><strong>Желательно:</strong> лимит слотов («мест нет»).</p>
+<p><strong>Если останется время:</strong> бейдж «10 часов».</p>
+</section>
+<section class="tm-card" id="coverage">
+<h2>Покрытие ТЗ</h2>
+<ul><li>Grid: карточки акций + витрина книг; Flex: форма записи.</li><li>API: 1) Open Library search 2) Open-Meteo «погода на уличную акцию» 3) фолбэк 6 вымышленных книг <code>{ "title": "Северные истории", "author": "А. Волкова" }</code>.</li><li>Не использовать обложки издательств — плейсхолдер.</li><li>localStorage: акции, записи, книги витрины.</li></ul>
+</section>
+<section class="tm-card" id="screens">
+<h2>Экраны</h2>
+<p>Сводка часов; список акций с формой записи; витрина книг с поиском.</p>
+</section>
+<section class="tm-card" id="data">
+<h2>Схема данных</h2>
+<pre><code>{
+  "events": [{ "id": "e1", "title": "Помощь 5 классам", "date": "2026-03-18", "hours": 2, "slots": 6 }],
+  "signups": [{ "eventId": "e1", "name": "Кира П.", "className": "8Б" }],
+  "books": [{ "title": "Северные истории", "author": "А. Волкова" }],
+  "settings": { "theme": "light" }
+}</code></pre>
+<p>Сумма часов: не путать «часы акции × число людей» и «часы одного человека» — в README выбрать одну формулу и держаться её (рекомендация: сумма <code>hours</code> акций, на которые человек записан).</p>
+</section>
+<section class="tm-card" id="sprints">
+<h2>Спринты</h2>
+<p>20: каркас сводки и двух сеток. 21: Open Library + погода, состояния поиска. 22: записи, часы, localStorage, лимит слотов если успеют. 23: сверка формулы часов, README для организатора.</p>
+</section>
+<section class="tm-card" id="pitfalls">
+<h2>Подводные камни</h2>
+<p>Двойная запись на одну акцию. Часы как строки. Open Library отдаёт большие JSON — брать <code>docs[0].title</code> и <code>author_name[0]</code>. Школьный прокси.</p>
+</section>
+<section class="tm-card" id="demo">
+<h2>Демо</h2>
+<p>Запись на акцию → сумма часов выросла; поиск книги → карточка в витрине; отчёт «всего часов отряда». Вопрос: «Как считается сумма и где это написано в README?»</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="P05.html">← P05</a>
+      <a class="tm-btn tm-btn--ghost" href="index.html">►► Витрина тем</a>
+      <a class="tm-btn tm-btn--ghost" href="tz.html">ТЗ программы</a>
+      <a class="tm-btn tm-btn--primary" href="../L20/L20_presentation.html">►► Занятие 20</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

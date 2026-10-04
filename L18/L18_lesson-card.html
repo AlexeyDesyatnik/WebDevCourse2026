@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 18. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L18_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L18_trainer_kanban.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 18 · техкарта</p>
+    <h1>Занятие 18. Agile/Scrum: канбан и спринты</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L18</td></tr><tr><td>Тема</td><td>Agile/Scrum: канбан и спринты</td></tr><tr><td>Модуль</td><td>Модуль 8. Командная разработка (Agile, Scrum)</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Доска — рабочий инструмент модуля 9: она открывается в начале и в конце каждого занятия 20–23. Разделение backlog на обязательное и желательное определяет, что именно будет предъявлено как MVP на контрольной точке занятия 22</td></tr><tr><td>Артефакт на выходе</td><td>Файл <code>BOARD.md</code> в репозитории: три колонки, backlog из 8–14 задач, каждая помещается в одно занятие, разделён на «без этого не принимается» и «если останется время». Плюс письменно сформулированная граница MVP своей темы</td></tr><tr><td>Тип практики</td><td>Сценарий / квиз</td></tr><tr><td>Файл тренажёра</td><td><code>L18_trainer_kanban.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l18-kanban-v1</code> (состояние доски и ответы сценария). Ключ режима не используется</td></tr><tr><td>Контрольная точка</td><td>Нет. Занятие готовит занятие 19 (декомпозиция и окончательный выбор темы) и весь модуль 9</td></tr><tr><td>Опора</td><td>L13–L15: репозиторий, ветки, коммиты, публикация — доска живёт в репозитории и коммитится вместе с проектом. L16–L17: собранный промпт и протокол аудита переезжают в собственный проект</td></tr><tr><td>Смена сюжета</td><td>Буфет «Северный пирог» закончился на занятии 17. С сегодняшнего дня работа идёт по своей теме из шести (P01–P06). Окончательный выбор фиксируется на занятии 19</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход и смена сюжета</td><td>Слайды 1–2 + демонстрация шаг 1. Открывает витрину шести тем</td><td>Смотрят витрину, называют, что присмотрели дома</td><td>У каждого есть хотя бы одна тема-кандидат</td></tr><tr><td>4–10</td><td>Подтема 5.1 Почему без плана не выходит</td><td>Слайд 2. Разбирает два сценария четырёх занятий</td><td>Записывают порядок спринтов</td><td>Группа назвала, чего не хватает в первом сценарии</td></tr><tr><td>10–17</td><td>Подтема 5.2 Доска</td><td>Слайды 3–4 + демонстрация шаги 2–3. <strong>Собирает задачи с группы, не отбирая</strong></td><td>Называют задачи для трекера привычек</td><td>Список на 15–20 строк, вперемешку — это и нужно</td></tr><tr><td>17–24</td><td>Подтема 5.3 Формулировки</td><td>Слайды 5–6 + демонстрация шаги 4–5. Переписывает две плохие формулировки вместе с группой</td><td>Находят в общем списке задачи, которые не влезают в занятие</td><td>Группа сама забраковала «сделать трекер» и «разобраться с localStorage»</td></tr><tr><td>24–33</td><td>Подтема 5.4 Черта</td><td>Слайды 7–8 + демонстрация шаги 6–7. <strong>Провокация: предлагает поднять статистику наверх</strong></td><td>Возражают, ищут слово в памятке ТЗ</td><td>Возражение прозвучало от ученика со ссылкой на требования</td></tr><tr><td>33–39</td><td>Подтема 5.5 MVP</td><td>Слайды 9–10 + демонстрация шаги 8–9</td><td>Записывают три вопроса для определения MVP</td><td>Каждый может назвать задачу пользователя своей темы одной фразой</td></tr><tr><td>39–43</td><td>Пауза</td><td>Раздаёт шаблон <code>BOARD.md</code>, памятку ТЗ, карточку с четырьмя признаками задачи</td><td>Отдыхают</td><td>Раздаточные материалы у всех</td></tr><tr><td>43–50</td><td>Подтемы 5.6–5.7 Спринты и ритуал</td><td>Слайды 11–13 + демонстрация шаги 10–13. Показывает <code>git log -- BOARD.md</code></td><td>Отвечают на вопрос слайда 13</td><td>Ответ «в работе, пока не опубликовано» прозвучал от ученика</td></tr><tr><td>50–66</td><td>Практика, часть 1</td><td>Слайд 14. Ходит по группе, проверяет формулировки по четырём признакам</td><td>Заводят <code>BOARD.md</code>, пишут 8–14 задач</td><td><strong>Контроль 1 (66-я минута):</strong> у каждого не меньше восьми задач, ни одной со словами «сделать проект», «улучшить», «разобраться»</td></tr><tr><td>66–76</td><td>Практика, часть 2: черта</td><td><strong>Обходит каждого с памяткой ТЗ в руках</strong> и спрашивает по спорным задачам: «на какую строку показываешь?»</td><td>Делят backlog на две части, заполняют границу MVP</td><td><strong>Контроль 2:</strong> черта проведена, в верхней части нет ничего, чего нет в памятке</td></tr><tr><td>76–84</td><td>Тренажёр</td><td>Открывает <code>L18_trainer_kanban.html</code>, разбирает ситуацию 1 вместе</td><td>Проходят восемь ситуаций и раскладывают двенадцать задач</td><td>Порог: 6 из 8 ситуаций, 10 из 12 задач, ни одной из 9–12 наверху</td></tr><tr><td>84–92</td><td>Коммит и ИИ-проверка</td><td>Слайд 16. Показывает промпт на полноту плана</td><td>Коммитят доску, прогоняют backlog через промпт, добавляют недостающее</td><td><strong>Контроль 3:</strong> <code>BOARD.md</code> виден на странице репозитория</td></tr><tr><td>92–100</td><td>Итог</td><td>Слайд 15. Анонс занятия 19: окончательный выбор темы и спринт-план</td><td>Записывают домашку</td><td>Каждый назвал вслух свою кандидатную тему</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Открыть витрину шести тем</strong> (<code>projects/index.html</code>) и проверить, что она открывается с ученических машин. Ученик должен видеть легенду и уровень сложности, а не выбирать по названию.</li><li><strong>Прочитать <code>00_STORY_BANK.md</code>, часть 2 целиком</strong> — все шесть тем с их подводными камнями. Вопросы «а можно ли в P05 сделать так» посыплются сразу, и отвечать на них надо уверенно.</li><li><strong>Заранее решить, кому что рекомендовать.</strong> Тем, кто тяжело шёл через модуль 4, — P01 или P02, и подавать это не как «слабый вариант», а как проект, который точно будет доведён до публикации. Тем, кто ищет вызов, — P05 или P06.</li><li><strong>Подготовить общий разбор на теме P01</strong> для демонстрации: он идёт целиком у проектора и должен занять не больше пятнадцати минут.</li><li><strong>Раздаточные материалы:</strong> шаблон <code>BOARD.md</code>, памятка требований ТЗ (одиннадцать строк), карточка «четыре признака задачи», карточка с двенадцатью задачами вперемешку — для уровня «поддержка».</li><li><strong>Проверить, что репозиторий и публикация в рабочем состоянии</strong> у каждого после занятий 15–17: сегодня в <code>main</code> пойдёт коммит.</li><li><strong>Заготовить фразу про смену темы</strong> и произнести её дважды: выбор фиксируется на занятии 19 и после занятия 20 не меняется. Смена темы на 21-м — гарантия недоделанного проекта.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Витрина шести тем — открыта в начале и в конце занятия.</li><li>Редактор с <code>BOARD.md</code> тестового репозитория — на нём проходит вся демонстрация.</li><li>Памятка требований ТЗ — держать на втором экране или на доске всю практику.</li><li>Терминал для коммита доски.</li><li>Страница репозитория — показать, как <code>BOARD.md</code> отображается списком с чекбоксами.</li><li>Тренажёр <code>L18_trainer_kanban.html</code> — открыть к 76-й минуте.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<ol><li><strong>Обязательное перепутано с желаемым.</strong> Признак: наверху backlog статистика, графики и звуки. Готовое действие: подойти с памяткой ТЗ и по каждой спорной задаче задать один вопрос — «на какую строку требований ты показываешь?». Не отвечать за ученика: пусть ищет сам. Один такой разбор вслух на всю группу экономит десять индивидуальных.</li><li><strong>Формулировки размером с проект.</strong> Признак: «сделать трекер», «разобраться с API». Готовое действие: спросить «что должно заработать первым, чтобы остальное имело смысл» и записать ответ как первую задачу. Дальше ученик дробит сам. Разбирать на контроле 66-й минуты, пока доска не закоммичена.</li><li><strong>Ученик хочет свою тему вне списка.</strong> Признак: «а можно я сделаю игру / сайт про свою группу?». Готовое действие: объяснить причину прямо — у шести тем описаны подводные камни, проверены источники данных и разложены спринты; седьмая тема означает ТЗ, которого никто не проверял, и предупредить о котором невозможно. Предложить ближайшую по духу из шести и показать, где в ней ровно та же интересная часть.</li></ol>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<p>Интернет нужен только для последнего пункта.</p>
+<ol><li><strong>Определись с темой окончательно.</strong> Открой в <code>00_STORY_BANK.md</code> разбор двух своих кандидатов и прочитай в каждом два блока: «Подводные камни» и «Идея защиты». Выбирай не по названию, а по этим двум блокам: первый показывает, на чём ты застрянешь, второй — что будешь показывать через месяц.</li><li><strong>Допиши backlog до полных 12–14 задач</strong>, если сегодня успел меньше. Каждую проверь по четырём признакам.</li><li><strong>Проверь границу MVP вопросом-ножницами:</strong> вычеркни из списка MVP один пункт и спроси себя — задача пользователя всё ещё решается? Если да, пункт был лишним, перенеси его во вторую часть. Повтори для каждого пункта. То, что вычеркнуть нельзя, и есть настоящий MVP.</li><li><strong>Прогони backlog через ИИ-промпт на полноту</strong> (раздел 8). Добавь недостающее и убери из второй части столько же по объёму. Каждый отклонённый совет модели отклони письменно, одной фразой.</li><li>Закоммить доску: <code>git add BOARD.md</code>, коммит с осмысленным сообщением, <code>git push</code>.</li></ol>
+<p>Сдаётся ссылкой на <code>BOARD.md</code> в репозитории. На занятии 19 ты придёшь с готовым backlog и будешь раскладывать его на четыре спринта — это гораздо быстрее, чем начинать с нуля.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ итогового проекта (Приложение 1 к программе):</strong> сегодня backlog собирается прямо по тексту ТЗ — каждая задача обязательной части соответствует строке требований. Дальше этот список работает как чек-лист приёмки: закрыто всё — проект соответствует ТЗ.</p>
+<p><strong>Критерий из 30 баллов (Приложение 2):</strong></p>
+<blockquote><p>«Соответствие ТЗ (вёрстка, JS, API, localStorage) — 10 баллов: полнота реализации обязательных требований»</p></blockquote>
+<p>Это самый дорогой критерий из пяти, и он закрывается не в конце, а сегодня — тем, как проведена черта. Проект, где обязательное перемешано с желаемым, теряет баллы именно здесь: к занятию 22 сделано интересное, а не требуемое.</p>
+<p><strong>Что переносится дальше:</strong></p>
+<ul><li><strong>Занятие 19</strong> начинается с готового backlog: тема фиксируется письменно, задачи раскладываются на четыре спринта, у каждого появляется строка «Готово, если».</li><li><strong>Занятия 20–23</strong> открываются и закрываются доской — две минуты по регламенту. Педагог проверяет при обходе: в «в работе» одна задача.</li><li><strong>Занятие 22</strong> — контрольная точка MVP. Проверяется ровно тот список, который ты записал сегодня в блоке «Граница MVP».</li><li><strong>Занятие 23</strong> — если MVP не достигнут, объём сокращают по заранее написанному плану «Если время кончится». Это та строка, ради которой блок и заполняется.</li><li><strong>Занятие 24</strong> — на защите звучит «что доработал бы дальше». Вторая часть backlog — готовый ответ на этот вопрос.</li></ul>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L18_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L18_trainer_kanban.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

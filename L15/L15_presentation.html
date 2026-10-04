@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 15. Деплой и CI/CD</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 15</strong>
+      <span>Деплой и CI/CD</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 18</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Контрольная точка программы. К концу занятия у каждого — публичная ссылка, открывающаяся с телефона. У каждого без исключения.» -->
+        <p class="tm-eyebrow">►► Модуль 6 · Занятие 15</p>
+        <h1>Деплой и CI/CD</h1>
+        <p>Сегодня у вашего сайта появится адрес</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L15_trainer_deploy.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--primary" href="../L14/L14_presentation.html">►► Занятие 14</a>
+          <a class="tm-btn tm-btn--primary" href="../L16/L16_presentation.html">►► Занятие 16</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Не потому что он что-то сделал не так. Этого файла на его компьютере просто нет.» -->
+        <p class="tm-eyebrow">►► Проверим</p>
+        <h2>Отправьте эту ссылку другу</h2>
+        <pre class="tm-code"><span class="hl">file:///C:/Users/Ученик/Desktop/severny-pirog/index.html</span></pre>
+        <p>у него не откроется ничего</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Три слэша в первом адресе — не опечатка. Это признак того, что страница открыта с диска.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Что значит «опубликован»</h2>
+        <ul class="tm-list">
+          <li>файлы лежат на сервере</li>
+          <li>у места есть адрес</li>
+          <li>соединение защищено (<code>https</code>). Ни одно не про качество кода</li>
+        </ul>
+        <pre class="tm-code">file:///C:/...
+<span class="hl">https://ivanov.github.io/severny-pirog/</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Пять файлов. Всё, что нужно для публикации. Ни базы данных, ни программы на сервере.» -->
+        <p class="tm-eyebrow">►► Понятие 2</p>
+        <h2>Статический сайт</h2>
+        <p>Сервер отдаёт готовые файлы и ничего не вычисляет. Поэтому: бесплатно, быстро, за пять минут. И поэтому же нельзя хранить общие данные</p>
+        <pre class="tm-code"><span class="hl">index.html  style.css  script.js  pie.svg  README.md</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Push — это и есть кнопка публикации. Между "я изменил код" и "это видят все" не должно быть ручной работы: ручную работу забывают.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>CI/CD: публикация без рук</h2>
+        <p>Настроили один раз → дальше каждый <code>git push</code> в <code>main</code> сам обновляет публичную версию. Отдельной команды деплоя нет</p>
+        <pre class="tm-code">git commit -m "Вынес стили в style.css"
+<span class="hl">git push</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Ждём минуту. Обновление не мгновенное — от нескольких секунд до пары минут. Это нормально.» -->
+        <p class="tm-eyebrow">►► Смотрим</p>
+        <h2>Публикую прямо сейчас</h2>
+        <p>Настройки репозитория → публикация из <code>main</code> → адрес выдан → открываем</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Вот главный сюрприз первого деплоя. Сейчас разберёмся, почему. Открываем DevTools.» -->
+        <p class="tm-eyebrow">►► Сюрприз</p>
+        <h2>Открылось — и без стилей</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Сюрприз</p>
+          <p>Локально было идеально. Код не менялся. Изменился адрес — и всё сломалось</p>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Никогда не гадайте. Откройте Network и посмотрите, куда именно браузер ходил за файлом.» -->
+        <h2><span class="hl">404</span> — файл по такому адресу не найден</h2>
+        <p>DevTools → Network. Красная строка, статус 404 и адрес, по которому браузер искал</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Правило без исключений: путь внутри проекта — это имя файла и ничего больше.» -->
+        <p class="tm-eyebrow">►► Понятие 4</p>
+        <h2>Три вида путей, один правильный</h2>
+        <ul class="tm-list">
+          <li><code>C:\Users\...</code> — только у вас</li>
+          <li><code>/style.css</code> — от корня сайта, а проект в папке</li>
+          <li><code>style.css</code> — относительный, работает везде</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">&lt;link rel="stylesheet" href="style.css"&gt;</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверка на пять секунд: поиск по файлу на C: и на href="/". Ни одного вхождения быть не должно.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>Три пути, которые сломаются</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Все три локально могут сработать и все три упадут после публикации</p>
+          <pre class="tm-code">&lt;link rel="stylesheet" href="/style.css"&gt;
+&lt;link rel="stylesheet" href="C:\Users\Ученик\style.css"&gt;
+&lt;img src="file:///C:/pie.svg" alt=""&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Переименование в проводнике Git может не заметить. Делайте командой — тогда изменение точно попадёт в коммит.» -->
+        <p class="tm-eyebrow">►► Ловушка</p>
+        <h2>Заглавные буквы</h2>
+        <p>Windows: <code>Pie.SVG</code> = <code>pie.svg</code>. Сервер: это разные файлы. Отсюда — латиница, нижний регистр, дефис вместо пробела</p>
+        <pre class="tm-code"><span class="hl">git mv Pie.SVG pie.svg</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Обратите внимание: тег &lt;style&gt; в CSS-файл не переносится. Это разметка, а не стили.» -->
+        <p class="tm-eyebrow">►► Порядок в проекте</p>
+        <h2>Стили — в отдельный файл</h2>
+        <p>В <code>index.html</code> — одна строка <code>&lt;link&gt;</code>. В <code>style.css</code> — только правила, без тегов <code>&lt;style&gt;</code></p>
+        <pre class="tm-code"><span class="hl">&lt;link rel="stylesheet" href="style.css"&gt;</span>
+
+/* style.css */
+:root { --pie-accent: #7CC142; }</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Подсказка: браузер даже не пошёл за файлом. Чего не хватает в строке?» -->
+        <p class="tm-eyebrow">►► Вопрос</p>
+        <h2>Стилей нет, в консоли пусто. Почему?</h2>
+        <p>файл на месте, путь верный, ошибок нет</p>
+        <pre class="tm-code"><span class="hl">&lt;link href="style.css"&gt;</span></pre>
+        <p class="muted">Обсуждаем вслух, ответ не показываем сразу</p>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Вот ради чего было всё занятие. Вечером отправьте эту ссылку кому-нибудь — родителям, другу. Это ваш сайт в интернете.» -->
+        <h2>Откройте ссылку на <span class="hl">телефоне</span></h2>
+        <p>Не на компьютере. На телефоне. Прямо сейчас</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Порядок именно такой. Публикацию включаем до того, как всё идеально: незаконченный сайт публиковать можно и нужно.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 45 минут</h2>
+        <ul class="tm-list">
+          <li>вынести стили в <code>style.css</code></li>
+          <li>исправить три пути в заготовке</li>
+          <li>включить публикацию</li>
+          <li>открыть ссылку с телефона</li>
+          <li>заполнить <code>README.md</code></li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L15_trainer_deploy.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Ссылка — сразу под названием. За ней читатель и пришёл; чем она дальше, тем меньше шанс, что до неё дойдут.» -->
+        <p class="tm-eyebrow">►► Паспорт проекта</p>
+        <h2>README из пяти блоков</h2>
+        <ul class="tm-list">
+          <li>название и одна фраза</li>
+          <li><strong>ссылка</strong></li>
+          <li>стек</li>
+          <li>что умеет</li>
+          <li>что сделано с помощью ИИ</li>
+        </ul>
+        <pre class="tm-code"># Северный пирог — сайт буфета
+<span class="hl">**Открыть:** https://…</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Пятый пункт проверяем вместе: открыли Network, обновили — ни одной красной строки.» -->
+        <p class="tm-eyebrow">►► Сделано, если</p>
+        <h2>Шесть пунктов приёмки</h2>
+        <ul class="tm-list">
+          <li><code>style.css</code> отдельно, подключён через <code>link</code></li>
+          <li>нет <code>C:</code>, <code>file://</code>, <code>href="/</code></li>
+          <li>имена латиницей строчными</li>
+          <li>ссылка открывается <strong>с телефона</strong></li>
+          <li>в Network ноль строк с 404</li>
+          <li>README из пяти блоков со ссылкой</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «И правило курса: сдаётся только то, что ты можешь объяснить. Сегодня это касается и текста: README, который вы не можете пересказать, — чужое описание вашего проекта.» -->
+        <p class="tm-eyebrow">►► ИИ в работе</p>
+        <h2>Модель пишет README — вы отвечаете за правду</h2>
+        <p>Дай факты списком и запрети выдумывать. Проверь: нет ли возможностей, которых у тебя нет; нет ли разделов про установку и сборку; ведёт ли ссылка на живой сайт</p>
+        <pre class="tm-code">Контекст: я школьник, сделал учебный одностраничный сайт школьного
+буфета «Северный пирог» на HTML, CSS и JavaScript без фреймворков
+и без сборщиков. Проект опубликован по ссылке
+https://&lt;сюда свой адрес&gt;/ и лежит в репозитории.
+
+Что сайт умеет (это факты, ничего не добавляй от себя):
+- меню из шести позиций рисуется из массива данных
+- фильтр «сладкое / солёное» и сортировка по цене
+- модальное окно с составом пирога
+- форма предзаказа с проверкой полей
+- «меню дня» с запасным вариантом, если данные не пришли
+- тёмная тема, запоминается между визитами
+
+Что сделано с помощью ИИ (тоже факты):
+- сгенерирована иконка pie.svg, вручную убраны жёсткие width и height
+- предложены варианты текста «о буфете», выбран один и сокращён
+
+Задача: напиши README.md для этого проекта.
+
+Ограничения:
+- пять блоков в таком порядке: название и одна фраза о проекте;
+  ссылка на опубликованную версию; стек; что умеет; что сделано
+  с помощью ИИ;
+- ссылка идёт сразу после названия, до всего остального;
+- ничего не выдумывать: если факта нет в списке выше — его нет
+  в README;
+- не писать про установку, сборку, npm, зависимости и лицензию —
+  их в проекте нет;
+- «что умеет» — по одной строке на пункт, начиная с существительного
+  или глагола, без слов «функционал», «реализовано», «современный».
+
+Формат ответа: готовый текст README.md в разметке Markdown,
+без пояснений до и после.
+
+Критерии проверки: посторонний человек, прочитав README за минуту,
+понимает, что это за проект и где на него посмотреть.</pre>
+        <p><strong>Проверить руками:</strong> ссылка на месте и живая · ни одной выдуманной возможности · нет разделов про установку и сборку · блок про ИИ конкретен · стек честный · ты можешь пересказать README своими словами</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L15_trainer_deploy.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L16/L16_presentation.html">►► Занятие 16</a>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 15</h3>
+      <dl>
+        <dt>Деплой (публикация)</dt>
+        <dd>Перенос файлов проекта туда, откуда их отдают всем желающим по адресу. После деплоя у сайта появляется публичная ссылка.</dd>
+        <dt>Статический сайт</dt>
+        <dd>Сайт из готовых файлов, которые сервер отдаёт как есть, ничего не вычисляя. Вся логика работает в браузере посетителя. Публикуется бесплатно и за минуты, но не может хранить общие для всех данные.</dd>
+        <dt>Хостинг статических сайтов</dt>
+        <dd>Сервис, который хранит файлы сайта и отдаёт их браузерам по адресу. На курсе используется тот, что встроен в платформу репозиториев.</dd>
+        <dt>CI/CD</dt>
+        <dd>Автоматическая цепочка «изменение → проверка → публикация», срабатывающая после отправки коммита. Настраивается один раз; дальше публикация обновляется сама после каждого git push в основную ветку.</dd>
+        <dt>Относительный путь</dt>
+        <dd>Адрес файла, отсчитываемый от текущей страницы: style.css, pie.svg, img/logo.svg. Работает и локально, и по любому адресу на любой платформе. Единственный вид путей, разрешённый внутри проекта.</dd>
+        <dt>Абсолютный путь</dt>
+        <dd>Полный адрес файла от корня диска (C:\Users\...) или от корня сайта (/style.css). Внутри проекта не используется: после публикации такой адрес не находится.</dd>
+        <dt>Статус 404</dt>
+        <dd>Ответ сервера «файл по такому адресу не найден». Виден в DevTools на вкладке Network. Главный признак ошибки в пути или в регистре имени файла.</dd>
+        <dt>Кэш браузера</dt>
+        <dd>Сохранённая копия уже загруженных файлов. Из-за него после публикации может показываться старая версия стилей; лечится обновлением с очисткой кэша (Ctrl+F5).</dd>
+        <dt>README.md</dt>
+        <dd>Файл с описанием проекта, который платформа показывает на главной странице репозитория. Пять обязательных блоков: название, ссылка, стек, что умеет, что сделано с помощью ИИ.</dd>
+        <dt>Markdown</dt>
+        <dd>Простой формат текста с разметкой: # для заголовков, - для списков, ** для полужирного. На нём пишется README.md.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

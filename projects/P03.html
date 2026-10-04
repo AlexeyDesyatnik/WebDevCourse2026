@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P03. «Диванный зал» — кинопоиск</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn):not(.jump) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn):not(.jump) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover { color: #111312; }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill {
+      display: inline-block;
+      width: fit-content;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: #111312;
+      border-color: var(--tm-green);
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    .theme-grid {
+      display: grid;
+      gap: 12px;
+    }
+    @media (min-width: 720px) {
+      .theme-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .theme-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      padding: 18px 20px;
+      box-shadow: var(--tm-shadow);
+    }
+    html[data-theme="dark"] .theme-link { background: var(--tm-bg-alt); }
+    .theme-link:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .theme-link .num {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      margin-bottom: 6px;
+    }
+    html[data-theme="dark"] .theme-link .num { color: var(--tm-green); }
+    .theme-link strong { display: block; font-size: 18px; margin-bottom: 4px; }
+    .theme-link span.desc { color: var(--tm-muted); font-size: 15px; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 420px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="index.html">Витрина тем</a>
+      <a class="tm-btn tm-btn--ghost" href="tz.html">ТЗ программы</a>
+      <a class="tm-btn tm-btn--primary" href="../L20/L20_presentation.html">Занятие 20</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► P03 · повышенный</p>
+    <h1>P03. «Диванный зал» — кинопоиск</h1>
+    <p class="lead">Это ТЗ вашей темы. Сначала закройте обязательное из ТЗ программы, затем идите по спринтам занятий 20–23.</p>
+    <nav class="jumps" aria-label="Разделы">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#stories">Истории</a>
+        <a class="jump" href="#mvp">MVP</a>
+        <a class="jump" href="#coverage">Покрытие ТЗ</a>
+        <a class="jump" href="#screens">Экраны</a>
+        <a class="jump" href="#data">Данные</a>
+        <a class="jump" href="#sprints">Спринты</a>
+        <a class="jump" href="#pitfalls">Камни</a>
+        <a class="jump" href="#demo">Демо</a>
+      </nav>
+    <p class="tm-pill">повышенный</p>
+    <section class="tm-card" id="passport">
+<h2>Паспорт темы</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Сложность</td><td><strong>повышенный</strong></td></tr><tr><td>На кого</td><td>15–17 лет, кому дался fetch на занятии 12</td></tr><tr><td>Легенда</td><td>Семейный киноклуб в подъезде: бабушки и подростки спорят, что смотреть в субботу. Нужен поиск по названию, карточка с рейтингом и сюжетом, список «посмотрим» без регистрации.</td></tr><tr><td>Аудитория</td><td>Семья / класс, выбирающий фильм или сериал на вечер</td></tr><tr><td>Проблема</td><td>Вкладки с трейлерами расползаются; нет общего короткого списка</td></tr></tbody></table></div>
+<p>Отличие: <strong>поиск по внешней каталожной базе</strong>, избранное локально, много карточек результатов.</p>
+</section>
+<section class="tm-card" id="stories">
+<h2>Пользовательские истории</h2>
+<ol><li>Я как зритель, хочу ввести название и увидеть список карточек.</li><li>Я как зритель, хочу открыть подробности выбранного тайтла.</li><li>Я как зритель, хочу добавить тайтл в «Посмотрим».</li><li>Я как зритель, хочу убрать из списка.</li><li>Я как зритель, хочу видеть сообщение, если ничего не найдено.</li><li>Я как зритель, хочу видеть сообщение, если сети нет — и работать с локальным каталогом.</li><li>Я как зритель, хочу, чтобы пустой запрос не уходил на сервер.</li><li>Я как зритель, хочу тёмной темой смотреть вечером без «белой вспышки».</li><li>Я как зритель, хочу, чтобы «Посмотрим» сохранился.</li></ol>
+</section>
+<section class="tm-card" id="mvp">
+<h2>MVP-граница</h2>
+<p><strong>Обязательно:</strong> поиск, список результатов, избранное, пустые/ошибочные состояния, фолбэк JSON, форма поиска, тема, Grid карточек, доступное поле поиска (<code>label</code>), Git/ИИ.</p>
+<p><strong>Желательно:</strong> фильтр «только сериалы».</p>
+<p><strong>Если останется время:</strong> отметка «уже видели».</p>
+</section>
+<section class="tm-card" id="coverage">
+<h2>Покрытие ТЗ</h2>
+<ul><li>API: 1) TVMaze <code>https://api.tvmaze.com/search/shows?q=</code> 2) Open Library как запасной «книги по мотивам» 3) Advice Slip не подходит как каталог — не использовать третьим каталогом; третьим держать <strong>локальный</strong> <code>fallback.json</code> (8 вымышленных тайтлов). Не использовать постеры чужих фильмов с копирайтом: в эталоне — цветные плейсхолдеры и вымышленные названия, с TVMaze — только данные API без складирования чужих баннеров в репозиторий (горячая ссылка или плейсхолдер).</li><li>Grid: результаты; Flex: карточка (постер-плейсхолдер + текст).</li><li>localStorage: массив избранного <code>{ id, title, year, summary }</code>.</li></ul>
+</section>
+<section class="tm-card" id="screens">
+<h2>Экраны</h2>
+<p>Поиск; результаты; боковая/нижняя панель «Посмотрим»; деталь в модалке (<code>dialog</code> или самодельная с фокусом и Escape — навык занятия 10).</p>
+</section>
+<section class="tm-card" id="data">
+<h2>Схема данных</h2>
+<pre><code>{
+  "watchlist": [{ "id": "tv-123", "title": "Вымышленный маяк", "year": "2019", "note": "" }],
+  "settings": { "theme": "dark" }
+}</code></pre>
+</section>
+<section class="tm-card" id="sprints">
+<h2>Спринты</h2>
+<p>20: сетка, модалка-заглушка, форма. 21: fetch TVMaze + состояния загрузки/ошибки/пусто. 22: watchlist в localStorage, тема, анимация карточек. 23: без сети открыть фолбэк, README.</p>
+</section>
+<section class="tm-card" id="pitfalls">
+<h2>Подводные камни</h2>
+<p>CORS редко, но школьный прокси режет TVMaze — фолбэк обязателен с занятия 21. Длинный HTML в <code>summary</code> — <code>textContent</code>, не <code>innerHTML</code>. Пустой <code>q</code> — 400 от API.</p>
+</section>
+<section class="tm-card" id="demo">
+<h2>Демо</h2>
+<p>Найти запрос → открыть карточку → добавить в список → F5. Затем отключить сеть в DevTools и показать фолбэк. Вопрос: «Почему нельзя вставлять описание через innerHTML?»</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="P02.html">← P02</a>
+      <a class="tm-btn tm-btn--ghost" href="index.html">►► Витрина тем</a>
+      <a class="tm-btn tm-btn--ghost" href="tz.html">ТЗ программы</a>
+      <a class="tm-btn tm-btn--primary" href="P04.html">P04 →</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

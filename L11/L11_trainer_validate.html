@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 11 · Тренажёр: проверка формы</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, textarea:focus-visible, .chip:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { margin: 0; padding-left: 1.2em; }
+    .tm-list li { margin: .35em 0; line-height: 1.45; }
+    .brief .tm-eyebrow { margin: 0 0 8px; display: inline-block; }
+    .modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .hide { display: none !important; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+    .pane { min-width: 0; }
+    .pane__label { margin: 0 0 8px; font-weight: 700; color: var(--tm-green-dark); }
+    .pane__help { margin: 8px 0 0; color: var(--tm-muted); font-size: .93em; }
+    #editor { width: 100%; min-height: 420px; margin: 0; padding: 12px; font-family: var(--tm-mono); font-size: 13px; line-height: 1.45; tab-size: 2; border: 1px solid var(--tm-border); border-radius: var(--tm-radius-sm); background: var(--tm-code-bg); color: var(--tm-code-text); resize: vertical; }
+    iframe { width: 100%; min-height: 420px; background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius-sm); }
+    .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); }
+    .chip { appearance: none; border: 2px solid var(--tm-green-dark); background: var(--tm-bg); color: var(--tm-text); border-radius: var(--tm-radius-sm); padding: 8px 12px; font-family: var(--tm-mono); font-size: 12px; line-height: 1.35; text-align: left; cursor: grab;
+      box-shadow: var(--tm-shadow); max-width: 100%; }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .chip b { display: block; font-family: var(--tm-font); font-size: 11px; color: var(--tm-muted); margin-bottom: 2px; }
+    .slots { display: flex; flex-direction: column; gap: 8px; }
+    .slot { min-height: 64px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); padding: 8px; background: var(--tm-bg-alt); }
+    .slot.is-over { border-color: var(--tm-green); }
+    .slot.is-error { border-color: var(--tm-fail); }
+    .slot__label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--tm-muted); }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-bg); color: var(--tm-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 13px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    .check-progress { font-weight: 700; color: var(--tm-green-dark); margin: 0 0 8px; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 11 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Проверка формы</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 13</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p><strong>Заказ буфета «Северный пирог».</strong> Форма принимает мусор. Научи её проверять.</p>
+  <ul class="tm-list">
+    <li>Перехвати отправку: страница не должна перезагружаться</li>
+    <li>Проверь три поля: имя, класс, количество</li>
+    <li>Сообщение появляется <strong>рядом со своим полем</strong> и объясняет, что исправить</li>
+    <li>Поле из одних пробелов — незаполненное</li>
+    <li>У неверного поля выставь <code>aria-invalid="true"</code>, у первого из них — фокус</li>
+    <li>Показывай <strong>все</strong> ошибки сразу, а не по одной</li>
+    <li>При успехе — сообщение об успехе</li>
+  </ul>
+  <p>Обработчик вешай на форму и слушай <code>submit</code>, а не <code>click</code> на кнопке.</p>
+</section>
+
+<div class="modes" role="tablist" aria-label="Режим работы">
+  <button class="tm-btn tm-btn--primary" id="modeCode" role="tab" aria-selected="true" type="button">1. Писать код</button>
+  <button class="tm-btn tm-btn--ghost" id="modeBlocks" role="tab" aria-selected="false" type="button">2. Собрать блоками</button>
+</div>
+<main class="layout" id="layout">
+  <section class="pane" id="paneCode">
+    <label class="pane__label" for="editor">Твой код</label>
+    <textarea id="editor" spellcheck="false" aria-describedby="editorHelp"></textarea>
+    <p class="pane__help" id="editorHelp">Пиши здесь. Превью обновляется само. Разметку не меняй — дописывай скрипт.</p>
+  </section>
+  <section class="blocks-board hide" id="paneBlocks">
+    <div class="pane" id="blockPoolPane">
+      <p class="pane__label">Блоки</p>
+      <div id="blockPool" class="pool"></div>
+    </div>
+    <div class="pane" id="slotsPane">
+      <p class="pane__label">Страница</p>
+      <div id="slots" class="slots">
+        <div class="slot" data-accept="checks"><span class="slot__label">1. Правила проверки</span></div>
+        <div class="slot" data-accept="show"><span class="slot__label">2. Показать и убрать сообщение</span></div>
+        <div class="slot" data-accept="fields"><span class="slot__label">3. Описания полей</span></div>
+        <div class="slot" data-accept="submit"><span class="slot__label">4. Обработчик отправки</span></div>
+</div>
+    </div>
+  </section>
+  <section class="pane" id="panePreview">
+    <p class="pane__label">Что видит браузер</p>
+    <iframe id="preview" title="Предпросмотр страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+  </section>
+</main>
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Эталон</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► ЭТАЛОН</p>
+  <p>Почему так: обработчик на submit ловит и кнопку, и Enter. preventDefault оставляет человека на странице. Функции возвращают текст ошибки — его сразу можно показать. Цикл проходит все поля, потом фокус. aria-invalid ставится и снимается вместе с сообщением.</p>
+  <pre class="tm-code" id="solCode"></pre>
+</section>
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Валидация</dt><dd>Проверка введённых данных до того, как их принять.</dd>
+    <dt>Событие submit</dt><dd>Попытка отправить форму при любом способе отправки, включая Enter из поля.</dd>
+    <dt>preventDefault</dt><dd>Отмена перезагрузки страницы при отправке.</dd>
+    <dt>.trim()</dt><dd>Обрезка пробелов. Строка из пробелов — пустое поле.</dd>
+    <dt>aria-invalid</dt><dd>Сообщает программе чтения, что поле заполнено неверно.</dd>
+  </dl>
+</section>
+<details class="teacher"><summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> <code>submit</code> + <code>preventDefault</code>, функции проверки (текст или «»), <code>aria-invalid</code>, все ошибки сразу, фокус в первое неверное.</li>
+    <li><strong>Норматив:</strong> 16–20 мин. Scaffolding — инструкция. Разметку формы ученик не меняет.</li>
+    <li><strong>Типичные ошибки:</strong> обработчик на кнопке; нет <code>preventDefault</code>; нет <code>trim</code>; одна ошибка вместо всех; <code>alert</code> и стили из скрипта.</li>
+    <li><strong>Готово, когда:</strong> 13/13 и вслух: зачем обработчик на форме. Enter из поля имени не перезагружает страницу.</li>
+    <li><strong>Усложнение:</strong> счётчик символов; седьмое поле со своим правилом.</li>
+    <li><strong>Поддержка:</strong> режим блоков; файл с тремя пропусками в обработчике.</li>
+    <li><strong>ИИ:</strong> промпт на рефакторинг. Руками: поведение то же; на месте <code>preventDefault</code>, <code>trim</code>, <code>aria-invalid</code>; не подмена на браузерную валидацию; тексты сообщений не изменены; ученик объясняет каждую строку.</li>
+    <li><strong>Не проверять тестами:</strong> <code>input</code> и <code>wasSubmitted</code> — только при приёмке своего файла.</li>
+  </ul>
+</details>
+<script type="text/plain" id="starter">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Проверка формы</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root { --err: #c24545; --border: #e3e7e1; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }
+    .field { margin-bottom: 16px; max-width: 360px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; }
+    input { font: inherit; padding: 8px 10px; border: 1px solid var(--border);
+            border-radius: 8px; width: 100%; }
+    input[aria-invalid="true"] { border-color: var(--err); }
+    .field__error { display: block; min-height: 1.2em; margin-top: 4px;
+                    color: var(--err); font-size: 14px; }
+    button { font: inherit; padding: 10px 22px; border: none; border-radius: 999px;
+             background: #7cc142; cursor: pointer; }
+    #status { margin-top: 16px; font-weight: 700; min-height: 1.5em; }
+  </style>
+</head>
+<body>
+
+  <h2>Записаться в буфет</h2>
+
+  <form id="orderForm">
+    <div class="field">
+      <label for="name">Имя</label>
+      <input type="text" id="name" name="name" aria-describedby="nameError">
+      <span class="field__error" id="nameError"></span>
+    </div>
+
+    <div class="field">
+      <label for="cls">Класс</label>
+      <input type="text" id="cls" name="cls" aria-describedby="clsError" placeholder="9А">
+      <span class="field__error" id="clsError"></span>
+    </div>
+
+    <div class="field">
+      <label for="count">Сколько штук</label>
+      <input type="number" id="count" name="count" aria-describedby="countError">
+      <span class="field__error" id="countError"></span>
+    </div>
+
+    <button type="submit">Записаться</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const CLASS_PATTERN = /^\d{1,2}[А-Яа-я]$/;
+
+    const form = document.querySelector("#orderForm");
+    const status = document.querySelector("#status");
+
+    /* твой код здесь: checkName, checkClass, checkCount — возвращают текст ошибки или "" */
+
+
+    /* твой код здесь: showError и clearError */
+
+
+    /* твой код здесь: обработчик submit — все ошибки сразу, фокус в первое неверное */
+  <\/script>
+
+</body>
+</html>
+</script>
+<script type="text/plain" id="etalon">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Проверка формы</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root { --err: #c24545; --border: #e3e7e1; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }
+    .field { margin-bottom: 16px; max-width: 360px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; }
+    input { font: inherit; padding: 8px 10px; border: 1px solid var(--border);
+            border-radius: 8px; width: 100%; }
+    input[aria-invalid="true"] { border-color: var(--err); }
+    .field__error { display: block; min-height: 1.2em; margin-top: 4px;
+                    color: var(--err); font-size: 14px; }
+    button { font: inherit; padding: 10px 22px; border: none; border-radius: 999px;
+             background: #7cc142; cursor: pointer; }
+    #status { margin-top: 16px; font-weight: 700; min-height: 1.5em; }
+  </style>
+</head>
+<body>
+
+  <h2>Записаться в буфет</h2>
+
+  <form id="orderForm">
+    <div class="field">
+      <label for="name">Имя</label>
+      <input type="text" id="name" name="name" aria-describedby="nameError">
+      <span class="field__error" id="nameError"></span>
+    </div>
+
+    <div class="field">
+      <label for="cls">Класс</label>
+      <input type="text" id="cls" name="cls" aria-describedby="clsError" placeholder="9А">
+      <span class="field__error" id="clsError"></span>
+    </div>
+
+    <div class="field">
+      <label for="count">Сколько штук</label>
+      <input type="number" id="count" name="count" aria-describedby="countError">
+      <span class="field__error" id="countError"></span>
+    </div>
+
+    <button type="submit">Записаться</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const CLASS_PATTERN = /^\d{1,2}[А-Яа-я]$/;
+
+    const form = document.querySelector("#orderForm");
+    const status = document.querySelector("#status");
+
+    function checkName(value) {
+      const text = value.trim();
+      if (text === "") return "Напиши имя — как к тебе обращаться?";
+      if (text.length < 2) return "Слишком короткое имя, напиши полностью";
+      return "";
+    }
+
+    function checkClass(value) {
+      const text = value.trim();
+      if (text === "") return "Укажи класс";
+      if (!CLASS_PATTERN.test(text)) return "Класс пишется как 9А или 11Б";
+      return "";
+    }
+
+    function checkCount(value) {
+      const count = Number(value);
+      if (value.trim() === "" || Number.isNaN(count)) return "Укажи количество цифрой";
+      if (count < 1 || count > 5) return "От 1 до 5 штук за раз";
+      return "";
+    }
+
+    function showError(input, errorBox, message) {
+      errorBox.textContent = message;
+      input.setAttribute("aria-invalid", "true");
+    }
+
+    function clearError(input, errorBox) {
+      errorBox.textContent = "";
+      input.removeAttribute("aria-invalid");
+    }
+
+    const FIELDS = [
+      { input: "#name",  error: "#nameError",  check: checkName  },
+      { input: "#cls",   error: "#clsError",   check: checkClass },
+      { input: "#count", error: "#countError", check: checkCount }
+    ];
+
+    const fields = FIELDS.map((item) => ({
+      input: document.querySelector(item.input),
+      errorBox: document.querySelector(item.error),
+      check: item.check
+    }));
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      let firstInvalid = null;
+
+      fields.forEach((field) => {
+        const message = field.check(field.input.value);
+        if (message === "") {
+          clearError(field.input, field.errorBox);
+        } else {
+          showError(field.input, field.errorBox, message);
+          if (firstInvalid === null) {
+            firstInvalid = field.input;
+          }
+        }
+      });
+
+      if (firstInvalid !== null) {
+        status.textContent = "";
+        firstInvalid.focus();
+        return;
+      }
+
+      status.textContent = "Заявка принята, подходи к буфету";
+    });
+  <\/script>
+
+</body>
+</html>
+</script>
+<script>
+  (function () {
+      
+      const DRAFT_KEY = "wdc-l11-validate-v1";
+      const MODE_KEY = "wdc-l11-mode-v1";
+      const DL_NAME = "l11_moya_rabota.html";
+
+      const BLOCKS = [{"id": "checks-ok", "accept": "checks", "label": "Проверки: trim + текст ошибки", "show": "return \"текст\" / \"\"", "html": "function checkName(value) {\n      const text = value.trim();\n      if (text === \"\") return \"Напиши имя — как к тебе обращаться?\";\n      if (text.length < 2) return \"Слишком короткое имя, напиши полностью\";\n      return \"\";\n    }\n\n    function checkClass(value) {\n      const text = value.trim();\n      if (text === \"\") return \"Укажи класс\";\n      if (!CLASS_PATTERN.test(text)) return \"Класс пишется как 9А или 11Б\";\n      return \"\";\n    }\n\n    function checkCount(value) {\n      const count = Number(value);\n      if (value.trim() === \"\" || Number.isNaN(count)) return \"Укажи количество цифрой\";\n      if (count < 1 || count > 5) return \"От 1 до 5 штук за раз\";\n      return \"\";\n    }"}, {"id": "checks-bad1", "accept": "none", "label": "Проверки: без trim", "show": "value === \"\"", "html": "function checkName(value) {\n      if (value === \"\") return \"Напиши имя\";\n      return \"\";\n    }\n\n    function checkClass(value) {\n      if (value === \"\") return \"Укажи класс\";\n      return \"\";\n    }\n\n    function checkCount(value) {\n      const count = Number(value);\n      if (count < 1 || count > 5) return \"От 1 до 5 штук за раз\";\n      return \"\";\n    }"}, {"id": "checks-bad2", "accept": "none", "label": "Проверки: возвращают true/false", "show": "return false", "html": "function checkName(value) {\n      return value.trim() !== \"\";\n    }\n\n    function checkClass(value) {\n      return CLASS_PATTERN.test(value.trim());\n    }\n\n    function checkCount(value) {\n      const count = Number(value);\n      return count >= 1 && count <= 5;\n    }"}, {"id": "show-ok", "accept": "show", "label": "Сообщения: textContent + aria-invalid", "show": "setAttribute(\"aria-invalid\")", "html": "function showError(input, errorBox, message) {\n      errorBox.textContent = message;\n      input.setAttribute(\"aria-invalid\", \"true\");\n    }\n\n    function clearError(input, errorBox) {\n      errorBox.textContent = \"\";\n      input.removeAttribute(\"aria-invalid\");\n    }"}, {"id": "show-bad1", "accept": "none", "label": "Сообщения: alert", "show": "alert(message)", "html": "function showError(input, errorBox, message) {\n      alert(message);\n    }\n\n    function clearError(input, errorBox) {\n    }"}, {"id": "show-bad2", "accept": "none", "label": "Сообщения: стили из скрипта", "show": "input.style.borderColor", "html": "function showError(input, errorBox, message) {\n      errorBox.textContent = message;\n      input.style.borderColor = \"red\";\n    }\n\n    function clearError(input, errorBox) {\n      errorBox.textContent = \"\";\n      input.style.borderColor = \"\";\n    }"}, {"id": "fields-ok", "accept": "fields", "label": "Описания полей массивом", "show": "FIELDS = [{ input, error, check }]", "html": "const FIELDS = [\n      { input: \"#name\",  error: \"#nameError\",  check: checkName  },\n      { input: \"#cls\",   error: \"#clsError\",   check: checkClass },\n      { input: \"#count\", error: \"#countError\", check: checkCount }\n    ];\n\n    const fields = FIELDS.map((item) => ({\n      input: document.querySelector(item.input),\n      errorBox: document.querySelector(item.error),\n      check: item.check\n    }));"}, {"id": "submit-ok", "accept": "submit", "label": "Отправка: submit + все ошибки + фокус", "show": "form.addEventListener(\"submit\")", "html": "form.addEventListener(\"submit\", (event) => {\n      event.preventDefault();\n\n      let firstInvalid = null;\n\n      fields.forEach((field) => {\n        const message = field.check(field.input.value);\n        if (message === \"\") {\n          clearError(field.input, field.errorBox);\n        } else {\n          showError(field.input, field.errorBox, message);\n          if (firstInvalid === null) {\n            firstInvalid = field.input;\n          }\n        }\n      });\n\n      if (firstInvalid !== null) {\n        status.textContent = \"\";\n        firstInvalid.focus();\n        return;\n      }\n\n      status.textContent = \"Заявка принята, подходи к буфету\";\n    });"}, {"id": "submit-bad1", "accept": "none", "label": "Отправка: обработчик на кнопке", "show": "button click", "html": "const btn = document.querySelector(\"button\");\n\n    btn.addEventListener(\"click\", (event) => {\n      event.preventDefault();\n\n      fields.forEach((field) => {\n        const message = field.check(field.input.value);\n        if (message === \"\") {\n          clearError(field.input, field.errorBox);\n        } else {\n          showError(field.input, field.errorBox, message);\n        }\n      });\n    });"}, {"id": "submit-bad2", "accept": "none", "label": "Отправка: выход после первой ошибки", "show": "return после первой", "html": "form.addEventListener(\"submit\", (event) => {\n      event.preventDefault();\n\n      for (const field of fields) {\n        const message = field.check(field.input.value);\n        if (message !== \"\") {\n          showError(field.input, field.errorBox, message);\n          field.input.focus();\n          return;\n        }\n        clearError(field.input, field.errorBox);\n      }\n\n      status.textContent = \"Заявка принята, подходи к буфету\";\n    });"}];
+      const HINTS = ["Отправь свою форму клавишей Enter прямо из поля имени, не нажимая кнопку. Проверка сработала? Если нет — обработчик висит не там. И второй вопрос: если в имени три пробела, твоя проверка считает поле заполненным?", "Обработчик на form, событие submit, первой строкой event.preventDefault(). Каждая функция проверки возвращает текст ошибки или пустую строку — так результат сразу готов к показу. В обработчике проходишь по всем полям, показываешь все сообщения, запоминаешь первое неверное и в конце ставишь ему фокус. showError пишет текст и ставит aria-invalid, clearError — стирает и снимает.", "function checkName(value) {\n  const text = value.trim();\n  if (text === \"\") return \"Напиши имя — как к тебе обращаться?\";\n  return \"\";\n}\n\nfunction showError(input, errorBox, message) {\n  errorBox.textContent = message;\n  input.setAttribute(\"aria-invalid\", \"true\");\n}\n\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n  let firstInvalid = null;\n  fields.forEach((field) => {\n    const message = field.check(field.input.value);\n    if (message === \"\") {\n      clearError(field.input, field.errorBox);\n    } else {\n      showError(field.input, field.errorBox, message);\n      if (firstInvalid === null) firstInvalid = field.input;\n    }\n  });\n  if (firstInvalid !== null) {\n    firstInvalid.focus();\n    return;\n  }\n  status.textContent = \"Заявка принята, подходи к буфету\";\n});"];
+      
+      const BASE = location.href.replace(/[^/]*$/, "");
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      const layout = document.getElementById("layout");
+      const paneCode = document.getElementById("paneCode");
+      const paneBlocks = document.getElementById("paneBlocks");
+      const modeCode = document.getElementById("modeCode");
+      const modeBlocks = document.getElementById("modeBlocks");
+      const testsEl = document.getElementById("tests");
+      const hintsEl = document.getElementById("hints");
+      const scoreEl = document.getElementById("score");
+      const bar = document.getElementById("bar");
+      const honesty = document.getElementById("honesty");
+      const etalonBtn = document.getElementById("etalonBtn");
+      const etalonBox = document.getElementById("etalonBox");
+      const pool = document.getElementById("blockPool");
+      const slotsRoot = document.getElementById("slots");
+
+      function readSlot(id) {
+        const raw = document.getElementById(id).textContent;
+        return raw.replace(/<\\\/script>/g, "<" + "/script>").trim();
+      }
+      const STARTER = readSlot("starter");
+      const ETALON = readSlot("etalon");
+      let typeTimer = null;
+      let hintsOpen = 0;
+      let lastPassed = 0;
+
+      function withBase(html) {
+        const tag = '<base href="' + BASE + '">';
+        if (/<head[^>]*>/i.test(html)) return html.replace(/<head([^>]*)>/i, "<head$1>" + tag);
+        if (/<html[^>]*>/i.test(html)) return html.replace(/<html([^>]*)>/i, "<html$1><head>" + tag + "</head>");
+        return "<head>" + tag + "</head>" + html;
+      }
+      function previewDoc(html) { preview.srcdoc = withBase(html); }
+      function currentHtml() {
+        return layout.classList.contains("is-blocks") ? htmlFromBlocks() : editor.value;
+      }
+      function schedulePreview() {
+        clearTimeout(typeTimer);
+        typeTimer = setTimeout(function () { previewDoc(currentHtml()); saveDraft(); }, 280);
+      }
+      editor.addEventListener("input", schedulePreview);
+
+      function saveDraft() {
+        const data = {
+          code: editor.value,
+          slots: [...slotsRoot.querySelectorAll(".slot")].map(function (s) { return s.dataset.filled || ""; }),
+          hintsOpen: hintsOpen
+        };
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+      }
+      function persistMode(mode) {
+        try {
+          if (typeof MODE_PACK === "function") localStorage.setItem(MODE_KEY, JSON.stringify(MODE_PACK(mode)));
+          else localStorage.setItem(MODE_KEY, mode);
+        } catch (e) {}
+      }
+      function loadMode() {
+        try {
+          const raw = localStorage.getItem(MODE_KEY);
+          if (!raw) return "code";
+          if (raw === "code" || raw === "blocks") return raw;
+          const o = JSON.parse(raw);
+          return o && o.mode === "blocks" ? "blocks" : "code";
+        } catch (e) { return "code"; }
+      }
+      function setMode(mode) {
+        const isBlocks = mode === "blocks";
+        layout.classList.toggle("is-blocks", isBlocks);
+        paneCode.classList.toggle("hide", isBlocks);
+        paneBlocks.classList.toggle("hide", !isBlocks);
+        modeCode.setAttribute("aria-selected", String(!isBlocks));
+        modeBlocks.setAttribute("aria-selected", String(isBlocks));
+        modeCode.className = "tm-btn " + (isBlocks ? "tm-btn--ghost" : "tm-btn--primary");
+        modeBlocks.className = "tm-btn " + (isBlocks ? "tm-btn--primary" : "tm-btn--ghost");
+        persistMode(mode);
+        previewDoc(currentHtml());
+        saveDraft();
+      }
+      function findBlock(id) { return BLOCKS.filter(function (b) { return b.id === id; })[0]; }
+      function part(name) {
+        const slot = slotsRoot.querySelector('.slot[data-accept="' + name + '"]');
+        const id = slot && slot.dataset.filled;
+        const b = findBlock(id);
+        return b ? b.html : "";
+      }
+      function makeChip(item) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "chip"; b.draggable = true; b.dataset.id = item.id; b.tabIndex = 0;
+        const lab = document.createElement("b"); lab.textContent = item.label; b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        function activate() {
+          if (b.closest(".slot")) {
+            b.closest(".slot").dataset.filled = "";
+            renderBoard(); previewDoc(currentHtml()); saveDraft(); return;
+          }
+          placeChip(item.id);
+        }
+        b.addEventListener("click", function (e) { e.stopPropagation(); activate(); });
+        b.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); activate(); } });
+        b.addEventListener("dragstart", function (e) {
+          e.dataTransfer.setData("text/plain", item.id); e.dataTransfer.effectAllowed = "move";
+        });
+        return b;
+      }
+      function flashSlotError(block) {
+        const nodes = block.accept === "none"
+          ? [...slotsRoot.querySelectorAll(".slot")]
+          : [...slotsRoot.querySelectorAll('.slot[data-accept="' + block.accept + '"]')];
+        nodes.forEach(function (s) { s.classList.add("is-error"); });
+        setTimeout(function () { nodes.forEach(function (s) { s.classList.remove("is-error"); }); }, 400);
+      }
+      function placeChip(chipId) {
+        const block = findBlock(chipId);
+        if (!block) return;
+        const slot = [...slotsRoot.querySelectorAll(".slot")]
+          .find(function (s) { return s.dataset.accept === block.accept && !s.dataset.filled; });
+        if (!slot) { flashSlotError(block); return; }
+        slotsRoot.querySelectorAll(".slot").forEach(function (s) {
+          if (s.dataset.filled === chipId) s.dataset.filled = "";
+        });
+        slot.dataset.filled = chipId;
+        renderBoard(); previewDoc(currentHtml()); saveDraft();
+      }
+      function renderBoard() {
+        const used = {};
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          const label = slot.querySelector(".slot__label");
+          const filled = slot.dataset.filled || "";
+          slot.innerHTML = "";
+          if (label) slot.appendChild(label);
+          if (filled && findBlock(filled)) {
+            used[filled] = true;
+            slot.appendChild(makeChip(findBlock(filled)));
+          }
+        });
+        pool.innerHTML = "";
+        BLOCKS.forEach(function (item) { if (!used[item.id]) pool.appendChild(makeChip(item)); });
+      }
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+      function fillBlocks(orderIds) {
+        slotsRoot.querySelectorAll(".slot").forEach(function (s) { s.dataset.filled = ""; });
+        if (orderIds && orderIds.length) {
+          slotsRoot.querySelectorAll(".slot").forEach(function (s, i) { if (orderIds[i]) s.dataset.filled = orderIds[i]; });
+        } else {
+          const sh = shuffle(BLOCKS);
+          BLOCKS.length = 0; sh.forEach(function (x) { BLOCKS.push(x); });
+        }
+        renderBoard();
+      }
+      function bindSlots() {
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          const id = e.dataTransfer.getData("text/plain");
+          slotsRoot.querySelectorAll(".slot").forEach(function (s) { if (s.dataset.filled === id) s.dataset.filled = ""; });
+          renderBoard(); previewDoc(currentHtml()); saveDraft();
+        });
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (slot.dataset.filled) {
+              slot.dataset.filled = ""; renderBoard(); previewDoc(currentHtml()); saveDraft();
+            }
+          });
+          slot.addEventListener("dragover", function (e) { e.preventDefault(); slot.classList.add("is-over"); });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault(); slot.classList.remove("is-over");
+            const id = e.dataTransfer.getData("text/plain");
+            const block = findBlock(id);
+            if (!block || block.accept !== slot.dataset.accept) { if (block) flashSlotError(block); return; }
+            slotsRoot.querySelectorAll(".slot").forEach(function (s) { if (s.dataset.filled === id) s.dataset.filled = ""; });
+            slot.dataset.filled = id; renderBoard(); previewDoc(currentHtml()); saveDraft();
+          });
+        });
+      }
+      function stripComments(src) {
+        return String(src).replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:\\\n])\/\/[^\n]*/g, "$1");
+      }
+      function stripCommentsAndStrings(src) {
+        let s = stripComments(src);
+        s = s.replace(/`(?:\\.|[^`\\])*`/g, "''");
+        s = s.replace(/"(?:\\.|[^"\\])*"/g, "''");
+        s = s.replace(/'(?:\\.|[^'\\])*'/g, "''");
+        return s;
+      }
+      function renderResults(list, progressLabel) {
+        const passed = list.filter(function (r) { return r.ok; }).length;
+        const head = progressLabel ? '<p class="check-progress">' + progressLabel + "</p>" : "";
+        testsEl.innerHTML = head + list.map(function (r) {
+          return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+            '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + "</span>" +
+            "<div><div>" + r.name + "</div>" +
+            (r.ok ? "" : '<div class="tm-test__hint">' + r.hint + "</div>") +
+            "</div></div>";
+        }).join("");
+        lastPassed = passed;
+        scoreEl.textContent = passed + " / " + TESTS.length;
+        bar.style.width = (list.length ? (passed / TESTS.length * 100) : 0) + "%";
+        if (passed === TESTS.length && list.length === TESTS.length) finishTask();
+      }
+      function unlockEtalon() { etalonBtn.disabled = false; }
+      function finishTask() {
+        unlockEtalon();
+        honesty.textContent = "Задача сдана. Подсказок открыто: " + hintsOpen + ".";
+      }
+      function appendHint(i, countOpen) {
+        const wrap = document.createElement("div"); wrap.className = "hint";
+        const title = document.createElement("p"); title.style.margin = "0 0 8px";
+        const strong = document.createElement("strong");
+        strong.textContent = "Подсказка " + (i + 1) + ". ";
+        title.appendChild(strong);
+        if (i === 2) {
+          title.appendChild(document.createTextNode("Фрагмент:"));
+          wrap.appendChild(title);
+          const pre = document.createElement("pre"); pre.className = "tm-code"; pre.textContent = HINTS[i];
+          wrap.appendChild(pre);
+        } else {
+          title.appendChild(document.createTextNode(HINTS[i]));
+          wrap.appendChild(title);
+        }
+        hintsEl.appendChild(wrap);
+        if (countOpen) {
+          hintsOpen = i + 1;
+          honesty.textContent = "Подсказок открыто: " + hintsOpen + ".";
+          if (hintsOpen >= HINTS.length) unlockEtalon();
+          saveDraft();
+        }
+      }
+      function replayHints() {
+        hintsEl.innerHTML = "";
+        for (let i = 0; i < hintsOpen; i += 1) appendHint(i, false);
+        if (hintsOpen >= HINTS.length) unlockEtalon();
+      }
+      document.getElementById("hintBtn").addEventListener("click", function () {
+        if (hintsOpen >= HINTS.length) return;
+        appendHint(hintsOpen, true);
+      });
+      document.getElementById("etalonBtn").addEventListener("click", function () {
+        if (etalonBtn.disabled) return;
+        etalonBox.classList.remove("hide");
+        document.getElementById("solCode").textContent = ETALON;
+      });
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        editor.value = STARTER; fillBlocks(null); hintsOpen = 0; hintsEl.innerHTML = "";
+        testsEl.innerHTML = ""; scoreEl.textContent = "0 / " + TESTS.length; bar.style.width = "0";
+        etalonBtn.disabled = true; etalonBox.classList.add("hide"); honesty.textContent = "";
+        saveDraft(); previewDoc(currentHtml());
+      });
+      document.getElementById("dlBtn").addEventListener("click", function () {
+        const blob = new Blob([currentHtml()], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+        a.download = DL_NAME; a.click(); URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+      });
+      modeCode.addEventListener("click", function () { setMode("code"); });
+      modeBlocks.addEventListener("click", function () { setMode("blocks"); });
+      function loadDraft() {
+        let raw = null;
+        try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) {}
+        if (!raw) { editor.value = STARTER; fillBlocks(null); return; }
+        try {
+          const data = JSON.parse(raw);
+          if (data && typeof data === "object" && (data.code || data.slots)) {
+            editor.value = data.code || STARTER;
+            fillBlocks(data.slots && data.slots.some(Boolean) ? data.slots : null);
+            hintsOpen = data.hintsOpen || 0; replayHints(); return;
+          }
+        } catch (e) {}
+        editor.value = raw; fillBlocks(null);
+      }
+
+      
+      function htmlFromBlocks() {
+        const body = ["checks", "show", "fields", "submit"].map(part).join("\n\n    ");
+        return STARTER.replace(/\/\* твой код здесь: checkName[\s\S]*фокус в первое неверное \*\//, body);
+      }
+      function fireSubmit(doc, win) {
+        const form = doc.querySelector("#orderForm");
+        if (!form) return false;
+        const ev = new win.Event("submit", { bubbles: true, cancelable: true });
+        form.dispatchEvent(ev);
+        return true;
+      }
+      function resetForm(doc) {
+        const form = doc.querySelector("#orderForm");
+        if (form) form.reset();
+        doc.querySelectorAll(".field__error").forEach(function (el) { el.textContent = ""; });
+        const st = doc.querySelector("#status");
+        if (st) st.textContent = "";
+        ["#name", "#cls", "#count"].forEach(function (sel) {
+          const el = doc.querySelector(sel);
+          if (el) el.removeAttribute("aria-invalid");
+        });
+      }
+      function fillValid(doc) {
+        doc.querySelector("#name").value = "Анна";
+        doc.querySelector("#cls").value = "9А";
+        doc.querySelector("#count").value = "2";
+      }
+      const TESTS = [
+        {
+          name: "Отправка перехвачена",
+          hint: "После отправки страница перезагрузилась и всё стёрлось. Первой строкой обработчика должен стоять event.preventDefault()",
+          run: function (src, doc, win) {
+            const form = doc.querySelector("#orderForm");
+            if (!form) return false;
+            win.__marker = "alive";
+            fireSubmit(doc, win);
+            return win.__marker === "alive";
+          }
+        },
+        {
+          name: "Обработчик на форме",
+          hint: "Проверка не сработала при отправке без нажатия на кнопку. Значит, обработчик висит на кнопке и слушает click — тогда отправка клавишей Enter из поля пройдёт мимо проверки. Вешай на <form> и слушай submit",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            if (!fireSubmit(doc, win)) return false;
+            return ["#nameError", "#clsError", "#countError"].some(function (id) {
+              const el = doc.querySelector(id);
+              return el && el.textContent.trim() !== "";
+            });
+          }
+        },
+        {
+          name: "Пустые поля отмечены",
+          hint: "При пустой форме сообщений нет. Проверь, что функции проверки возвращают текст, а обработчик его показывает",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            fireSubmit(doc, win);
+            return ["#nameError", "#clsError", "#countError"].every(function (id) {
+              const el = doc.querySelector(id);
+              return el && el.textContent.trim() !== "";
+            });
+          }
+        },
+        {
+          name: "Все ошибки видны сразу",
+          hint: "Показана только первая ошибка. Человеку придётся отправлять форму трижды. Проверяй все поля в цикле, а выход делай после цикла",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            fireSubmit(doc, win);
+            const n = ["#nameError", "#clsError", "#countError"].filter(function (id) {
+              const el = doc.querySelector(id);
+              return el && el.textContent.trim() !== "";
+            }).length;
+            return n === 3;
+          }
+        },
+        {
+          name: "Пробелы не проходят",
+          hint: "Три пробела прошли проверку как заполненное поле. Обрезай строку методом .trim() до сравнения",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            doc.querySelector("#name").value = "   ";
+            fireSubmit(doc, win);
+            const el = doc.querySelector("#nameError");
+            return el && el.textContent.trim() !== "";
+          }
+        },
+        {
+          name: "Сообщения на своих местах",
+          hint: "Сообщение должно попадать в блок рядом со своим полем — тот, чей id указан в aria-describedby этого поля",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            fireSubmit(doc, win);
+            const el = doc.querySelector("#nameError");
+            return el && el.textContent.trim() !== "";
+          }
+        },
+        {
+          name: "Доступность: поле отмечено",
+          hint: "Человек, который не видит экран, не узнает об ошибке. Ставь input.setAttribute(\"aria-invalid\", \"true\") вместе с сообщением",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            fireSubmit(doc, win);
+            const name = doc.querySelector("#name");
+            return name && name.getAttribute("aria-invalid") === "true";
+          }
+        },
+        {
+          name: "Отметка снимается",
+          hint: "Поле исправлено, а отметка осталась — программа чтения по-прежнему считает его неверным. Снимай атрибут методом removeAttribute в clearError",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            fireSubmit(doc, win);
+            fillValid(doc);
+            fireSubmit(doc, win);
+            const name = doc.querySelector("#name");
+            return name && !name.hasAttribute("aria-invalid");
+          }
+        },
+        {
+          name: "Фокус в первом неверном",
+          hint: "После отправки фокус остался на кнопке. Запомни первое неверное поле в цикле и вызови у него .focus()",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            try { win.focus(); } catch (e) {}
+            fireSubmit(doc, win);
+            const name = doc.querySelector("#name");
+            if (doc.activeElement === name) return true;
+            return /\.focus\s*\(/.test(stripComments(src));
+          }
+        },
+        {
+          name: "Формат класса проверяется",
+          hint: "Проверь шаблон: CLASS_PATTERN.test(text) возвращает true, если строка подходит. Перед ним нужен восклицательный знак: ошибка — когда не подходит",
+          run: function (src, doc, win) {
+            resetForm(doc);
+            fillValid(doc);
+            doc.querySelector("#cls").value = "девятый";
+            fireSubmit(doc, win);
+            const bad = doc.querySelector("#clsError");
+            const badOk = bad && bad.textContent.trim() !== "";
+            resetForm(doc);
+            fillValid(doc);
+            doc.querySelector("#cls").value = "9А";
+            fireSubmit(doc, win);
+            const good = doc.querySelector("#clsError");
+            return badOk && good && good.textContent.trim() === "";
+          }
+        },
+        {
+          name: "Границы количества верны",
+          hint: "Проверь границы: 1 и 5 должны проходить, 0 и 6 — нет. И не забудь Number(): значение из поля — строка",
+          run: function (src, doc, win) {
+            function err(val) {
+              resetForm(doc); fillValid(doc);
+              doc.querySelector("#count").value = val;
+              fireSubmit(doc, win);
+              const el = doc.querySelector("#countError");
+              return el ? el.textContent.trim() : "x";
+            }
+            return err("0") !== "" && err("6") !== "" && err("1") === "" && err("5") === "";
+          }
+        },
+        {
+          name: "Успех виден пользователю",
+          hint: "Форма прошла проверку, но человек об этом не узнал: экран не изменился. Выведи сообщение об успехе",
+          run: function (src, doc, win) {
+            resetForm(doc); fillValid(doc); fireSubmit(doc, win);
+            const st = doc.querySelector("#status");
+            return st && st.textContent.trim() !== "";
+          }
+        },
+        {
+          name: "Сообщения по-человечески",
+          hint: "alert блокирует страницу и не связан с полем. А стили из скрипта нельзя переопределить и не переключатся в тёмной теме: скрипт меняет атрибут или класс, вид задаёт CSS",
+          run: function (src) {
+            const clean = stripComments(src);
+            return !/alert\s*\(/.test(clean) && !/\.style\s*\./.test(clean);
+          }
+        }
+      ];
+      function runChecks() {
+        clearTimeout(typeTimer);
+        const html = currentHtml();
+        let finished = false;
+        function go() {
+          if (finished) return;
+          finished = true;
+          preview.removeEventListener("load", go);
+          const doc = preview.contentDocument;
+          const win = preview.contentWindow;
+          if (!doc || !doc.body) {
+            renderResults([{ ok: false, name: "Документ не разобрался", hint: "Проверь незакрытые теги и скобки в script." }]);
+            return;
+          }
+          const list = TESTS.map(function (t) {
+            let ok = false;
+            try { ok = !!t.run(html, doc, win, preview); } catch (e) { ok = false; }
+            return { name: t.name, hint: t.hint, ok: ok };
+          });
+          renderResults(list);
+        }
+        preview.addEventListener("load", go);
+        preview.srcdoc = withBase(html);
+        setTimeout(function () { if (!finished) go(); }, 1200);
+      }
+      document.getElementById("checkBtn").addEventListener("click", function () {
+        clearTimeout(typeTimer);
+        runChecks();
+      });
+      bindSlots();
+      loadDraft();
+      setMode(loadMode());
+      scoreEl.textContent = "0 / " + TESTS.length;
+
+  })();
+</script>
+</body>
+</html>

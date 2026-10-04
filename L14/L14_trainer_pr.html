@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 14 · Тренажёр: Pull Request и Code Review</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visible, .rev-line:focus-visible, .opt:focus-within { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; line-height: 1.45; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    .brief .tm-eyebrow { margin: 0 0 8px; display: inline-block; }
+    .hide { display: none !important; }
+    .tm-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .sit-grid { display: grid; grid-template-columns: 1fr minmax(220px, 280px); gap: 16px; align-items: start; }
+    @media (max-width: 860px) { .sit-grid { grid-template-columns: 1fr; } }
+    .tm-progress { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; height: 10px; margin: 0 0 14px; }
+    .tm-progress span { display: block; height: 100%; border-radius: var(--tm-radius-pill); background: var(--tm-border); }
+    .tm-progress span.is-done { background: var(--tm-green); }
+    .tm-progress span.is-now { box-shadow: 0 0 0 2px var(--tm-green-dark); }
+    .pr-panel { background: var(--tm-bg-alt); border: 1px solid var(--tm-border); border-radius: var(--tm-radius-sm); padding: 14px 16px; font-family: var(--tm-mono); font-size: 14px; line-height: 1.7; }
+    html[data-theme="dark"] .pr-panel { background: var(--tm-code-bg); }
+    .pr-panel h3 { margin: 0 0 8px; font-family: var(--tm-font); font-size: 14px; color: var(--tm-green-dark); }
+    .pr-row { display: grid; grid-template-columns: 7.2em 1fr; gap: 8px; }
+    .pr-row dt { color: var(--tm-muted); margin: 0; }
+    .pr-row dd { margin: 0; font-weight: 600; }
+    .sit-q { margin: 0 0 12px; font-size: 1.05rem; line-height: 1.5; }
+    .opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); margin-bottom: 8px; cursor: pointer; line-height: 1.45; }
+    .opt:hover { background: var(--tm-green-soft); }
+    .opt input { margin-top: 4px; accent-color: var(--tm-green-dark); }
+    .sit-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .rev-help { color: var(--tm-muted); margin: 0 0 12px; }
+    .rev-check { margin: 0 0 14px; padding: 10px 12px; background: var(--tm-bg-alt); border-radius: var(--tm-radius-sm); }
+    .rev-check li { margin: .25em 0; }
+    .rev-code { margin: 0; padding: 0; background: var(--tm-code-bg); color: var(--tm-code-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; overflow: auto; font-family: var(--tm-mono); font-size: 15px; line-height: 1.5; }
+    .rev-line { display: grid; grid-template-columns: 2.4em 1fr; gap: 8px; align-items: start; padding: 4px 12px; cursor: pointer; }
+    .rev-line:hover { background: var(--tm-green-soft); }
+    .rev-line.is-on { background: var(--tm-green-soft); outline: 1px solid var(--tm-green); }
+    .rev-n { color: var(--tm-muted); user-select: none; }
+    .rev-src { white-space: pre-wrap; word-break: break-word; }
+    .rev-rule { grid-column: 2; margin: 4px 0 8px; }
+    .rev-rule select { font: 600 15px/1.3 var(--tm-font); padding: 6px 8px; border-radius: var(--tm-radius-sm); border: 1px solid var(--tm-border); background: var(--tm-bg); color: var(--tm-text); max-width: 100%; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-weight: 700; margin-bottom: 6px; color: var(--tm-green-dark); }
+    .field textarea { width: 100%; min-height: 120px; padding: 10px 12px; font-family: var(--tm-mono); font-size: 15px; line-height: 1.45; border: 1px solid var(--tm-border); border-radius: var(--tm-radius-sm); background: var(--tm-code-bg); color: var(--tm-code-text); resize: vertical; }
+    .field-msg { color: var(--tm-fail); font-size: .93em; margin: 6px 0 0; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-code-bg); color: var(--tm-code-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 14px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+    .sol-sit { margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--tm-border); }
+    .sol-sit h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .why { margin: .35em 0; }
+    .why strong { color: var(--tm-green-dark); }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 14 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Pull Request и Code Review</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 14</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Ты ведёшь Pull Request в репозитории сайта буфета. Первая часть — девять ситуаций рабочего дня: выбери, что делать. Вторая часть — ревью: в готовом фрагменте кода найди пять нарушений чек-листа и отметь строки. Третья — собери описание PR из трёх блоков. Порог: 7 ситуаций из 9, не меньше 4 найденных нарушений из 5 и принятое описание.</p>
+</section>
+
+<div class="tm-tabs" role="tablist" aria-label="Части тренажёра">
+  <button class="tm-btn tm-btn--primary" id="tabSituations" role="tab" aria-selected="true" aria-controls="paneSituations" type="button">Ситуации</button>
+  <button class="tm-btn tm-btn--ghost" id="tabReview" role="tab" aria-selected="false" aria-controls="paneReview" type="button">Ревью</button>
+  <button class="tm-btn tm-btn--ghost" id="tabDescr" role="tab" aria-selected="false" aria-controls="paneDescr" type="button">Описание PR</button>
+</div>
+
+<main>
+  <section class="tm-card" id="paneSituations" role="tabpanel" aria-labelledby="tabSituations">
+    <p class="tm-eyebrow">►► СИТУАЦИИ</p>
+    <div class="tm-progress" id="sitProgress" aria-hidden="true"></div>
+    <div class="sit-grid">
+      <div>
+        <p class="sit-q" id="sitQ"></p>
+        <div id="sitOpts"></div>
+        <div class="sit-nav">
+          <button class="tm-btn tm-btn--ghost" id="sitPrev" type="button">Назад</button>
+          <button class="tm-btn tm-btn--ghost" id="sitNext" type="button">Дальше</button>
+        </div>
+      </div>
+      <aside class="pr-panel" aria-live="polite">
+        <h3>Состояние PR</h3>
+        <dl>
+          <div class="pr-row"><dt>Ветка:</dt><dd id="prBranch">feature/sort-price</dd></div>
+          <div class="pr-row"><dt>На сервере:</dt><dd id="prServer">нет</dd></div>
+          <div class="pr-row"><dt>PR:</dt><dd id="prState">нет</dd></div>
+          <div class="pr-row"><dt>Конфликт:</dt><dd id="prConflict">нет</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="tm-card hide" id="paneReview" role="tabpanel" aria-labelledby="tabReview" hidden>
+    <p class="tm-eyebrow">►► РЕВЬЮ</p>
+    <p class="rev-help">Кликни по строке с нарушением и выбери пункт чек-листа. Правильный ответ — и строка, и номер пункта. Строки 6, 7 и 8 нарушением не являются.</p>
+    <ol class="rev-check">
+      <li>Понятны ли имена</li>
+      <li>Нет ли закомментированного мусора</li>
+      <li>Работает ли на узком экране</li>
+      <li>Обработаны ли нештатные ситуации</li>
+      <li>Может ли автор это объяснить</li>
+    </ol>
+    <!-- Нумерация строк проставлена вручную, не из &lt;br&gt; -->
+    <div class="rev-code" id="revCode">
+      <div class="rev-line" data-line="1" tabindex="0" role="button"><span class="rev-n">1</span><span class="rev-src">const b = document.querySelector(".sort-btn");</span></div>
+      <div class="rev-line" data-line="2" tabindex="0" role="button"><span class="rev-n">2</span><span class="rev-src">// const old = document.querySelector(".button-old");</span></div>
+      <div class="rev-line" data-line="3" tabindex="0" role="button"><span class="rev-n">3</span><span class="rev-src"> </span></div>
+      <div class="rev-line" data-line="4" tabindex="0" role="button"><span class="rev-n">4</span><span class="rev-src">b.addEventListener("click", function () {</span></div>
+      <div class="rev-line" data-line="5" tabindex="0" role="button"><span class="rev-n">5</span><span class="rev-src">  const arr = PIES.sort((x, y) =&gt; x.price - y.price);</span></div>
+      <div class="rev-line" data-line="6" tabindex="0" role="button"><span class="rev-n">6</span><span class="rev-src">  let s = "";</span></div>
+      <div class="rev-line" data-line="7" tabindex="0" role="button"><span class="rev-n">7</span><span class="rev-src">  for (let i = 0; i &lt; arr.length; i++) {</span></div>
+      <div class="rev-line" data-line="8" tabindex="0" role="button"><span class="rev-n">8</span><span class="rev-src">    s = s + '&lt;article class="card"&gt;&lt;h3&gt;' + arr[i].name + '&lt;/h3&gt;&lt;/article&gt;';</span></div>
+      <div class="rev-line" data-line="9" tabindex="0" role="button"><span class="rev-n">9</span><span class="rev-src">  }</span></div>
+      <div class="rev-line" data-line="10" tabindex="0" role="button"><span class="rev-n">10</span><span class="rev-src">  document.querySelector(".list").innerHTML = s;</span></div>
+      <div class="rev-line" data-line="11" tabindex="0" role="button"><span class="rev-n">11</span><span class="rev-src">  console.log("отсортировал");</span></div>
+      <div class="rev-line" data-line="12" tabindex="0" role="button"><span class="rev-n">12</span><span class="rev-src">});</span></div>
+    </div>
+  </section>
+
+  <section class="tm-card hide" id="paneDescr" role="tabpanel" aria-labelledby="tabDescr" hidden>
+    <p class="tm-eyebrow">►► ОПИСАНИЕ PR</p>
+    <p class="rev-help">Три блока, все обязательные. Пиши так, чтобы ревьюер знал, что смотреть и как проверить.</p>
+    <div class="field">
+      <label for="descr0">Что сделано</label>
+      <textarea id="descr0" spellcheck="true" aria-describedby="descrMsg0"></textarea>
+      <p class="field-msg" id="descrMsg0"></p>
+    </div>
+    <div class="field">
+      <label for="descr1">Как проверить</label>
+      <textarea id="descr1" spellcheck="true" aria-describedby="descrMsg1"></textarea>
+      <p class="field-msg" id="descrMsg1"></p>
+    </div>
+    <div class="field">
+      <label for="descr2">Что осталось</label>
+      <textarea id="descr2" spellcheck="true" aria-describedby="descrMsg2"></textarea>
+      <p class="field-msg" id="descrMsg2"></p>
+    </div>
+  </section>
+</main>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hint1Btn" type="button">Подсказка 1 — вопрос</button>
+  <button class="tm-btn tm-btn--ghost" id="hint2Btn" type="button">Подсказка 2 — приём</button>
+  <button class="tm-btn tm-btn--ghost" id="hint3Btn" type="button">Подсказка 3 — фрагмент</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Показать разбор</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► РАЗБОР</p>
+  <div id="solBody"></div>
+</section>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Pull Request (PR)</dt><dd>Заявка на перенос изменений из своей ветки в основную, которую сначала читает человек.</dd>
+    <dt>Code Review</dt><dd>Чтение чужого кода перед принятием по конкретному чек-листу из пяти пунктов.</dd>
+    <dt>Merge (слияние)</dt><dd>Перенос коммитов одной ветки в другую. Техническое действие; PR — процедура вокруг него.</dd>
+    <dt>Конфликт слияния</dt><dd>Одну и ту же строку изменили в двух ветках по-разному. Git выкладывает оба варианта и ждёт человека.</dd>
+  </dl>
+</section>
+
+<details class="teacher">
+  <summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> довести PR до принятия: описание из трёх блоков, ревью по чек-листу, ручное разрешение конфликта.</li>
+    <li><strong>Норматив:</strong> 15–20 мин на тренажёр (83-я минута занятия). Scaffolding — инструкция.</li>
+    <li><strong>Типичные ошибки:</strong> ветка не отправлена; заголовок <code>Update script.js</code>; новый PR вместо доработки; конфликт «решён» удалением обоих вариантов; оценочное «норм» вместо замечания к строке; строка 5 помечена не тем пунктом чек-листа.</li>
+    <li><strong>Зачёт:</strong> тесты 2–10 ≥ 7/9, тест 11 (4 из 5 нарушений с верным пунктом) и тест 13 (описание принято). Три подсказки — зачёт с пометкой «с поддержкой».</li>
+    <li><strong>Усложнение:</strong> попросить переформулировать оценочную реплику в формулу «место + что не так + почему».</li>
+    <li><strong>Упрощение:</strong> сначала только ситуации 1–5, ревью — пункты 1 и 2, описание по готовому шаблону с пропусками.</li>
+    <li><strong>ИИ:</strong> модель — первый ревьюер. Руками: пункт 3 на 320 px в браузере, пункт 5 — устный вопрос автору. Замечание без места выбрасывается.</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  const KEY = "wdc-l14-pr-v1";
+  const GOLD = [
+    { line: 1, rule: 1 },
+    { line: 2, rule: 2 },
+    { line: 5, rule: 4 },
+    { line: 10, rule: 4 },
+    { line: 11, rule: 2 }
+  ];
+  const FALSE_LINES = [6, 7, 8];
+  const RULES = [
+    "1. Понятны ли имена",
+    "2. Нет ли закомментированного мусора",
+    "3. Работает ли на узком экране",
+    "4. Обработаны ли нештатные ситуации",
+    "5. Может ли автор это объяснить"
+  ];
+  const GOLD_NOTES = [
+    { line: 1, rule: 1, text: "Имя `b` не говорит, что это за элемент. Назови `sortButton` — тогда строка 4 читается сама" },
+    { line: 2, rule: 2, text: "Закомментированный старый селектор. Через неделю никто не вспомнит, зачем он лежит; в `main` такого быть не должно" },
+    { line: 5, rule: 4, text: "`PIES.sort(...)` меняет исходный массив — после первого нажатия вернуть первоначальный порядок нельзя. Нужна копия: `[...PIES].sort(...)`" },
+    { line: 10, rule: 4, text: "Если `PIES` пуст, в `.list` запишется пустая строка и пользователь увидит пустое место без объяснения. Нужен текст «Меню пока пустое»" },
+    { line: 11, rule: 2, text: "Отладочный `console.log` остался в коде. Перед PR такие строки удаляются" }
+  ];
+  const FALSE_WHY = [
+    { line: 6, text: "Строка 6, `let s = \"\"` — не нарушение: имя короткое, но переменная живёт три строки и её роль видна целиком. Замечание было бы придиркой." },
+    { line: 8, text: "Строка 8, `innerHTML` со строкой разметки — не нарушение здесь: данные берутся из своего массива `PIES`, а не из пользовательского ввода. Правило занятия 10 действует: `innerHTML` опасен для чужого текста, а не для своего." },
+    { line: 7, text: "Строка 7, цикл `for` вместо `map` — не нарушение чек-листа. Стилевое предпочтение, но код работает и читается; такое пишут как «предложение», а не как замечание." }
+  ];
+  const ETALON_DESCR = [
+    "- script.js: добавлена функция sortByPrice — возвращает НОВЫЙ массив, отсортированный по возрастанию цены (исходный PIES не меняется)\n- index.html: добавлена кнопка «Сначала дешёвые» с классом .sort-btn\n- style.css: правило для .sort-btn, на узком экране кнопка на всю ширину",
+    "1. открыть index.html\n2. нажать «Сначала дешёвые»\n3. порядок карточек: 45 ₽ (калитка) первой, 90 ₽ (рыбник) последней\n4. нажать ещё раз — порядок не должен ломаться\n5. на ширине 320 px кнопка занимает всю ширину и не выезжает за край",
+    "- обратная сортировка «сначала дорогие» — отдельная задача\n- сортировка по названию — не входит в этот PR"
+  ];
+
+  const SITUATIONS = [
+    {
+      q: "Ты закончил сортировку меню в ветке `feature/sort-price` и закоммитил. Открываешь страницу репозитория — предложения создать Pull Request нет. Панель: `На сервере: нет`. Что делаешь?",
+      opts: [
+        { k: "А", t: "Создаёшь PR из `main`", ok: false, why: "неверно. PR — это заявка перенести изменения из ветки; из `main` в `main` переносить нечего." },
+        { k: "Б", t: "`git push -u origin feature/sort-price`", ok: true, why: "верно. PR создаётся из ветки, которая есть на сервере. Пока ветка только локальная, платформа о ней не знает." },
+        { k: "В", t: "Обновляешь страницу репозитория", ok: false, why: "неверно. Обновление не отправляет коммиты; ветки на сервере от этого не появится." },
+        { k: "Г", t: "Пересоздаёшь ветку", ok: false, why: "неверно. С веткой всё в порядке, проблема только в том, что она не отправлена." }
+      ]
+    },
+    {
+      q: "Форма создания PR открыта. Платформа сама подставила заголовок `Update script.js`. Что делаешь?",
+      opts: [
+        { k: "А", t: "Оставляешь, платформа знает лучше", ok: false, why: "неверно. Платформа взяла имя файла из последнего коммита; о смысле изменения она ничего не знает." },
+        { k: "Б", t: "Пишешь заголовок «Сортировка меню по цене» и заполняешь описание в три блока", ok: true, why: "верно. Заголовок PR подчиняется тем же правилам, что сообщение коммита: что изменилось, а не какой файл тронут." },
+        { k: "В", t: "Пишешь «Изменения от 14 занятия»", ok: false, why: "неверно. Дата и номер занятия не говорят о содержании; через месяц по такому заголовку ничего не найти." },
+        { k: "Г", t: "Оставляешь пустым, всё видно в дифе", ok: false, why: "неверно. В дифе видно, что в коде изменилось, но не видно, зачем и как это проверять." }
+      ]
+    },
+    {
+      q: "Ревьюер оставил три замечания к твоему PR. Панель: `PR: открыт, 3 замечания`. Что делаешь?",
+      opts: [
+        { k: "А", t: "Закрываешь PR и создаёшь новый", ok: false, why: "неверно. Замечания — этап процедуры, а не отказ. Новый PR только плодит брошенные ветки." },
+        { k: "Б", t: "Правишь код, коммитишь в ту же ветку и делаешь `git push`", ok: true, why: "верно. Страница PR обновится сама: появятся новые коммиты, диф пересчитается." },
+        { k: "В", t: "Пишешь «я не согласен» и просишь принять", ok: false, why: "неверно как единственное действие: несогласие требует аргумента про код, а не просьбы." },
+        { k: "Г", t: "Ждёшь, пока ревьюер передумает", ok: false, why: "неверно. Незакрытое замечание блокирует принятие; PR так и провисит до конца занятия." }
+      ]
+    },
+    {
+      q: "Ты ревьюер. Открыл чужой PR и не знаешь, с чего начать. Что делаешь первым?",
+      opts: [
+        { k: "А", t: "Читаешь весь файл целиком сверху вниз", ok: false, why: "неверно. Файл может быть на триста строк, а изменений — двадцать. На это уйдёт всё занятие." },
+        { k: "Б", t: "Пишешь «выглядит нормально»", ok: false, why: "неверно. Это ровно то ревью, из-за которого ошибки доживают до занятия 23." },
+        { k: "В", t: "Открываешь вкладку с дифом и идёшь по пяти пунктам чек-листа", ok: true, why: "верно. Диф показывает только изменённые строки, чек-лист говорит, что в них искать." },
+        { k: "Г", t: "Спрашиваешь автора, что он сделал", ok: false, why: "неверно как первое действие: это написано в описании PR, для того его и заполняют." }
+      ]
+    },
+    {
+      q: "В чужом коде ты видишь `const b = document.querySelector(\".btn\")` и строку `// const old = document.querySelector(\".button-old\")`. Сколько это нарушений чек-листа и каких?",
+      opts: [
+        { k: "А", t: "Одно, пункт 1", ok: false, why: "неверно. Имя `b` — это пункт 1, но закомментированная строка — отдельное нарушение." },
+        { k: "Б", t: "Два: пункт 1 (непонятное имя `b`) и пункт 2 (закомментированный код)", ok: true, why: "верно. Это разные пункты, и замечания к ним пишутся отдельно, к разным строкам." },
+        { k: "В", t: "Ни одного, так тоже можно", ok: false, why: "неверно. Однобуквенные имена и мёртвый код — самые частые замечания в реальном ревью." },
+        { k: "Г", t: "Три, ещё и узкий экран", ok: false, why: "неверно. Пункт 3 по этим двум строкам проверить нельзя: он проверяется запуском, а не чтением." }
+      ]
+    },
+    {
+      q: "Ты нажимаешь «Merge». Платформа выводит `This branch has conflicts that must be resolved`. Панель: `Конфликт: да`. Что произошло?",
+      opts: [
+        { k: "А", t: "Твой код содержит ошибку", ok: false, why: "неверно. Конфликт не про ошибки: код может быть идеальным с обеих сторон." },
+        { k: "Б", t: "У тебя нет прав на слияние", ok: false, why: "неверно. Про права платформа сообщила бы отдельно и другими словами." },
+        { k: "В", t: "Одну и ту же строку изменили и в твоей ветке, и в `main`, и Git не решает за человека", ok: true, why: "верно. Конфликт возникает только на пересечении: одна строка, два разных изменения." },
+        { k: "Г", t: "Ветка устарела и её надо пересоздать", ok: false, why: "неверно. Пересоздание ветки потеряет работу и конфликт не решит: спорная строка никуда не денется." }
+      ]
+    },
+    {
+      q: "Ты открыл файл и видишь:\n\n<<<<<<< HEAD\n  { id: \"kalitka\", name: \"Калитка с картошкой\", price: 50 },\n=======\n  { id: \"kalitka\", name: \"Калитка с картошкой\", price: 55 },\n>>>>>>> feature/price-update\n\nДоговорились с напарником, что верная цена — 55. Что делаешь?",
+      opts: [
+        { k: "А", t: "Удаляешь весь блок целиком", ok: false, why: "неверно и опасно. Калитка исчезнет из меню, ошибки при этом не будет, и пропажу заметят через занятие." },
+        { k: "Б", t: "Оставляешь обе строки, убрав только `<<<<<<<` и `>>>>>>>`", ok: false, why: "неверно. В массиве окажется две калитки, а `=======` останется и сломает синтаксис." },
+        { k: "В", t: "Оставляешь строку с `price: 55` и удаляешь все три служебные строки", ok: true, why: "верно. Из конфликта всегда остаётся хотя бы один вариант, служебных строк — ноль." },
+        { k: "Г", t: "Оставляешь строку с `price: 50`, она сверху и значит главная", ok: false, why: "неверно. Порядок ничего не значит: сверху вариант `main`, снизу — ветки. Выбирают по смыслу, а не по расположению." }
+      ]
+    },
+    {
+      q: "Ты разрешил конфликт в `script.js`. Что делаешь до того, как коммитить?",
+      opts: [
+        { k: "А", t: "Сразу `git add` и `git commit`, там же всего пара строк", ok: false, why: "неверно. После ручной правки массива чаще всего остаётся лишняя запятая или скобка." },
+        { k: "Б", t: "Открываешь страницу в браузере, проверяешь, что карточки рисуются и консоль чистая", ok: true, why: "верно. Это единственный способ поймать сломанный синтаксис до того, как он уедет в `main`." },
+        { k: "В", t: "Просишь ревьюера проверить", ok: false, why: "неверно как первое действие: сначала убеждаешься сам, потом зовёшь." },
+        { k: "Г", t: "Делаешь `git pull`", ok: false, why: "неверно. Он ничего не проверит и может добавить новых изменений посреди неразрешённого конфликта." }
+      ]
+    },
+    {
+      q: "Напарник оставил в твоём PR единственный комментарий: «Всё супер, принимаю» — через полторы минуты после создания PR. Что делаешь?",
+      opts: [
+        { k: "А", t: "Радуешься и принимаешь", ok: false, why: "неверно. Полторы минуты на сто строк дифа означают, что PR не читали." },
+        { k: "Б", t: "Обижаешься и молча принимаешь сам", ok: false, why: "неверно. Проблема не в человеке, а в том, что процедура не выполнена." },
+        { k: "В", t: "Просишь пройти по чек-листу и назвать хотя бы три замечания", ok: true, why: "верно. Тебе нужны замечания: ошибка, найденная сейчас, стоит пять минут, найденная на занятии 23 — целое занятие." },
+        { k: "Г", t: "Идёшь к педагогу жаловаться", ok: false, why: "неверно как первый шаг. Сначала прямая просьба напарнику: она решает вопрос в девяти случаях из десяти." }
+      ]
+    }
+  ];
+
+  const HINTS = [
+    "В каждой ситуации спрашивай: на каком из семи шагов PR ты сейчас находишься? Ветка → коммиты → отправка → описание → ревью → доработка → принятие. Почти всегда ответ — это следующий шаг, а не возврат к началу.",
+    "Ревью читается по пунктам, а не по строкам. Пройди сначала весь фрагмент, ища только непонятные имена. Потом весь — ища мусор: комментарии, `console.log`, `alert`. Потом весь — ища нештатные ситуации: пустой массив, отсутствующий элемент, изменение исходных данных. Так находится пять из пяти; вразнобой — три из пяти.",
+    "Конфликт разрешается так — служебных строк не остаётся ни одной:\n\n  { id: \"kalitka\", name: \"Калитка с картошкой\", price: 55 },\n\nЗамечание пишется по формуле «место + что не так + почему»:\n\n  Строка 5: PIES.sort() меняет исходный массив — после первого нажатия\n  первоначальный порядок вернуть нельзя. Нужна копия: [...PIES].sort()"
+  ];
+
+  const tabs = {
+    situations: { btn: document.getElementById("tabSituations"), pane: document.getElementById("paneSituations") },
+    review: { btn: document.getElementById("tabReview"), pane: document.getElementById("paneReview") },
+    descr: { btn: document.getElementById("tabDescr"), pane: document.getElementById("paneDescr") }
+  };
+  const sitQ = document.getElementById("sitQ");
+  const sitOpts = document.getElementById("sitOpts");
+  const sitProgress = document.getElementById("sitProgress");
+  const sitPrev = document.getElementById("sitPrev");
+  const sitNext = document.getElementById("sitNext");
+  const testsEl = document.getElementById("tests");
+  const hintsEl = document.getElementById("hints");
+  const scoreEl = document.getElementById("score");
+  const bar = document.getElementById("bar");
+  const honesty = document.getElementById("honesty");
+  const etalonBtn = document.getElementById("etalonBtn");
+  const etalonBox = document.getElementById("etalonBox");
+  const solBody = document.getElementById("solBody");
+  const descrFields = [
+    document.getElementById("descr0"),
+    document.getElementById("descr1"),
+    document.getElementById("descr2")
+  ];
+  const descrMsgs = [
+    document.getElementById("descrMsg0"),
+    document.getElementById("descrMsg1"),
+    document.getElementById("descrMsg2")
+  ];
+
+  let answers = [null, null, null, null, null, null, null, null, null];
+  let review = [];
+  let descr = ["", "", ""];
+  let tab = "situations";
+  let hintsOpened = 0;
+  let sitIndex = 0;
+  let typeTimer = 0;
+  let lastCredit = false;
+
+  function emptyAnswers() {
+    return [null, null, null, null, null, null, null, null, null];
+  }
+
+  function saveDraft() {
+    const data = { answers: answers.slice(), review: review.map(function (r) { return { line: r.line, rule: r.rule }; }), descr: descr.slice(), tab: tab, hintsOpened: hintsOpened };
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function scheduleSave() {
+    clearTimeout(typeTimer);
+    typeTimer = setTimeout(saveDraft, 280);
+  }
+
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") return;
+    if (Array.isArray(data.answers) && data.answers.length === 9) {
+      answers = data.answers.map(function (a) { return a === "А" || a === "Б" || a === "В" || a === "Г" ? a : null; });
+    }
+    if (Array.isArray(data.review)) {
+      review = data.review.filter(function (r) {
+        return r && typeof r.line === "number" && r.line >= 1 && r.line <= 12;
+      }).map(function (r) {
+        const rule = Number(r.rule);
+        return { line: r.line, rule: rule >= 1 && rule <= 5 ? rule : 0 };
+      });
+    }
+    if (Array.isArray(data.descr) && data.descr.length === 3) {
+      descr = data.descr.map(function (s) { return String(s == null ? "" : s); });
+    }
+    if (data.tab === "situations" || data.tab === "review" || data.tab === "descr") tab = data.tab;
+    hintsOpened = Math.max(0, Math.min(3, Number(data.hintsOpened) || 0));
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function withCode(s) {
+    return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\n/g, "<br>");
+  }
+
+  function setTab(name) {
+    tab = name;
+    Object.keys(tabs).forEach(function (key) {
+      const on = key === name;
+      tabs[key].pane.classList.toggle("hide", !on);
+      if (on) tabs[key].pane.removeAttribute("hidden");
+      else tabs[key].pane.setAttribute("hidden", "");
+      tabs[key].btn.setAttribute("aria-selected", String(on));
+      tabs[key].btn.className = "tm-btn " + (on ? "tm-btn--primary" : "tm-btn--ghost");
+    });
+    scheduleSave();
+  }
+
+  function updatePanel() {
+    document.getElementById("prBranch").textContent = "feature/sort-price";
+    let server = "нет";
+    let pr = "нет";
+    let conflict = "нет";
+    if (answers[0] === "Б") server = "да";
+    if (answers[1] === "Б" && server === "да") pr = "открыт";
+    if (answers[2]) {
+      if (answers[2] === "А") pr = "закрыт, создан новый";
+      else if (server === "да" || answers[1] === "Б") pr = "открыт, 3 замечания";
+    }
+    if (answers[5]) conflict = "да";
+    if (answers[6] === "В") conflict = "нет";
+    document.getElementById("prServer").textContent = server;
+    document.getElementById("prState").textContent = pr;
+    document.getElementById("prConflict").textContent = conflict;
+  }
+
+  function renderProgress() {
+    sitProgress.innerHTML = "";
+    for (let i = 0; i < 9; i++) {
+      const span = document.createElement("span");
+      if (answers[i]) span.classList.add("is-done");
+      if (i === sitIndex) span.classList.add("is-now");
+      span.title = "Ситуация " + (i + 1);
+      sitProgress.appendChild(span);
+    }
+  }
+
+  function renderSit() {
+    const s = SITUATIONS[sitIndex];
+    sitQ.innerHTML = "<strong>Ситуация " + (sitIndex + 1) + " из 9.</strong> " + withCode(s.q);
+    sitOpts.innerHTML = "";
+    s.opts.forEach(function (opt) {
+      const id = "sit" + sitIndex + opt.k;
+      const label = document.createElement("label");
+      label.className = "opt";
+      label.setAttribute("for", id);
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "sit" + sitIndex;
+      input.id = id;
+      input.value = opt.k;
+      if (answers[sitIndex] === opt.k) input.checked = true;
+      input.addEventListener("change", function () {
+        answers[sitIndex] = opt.k;
+        updatePanel();
+        renderProgress();
+        scheduleSave();
+      });
+      const span = document.createElement("span");
+      span.innerHTML = "<strong>" + opt.k + ")</strong> " + withCode(opt.t);
+      label.appendChild(input);
+      label.appendChild(span);
+      sitOpts.appendChild(label);
+    });
+    sitPrev.disabled = sitIndex === 0;
+    sitNext.disabled = sitIndex === 8;
+    renderProgress();
+    updatePanel();
+  }
+
+  function entryFor(line) {
+    return review.find(function (r) { return r.line === line; });
+  }
+
+  function paintReview() {
+    document.querySelectorAll(".rev-line").forEach(function (row) {
+      const line = Number(row.getAttribute("data-line"));
+      const rec = entryFor(line);
+      row.classList.toggle("is-on", !!rec);
+      let box = row.querySelector(".rev-rule");
+      if (rec) {
+        if (!box) {
+          box = document.createElement("div");
+          box.className = "rev-rule";
+          const sel = document.createElement("select");
+          sel.setAttribute("aria-label", "Какой пункт чек-листа нарушен в строке " + line);
+          const dummy = document.createElement("option");
+          dummy.value = "";
+          dummy.textContent = "Какой пункт чек-листа нарушен?";
+          sel.appendChild(dummy);
+          RULES.forEach(function (name, i) {
+            const o = document.createElement("option");
+            o.value = String(i + 1);
+            o.textContent = name;
+            sel.appendChild(o);
+          });
+          sel.addEventListener("change", function (ev) {
+            ev.stopPropagation();
+            const found = entryFor(line);
+            if (found) found.rule = Number(sel.value) || 0;
+            scheduleSave();
+          });
+          sel.addEventListener("click", function (ev) { ev.stopPropagation(); });
+          box.appendChild(sel);
+          row.appendChild(box);
+        }
+        const sel = box.querySelector("select");
+        sel.value = rec.rule ? String(rec.rule) : "";
+      } else if (box) {
+        box.remove();
+      }
+    });
+  }
+
+  function toggleLine(line) {
+    const i = review.findIndex(function (r) { return r.line === line; });
+    if (i >= 0) review.splice(i, 1);
+    else review.push({ line: line, rule: 0 });
+    paintReview();
+    scheduleSave();
+    const rec = entryFor(line);
+    if (rec) {
+      const row = document.querySelector('.rev-line[data-line="' + line + '"]');
+      const sel = row && row.querySelector("select");
+      if (sel) sel.focus();
+    }
+  }
+
+  function foundCorrect() {
+    return GOLD.filter(function (g) {
+      return review.some(function (r) { return r.line === g.line && r.rule === g.rule; });
+    }).length;
+  }
+
+  function falsePositives() {
+    return review.filter(function (r) { return FALSE_LINES.indexOf(r.line) !== -1; }).length;
+  }
+
+  function isVagueOnly(text) {
+    const words = ["изменения", "правки", "улучшения", "рефакторинг"];
+    let found = null;
+    const lower = text.toLowerCase();
+    for (let i = 0; i < words.length; i++) {
+      if (lower.indexOf(words[i]) !== -1) { found = words[i]; break; }
+    }
+    if (!found) return null;
+    const stripped = text.replace(/изменения|правки|улучшения|рефакторинг/gi, "").replace(/[-*•\d.:«»"'\s]/g, "");
+    return stripped.length === 0 ? found : null;
+  }
+
+  function rule5ok(text) {
+    return /320/.test(text) || /узк|телефон|мобиль/i.test(text);
+  }
+
+  function validateDone(text) {
+    const messages = [];
+    const lines = String(text).split(/\n/).filter(function (l) { return /^\s*-\s+\S/.test(l); });
+    if (lines.length < 2) {
+      messages.push("Нужно не меньше двух пунктов: по одному на каждый изменённый файл или смысловое изменение");
+    }
+    if (!/\.(js|css|html)\b/i.test(text)) {
+      messages.push("Назови файлы: ревьюер должен знать, где смотреть");
+    }
+    const vague = isVagueOnly(text);
+    if (vague) {
+      messages.push("Слово \"" + vague + "\" не говорит, что именно изменилось");
+    }
+    return { ok: messages.length === 0, messages: messages };
+  }
+
+  function validateCheck(text) {
+    const messages = [];
+    const steps = String(text).split(/\n/).filter(function (l) { return /^\s*\d+[\.\)]\s+\S/.test(l); });
+    if (steps.length < 3) {
+      messages.push("Три шага минимум: что открыть, что сделать, что должно получиться");
+    }
+    if (!rule5ok(text)) {
+      messages.push("Добавь проверку на узком экране — это пункт 3 чек-листа ревью, его спрашивают всегда");
+    }
+    const withoutNums = String(text).replace(/^\s*\d+[\.\)]\s+/gm, "");
+    const hasPrice = /₽/.test(withoutNums);
+    const hasQuote = /[«"][^»"]+[»"]/.test(withoutNums);
+    const hasNumber = /\d/.test(withoutNums);
+    if (!hasPrice && !hasQuote && !hasNumber) {
+      messages.push("Напиши, что именно должно получиться: не \"должно работать\", а \"45 ₽ первой\"");
+    }
+    return { ok: messages.length === 0, messages: messages };
+  }
+
+  function validateLeft(text) {
+    if (String(text).trim().length === 0) {
+      return {
+        ok: false,
+        messages: ["Напиши честно, чего в PR нет. Если всё сделано — так и напиши: это снимает половину замечаний"]
+      };
+    }
+    return { ok: true, messages: [] };
+  }
+
+  function validateField(i, text) {
+    if (i === 0) return validateDone(text);
+    if (i === 1) return validateCheck(text);
+    return validateLeft(text);
+  }
+
+  function paintDescrMsgs() {
+    descrFields.forEach(function (el, i) {
+      const v = validateField(i, descr[i]);
+      descrMsgs[i].textContent = v.ok ? "" : v.messages.join(" ");
+    });
+  }
+
+  function unansweredList() {
+    const missing = [];
+    answers.forEach(function (a, i) { if (!a) missing.push(i + 1); });
+    return missing;
+  }
+
+  function failedFields() {
+    const names = ["Что сделано", "Как проверить", "Что осталось"];
+    const bad = [];
+    descr.forEach(function (t, i) {
+      if (!validateField(i, t).ok) bad.push(names[i]);
+    });
+    return bad;
+  }
+
+  function buildTests() {
+    const missed = unansweredList();
+    const found = foundCorrect();
+    const fp = falsePositives();
+    const fieldOk = descr.map(function (t, i) { return validateField(i, t).ok; });
+    const badFields = failedFields();
+    return [
+      {
+        ok: answers.filter(Boolean).length === 9,
+        name: "Отвечены все девять ситуаций",
+        pass: "Все девять ситуаций пройдены",
+        hint: "Без ответа: " + (missed.length ? missed.join(", ") : "—") + ". Серые деления в полосе прогресса — неотвеченные"
+      },
+      {
+        ok: answers[0] === "Б",
+        name: "Ситуация 1: ветка должна быть на сервере",
+        pass: "Верно: PR создаётся из отправленной ветки",
+        hint: "Панель говорит `На сервере: нет`. Платформа не видит того, чего ей не отправляли. Какая команда это исправляет?"
+      },
+      {
+        ok: answers[1] === "Б",
+        name: "Ситуация 2: заголовок и описание",
+        pass: "Верно: заголовок называет изменение, описание — в три блока",
+        hint: "`Update script.js` — это имя файла, а не смысл. Вспомни правило заголовка коммита с занятия 13"
+      },
+      {
+        ok: answers[2] === "Б",
+        name: "Ситуация 3: доработка в ту же ветку",
+        pass: "Верно: PR обновляется сам, новый создавать не нужно",
+        hint: "Замечания — это не отказ. Что происходит со страницей PR, если сделать ещё коммит в ту же ветку?"
+      },
+      {
+        ok: answers[3] === "В",
+        name: "Ситуация 4: ревью начинается с дифа и чек-листа",
+        pass: "Верно: диф плюс пять пунктов",
+        hint: "Читать весь файл — час. Что показывает вкладка с изменениями и по какому списку ты в ней смотришь?"
+      },
+      {
+        ok: answers[4] === "Б",
+        name: "Ситуация 5: два разных нарушения",
+        pass: "Верно: непонятное имя и мёртвый код — разные пункты",
+        hint: "Посчитай по чек-листу: имя `b` — это какой пункт? А закомментированная строка — какой? Это один пункт или два?"
+      },
+      {
+        ok: answers[5] === "В",
+        name: "Ситуация 6: природа конфликта",
+        pass: "Верно: одна строка изменена в двух ветках",
+        hint: "Конфликт не про ошибки и не про права. Что должно совпасть, чтобы Git отказался решать сам?"
+      },
+      {
+        ok: answers[6] === "В",
+        name: "Ситуация 7: разрешение конфликта",
+        pass: "Верно: один вариант остаётся, служебных строк ноль",
+        hint: "Проверь себя по правилу: сколько вариантов должно остаться после разрешения — ноль, один или два? И сколько служебных строк?"
+      },
+      {
+        ok: answers[7] === "Б",
+        name: "Ситуация 8: проверка в браузере до коммита",
+        pass: "Верно: после ручной правки сначала запуск, потом коммит",
+        hint: "Ты только что руками правил массив. Что чаще всего остаётся лишним — и чем это видно?"
+      },
+      {
+        ok: answers[8] === "В",
+        name: "Ситуация 9: пустое ревью",
+        pass: "Верно: просишь пройти по чек-листу",
+        hint: "Полторы минуты на сто строк. Что это говорит о том, читали ли твой код?"
+      },
+      {
+        ok: found >= 4,
+        name: "Ревью: найдено не меньше 4 нарушений из 5 с верным пунктом чек-листа",
+        pass: "Найдено " + found + " из 5 нарушений — ревью проведено по существу",
+        hint: "Найдено " + found + " из 5. Пройди по пунктам подряд: сначала все имена, потом весь мусор, потом нештатные ситуации. Не ищи вразнобой"
+      },
+      {
+        ok: fp <= 2,
+        name: "Ревью: отмечено не больше двух ложных целей",
+        pass: "Лишних замечаний почти нет",
+        hint: "Отмечено " + fp + " строк, которые нарушением не являются. Замечание должно быть исполнимым: что конкретно автор должен сделать с этой строкой?"
+      },
+      {
+        ok: fieldOk.every(Boolean),
+        name: "Описание PR: все три поля прошли валидатор",
+        pass: "Описание готово: ревьюер знает, что смотреть и как проверять",
+        hint: "Не приняты поля: " + (badFields.length ? badFields.join(", ") : "—") + ". Под каждым написано, какое именно правило нарушено"
+      },
+      {
+        ok: rule5ok(descr[1]),
+        name: "В описании есть проверка на узком экране",
+        pass: "Проверка на 320 px в описании есть",
+        hint: "В блоке «Как проверить» нет ни слова про узкий экран. Это пункт 3 чек-листа, его спрашивают на каждом ревью"
+      }
+    ];
+  }
+
+  function creditFrom(list) {
+    let sitOk = 0;
+    for (let i = 1; i <= 9; i++) {
+      if (list[i] && list[i].ok) sitOk += 1;
+    }
+    return sitOk >= 7 && list[10].ok && list[12].ok;
+  }
+
+  function renderResults(list) {
+    testsEl.innerHTML = "";
+    let passed = 0;
+    list.forEach(function (t) {
+      if (t.ok) passed += 1;
+      const div = document.createElement("div");
+      div.className = "tm-test " + (t.ok ? "tm-test--ok" : "tm-test--fail");
+      div.innerHTML = "<span class=\"tm-test__mark\">" + (t.ok ? "✅" : "❌") + "</span><div><div>" +
+        esc(t.ok ? t.pass : t.name) + "</div>" +
+        (t.ok ? "" : "<div class=\"tm-test__hint\">" + esc(t.hint) + "</div>") +
+        "</div>";
+      testsEl.appendChild(div);
+    });
+    scoreEl.textContent = passed + " / " + list.length;
+    bar.style.width = (passed / list.length * 100) + "%";
+    lastCredit = creditFrom(list);
+    if (lastCredit) {
+      scoreEl.textContent = passed + " / " + list.length + " · Задача сдана";
+    }
+    maybeUnlock(lastCredit);
+    paintDescrMsgs();
+  }
+
+  function fillSolBody() {
+    let html = "<p>Полный разбор трёх частей. Сначала ситуации, потом эталон ревью, потом эталон описания.</p>";
+    SITUATIONS.forEach(function (s, i) {
+      html += "<article class=\"sol-sit\"><h3>Ситуация " + (i + 1) + "</h3><p>" + withCode(s.q) + "</p>";
+      s.opts.forEach(function (opt) {
+        html += "<p class=\"why\"><strong>" + opt.k + ")</strong> " + withCode(opt.t) + " — " + withCode(opt.why) + "</p>";
+      });
+      html += "</article>";
+    });
+    html += "<h3>Эталонные замечания ревью</h3>";
+    GOLD_NOTES.forEach(function (n) {
+      html += "<p class=\"why\"><strong>Строка " + n.line + " → пункт " + n.rule + ".</strong> " + withCode(n.text) + "</p>";
+    });
+    html += "<p class=\"why\"><strong>Ложные цели.</strong></p>";
+    FALSE_WHY.forEach(function (n) {
+      html += "<p class=\"why\">" + withCode(n.text) + "</p>";
+    });
+    html += "<h3>Эталон описания PR</h3>";
+    html += "<p><strong>Что сделано</strong></p><pre class=\"tm-code\">" + esc(ETALON_DESCR[0]) + "</pre>";
+    html += "<p><strong>Как проверить</strong></p><pre class=\"tm-code\">" + esc(ETALON_DESCR[1]) + "</pre>";
+    html += "<p><strong>Что осталось</strong></p><pre class=\"tm-code\">" + esc(ETALON_DESCR[2]) + "</pre>";
+    solBody.innerHTML = html;
+  }
+
+  function openEtalon(reason) {
+    fillSolBody();
+    etalonBox.classList.remove("hide");
+    etalonBtn.disabled = false;
+    etalonBtn.textContent = "Показать разбор";
+    if (reason === "hints") {
+      honesty.textContent = "Разбор открыт: использованы три подсказки (в статусе это видно).";
+    } else if (reason === "credit") {
+      honesty.textContent = (honesty.textContent ? honesty.textContent + " " : "") + "Разбор открыт: порог зачёта выполнен.";
+    }
+  }
+
+  function maybeUnlock(credit) {
+    const unlocked = credit || hintsOpened >= 3;
+    if (!unlocked) return;
+    etalonBtn.disabled = false;
+    if (hintsOpened >= 3) openEtalon("hints");
+    else if (credit) openEtalon("credit");
+  }
+
+  function replayHints() {
+    hintsEl.innerHTML = "";
+    for (let i = 0; i < hintsOpened; i++) {
+      const p = document.createElement("div");
+      p.className = "hint";
+      if (i === 2) {
+        p.innerHTML = "<strong>Подсказка 3 — фрагмент.</strong><pre class=\"tm-code\">" + esc(HINTS[2]) + "</pre>";
+      } else {
+        p.innerHTML = "<strong>Подсказка " + (i + 1) + ".</strong> " + withCode(HINTS[i]);
+      }
+      hintsEl.appendChild(p);
+    }
+    updateHintButtons();
+    updateHonesty();
+    if (hintsOpened >= 3) openEtalon("hints");
+  }
+
+  function updateHintButtons() {
+    document.getElementById("hint1Btn").disabled = hintsOpened >= 1;
+    document.getElementById("hint2Btn").disabled = hintsOpened < 1 || hintsOpened >= 2;
+    document.getElementById("hint3Btn").disabled = hintsOpened < 2 || hintsOpened >= 3;
+  }
+
+  function updateHonesty() {
+    if (!hintsOpened) {
+      if (!lastCredit) honesty.textContent = "";
+      return;
+    }
+    honesty.textContent = "Открыты подсказки: " + hintsOpened + "/3. Это не штраф, но на защите объясните решение своими словами.";
+  }
+
+  function openHint(n) {
+    if (n !== hintsOpened) return;
+    if (hintsOpened >= 3) return;
+    hintsOpened += 1;
+    const p = document.createElement("div");
+    p.className = "hint";
+    if (hintsOpened === 3) {
+      p.innerHTML = "<strong>Подсказка 3 — фрагмент.</strong><pre class=\"tm-code\">" + esc(HINTS[2]) + "</pre>";
+    } else {
+      p.innerHTML = "<strong>Подсказка " + hintsOpened + ".</strong> " + withCode(HINTS[hintsOpened - 1]);
+    }
+    hintsEl.appendChild(p);
+    updateHintButtons();
+    updateHonesty();
+    saveDraft();
+    if (hintsOpened >= 3) openEtalon("hints");
+  }
+
+  function runChecks() {
+    clearTimeout(typeTimer);
+    saveDraft();
+    let list = [];
+    try { list = buildTests(); }
+    catch (e) {
+      list = [{ ok: false, name: "Проверка не выполнилась", pass: "", hint: "Обновите страницу и попробуйте ещё раз." }];
+    }
+    renderResults(list);
+  }
+
+  function resetAll() {
+    if (!confirm("Сбросить все ответы, ревью и описание? Черновик в памяти тоже очистится.")) return;
+    answers = emptyAnswers();
+    review = [];
+    descr = ["", "", ""];
+    tab = "situations";
+    hintsOpened = 0;
+    sitIndex = 0;
+    lastCredit = false;
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    descrFields.forEach(function (el, i) { el.value = ""; descrMsgs[i].textContent = ""; });
+    testsEl.innerHTML = "";
+    hintsEl.innerHTML = "";
+    solBody.innerHTML = "";
+    etalonBox.classList.add("hide");
+    etalonBtn.disabled = true;
+    scoreEl.textContent = "0 / 14";
+    bar.style.width = "0";
+    honesty.textContent = "";
+    paintReview();
+    updateHintButtons();
+    setTab("situations");
+    renderSit();
+    saveDraft();
+  }
+
+  sitPrev.addEventListener("click", function () {
+    if (sitIndex > 0) { sitIndex -= 1; renderSit(); }
+  });
+  sitNext.addEventListener("click", function () {
+    if (sitIndex < 8) { sitIndex += 1; renderSit(); }
+  });
+
+  tabs.situations.btn.addEventListener("click", function () { setTab("situations"); });
+  tabs.review.btn.addEventListener("click", function () { setTab("review"); });
+  tabs.descr.btn.addEventListener("click", function () { setTab("descr"); });
+
+  document.querySelectorAll(".rev-line").forEach(function (row) {
+    const line = Number(row.getAttribute("data-line"));
+    row.addEventListener("click", function (ev) {
+      if (ev.target.tagName === "SELECT") return;
+      toggleLine(line);
+    });
+    row.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        toggleLine(line);
+      }
+    });
+  });
+
+  descrFields.forEach(function (el, i) {
+    el.addEventListener("input", function () {
+      descr[i] = el.value;
+      scheduleSave();
+    });
+  });
+
+  document.getElementById("checkBtn").addEventListener("click", runChecks);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("hint1Btn").addEventListener("click", function () { openHint(0); });
+  document.getElementById("hint2Btn").addEventListener("click", function () { openHint(1); });
+  document.getElementById("hint3Btn").addEventListener("click", function () { openHint(2); });
+  etalonBtn.addEventListener("click", function () {
+    if (etalonBtn.disabled) return;
+    openEtalon(lastCredit ? "credit" : "hints");
+  });
+
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+  });
+
+  loadDraft();
+  descrFields.forEach(function (el, i) { el.value = descr[i]; });
+  paintReview();
+  replayHints();
+  setTab(tab);
+  renderSit();
+})();
+</script>
+</body>
+</html>

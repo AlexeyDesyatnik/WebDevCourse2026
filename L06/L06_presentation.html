@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 6. CSS Grid и адаптивная вёрстка</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 6</strong>
+      <span>CSS Grid и адаптивная вёрстка</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Сегодня достанем телефоны. В конце занятия каждый увидит свою работу так, как её видит заказчик» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 3 · ЗАНЯТИЕ 6</p>
+        <h1>CSS Grid и адаптивная вёрстка</h1>
+        <p class="lead">Занятие 6 из 24. Сегодня страница начинает подстраиваться под экран.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L05/L05_presentation.html">►► Занятие 5</a>
+          <a class="tm-btn tm-btn--primary" href="L06_trainer_grid.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L07/L07_presentation.html">►► Занятие 7</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Работает — но некрасиво. Сейчас поймём почему» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Дети смотрят с телефонов»</h2>
+        <p>Марина Петровна: «Сейчас надо тыкать пальцем в микроскопические буквы». Вчерашняя раскладка перестраивается, но стихийно: три карточки сверху, одна растянутая снизу</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Они не соперники. Сетка карточек — Grid, а внутри карточки — Flexbox. Так и делают» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Flexbox одномерный, Grid двумерный</h2>
+        <ul class="tm-list">
+          <li><strong>Flexbox</strong> — вдоль одной линии: шапка, ряд кнопок, форма</li>
+          <li><strong>Grid</strong> — строки и колонки сразу: сетка карточек, раскладка страницы</li>
+          <li>Вопрос для выбора: важно ли, что происходит по обеим осям?</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас нажму значок grid в DevTools — и вы увидите линии сетки прямо на странице» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Колонки и доля <code>fr</code></h2>
+        <ul class="tm-list">
+          <li><code>display: grid</code> — контейнеру</li>
+          <li><code>1fr</code> — одна доля свободного места</li>
+          <li><code>repeat(3, 1fr)</code> — то же, что <code>1fr 1fr 1fr</code></li>
+          <li><code>gap</code> — тот же, что во Flexbox</li>
+        </ul>
+        <pre class="tm-code">.menu {
+  display: grid;
+<span class="hl">  grid-template-columns: repeat(3, 1fr);</span>
+  gap: 20px;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «fr делит то, что осталось после промежутков. Проценты про промежутки не знают» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Проценты вместо <code>fr</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p><code>33% × 3</code> плюс два промежутка по 20 — больше ста процентов. Последняя колонка вылезет за край</p>
+          <pre class="tm-code">.menu {
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  gap: 20px;
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2><span class="hl">Одна строка</span> вместо трёх медиазапросов</h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Выпишите эту строку отдельно. Самая полезная строка во всём Grid» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Сетка, которая считает себя сама</h2>
+        <ul class="tm-list">
+          <li><code>minmax(220px, 1fr)</code> — не уже 220, но растягивается</li>
+          <li><code>auto-fit</code> — столько колонок, сколько влезет</li>
+          <li>4 → 3 → 2 → 1 без единого медиазапроса</li>
+        </ul>
+        <pre class="tm-code">.menu {
+  display: grid;
+<span class="hl">  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));</span>
+  gap: 20px;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Точки перелома выбирают там, где ломается вёрстка, а не по моделям телефонов» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Медиазапрос: правила с условием</h2>
+        <ul class="tm-list">
+          <li><code>@media (min-width: 600px)</code> — «если не уже 600»</li>
+          <li>На курсе только <code>min-width</code></li>
+          <li>Пишутся в конце файла</li>
+          <li>Идут по возрастанию ширины</li>
+        </ul>
+        <pre class="tm-code">@media (min-width: 600px) {
+  .menu { grid-template-columns: repeat(2, 1fr); }
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Единственная ошибка занятия, которая ничем себя не выдаёт. Сейчас покажу» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Медиазапросы в обратном порядке</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>На широком экране истинны оба условия. Побеждает написанный ниже — три колонки не появятся никогда. Ни ошибки, ни предупреждения</p>
+          <pre class="tm-code">@media (min-width: 900px) {
+  .menu { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 600px) {
+  .menu { grid-template-columns: repeat(2, 1fr); }
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Подсказка: специфичность» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Почему медиазапрос, написанный в начале файла, не работает?</h2>
+        <p>Обсуждаем вслух. Ответ — из занятия про каскад</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Собирая рюкзак, сначала кладут нужное. Потом добавляют, если место есть. Не наоборот» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Mobile First</h2>
+        <ul class="tm-list">
+          <li>Базовые правила — для узкого экрана</li>
+          <li>Расширения — через <code>min-width</code></li>
+          <li>Правила <strong>накапливаются</strong>, а не отменяются</li>
+          <li>Узкий экран — сложный случай, широкий — простой</li>
+        </ul>
+        <pre class="tm-code">/* база: телефон */
+.menu { grid-template-columns: 1fr; }
+@media (min-width: 600px) {
+  .menu { grid-template-columns: repeat(2, 1fr); }
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Через месяц откроете файл — и сразу видно, что где стоит. Без запуска браузера» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Раскладку видно прямо в коде</h2>
+        <p><code>grid-template-areas</code> — схема словами. Одно имя в соседних клетках объединяет их. Порядок в разметке при этом не меняется</p>
+        <pre class="tm-code">.layout {
+  display: grid;
+  grid-template-areas:
+<span class="hl">    "head head"</span>
+<span class="hl">    "main side"</span>
+<span class="hl">    "foot foot"</span>;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Правильно — перестроить. Таблицу в обёртку с overflow-x: auto, и ездить будет только она» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>«Не помещается — спрячем»</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Пользователь телефона теряет часть сайта. А он и есть основной пользователь этой страницы</p>
+          <pre class="tm-code">@media (max-width: 600px) {
+  table { display: none; }
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Адрес для телефона напишу на доске. Проверяем на настоящем устройстве, не в эмуляторе» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Меню на Grid: 1 → 2 → 3 колонки</li>
+          <li>Весь CSS по Mobile First</li>
+          <li>Таблица в обёртке с прокруткой</li>
+          <li><strong>Проверка на своём телефоне</strong> по чек-листу из шести пунктов</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> на ширине 360 нет горизонтальной прокрутки, медиазапросы по возрастанию в конце файла, <code>max-width</code> не используется</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L05/L05_presentation.html">►► Занятие 5</a>
+          <a class="tm-btn tm-btn--primary" href="L06_trainer_grid.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L07/L07_presentation.html">►► Занятие 7</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Эмулятор — примерить перед зеркалом. Телефон — походить час» -->
+        <p class="tm-eyebrow">►► ЗАЧЕМ</p>
+        <h2>Эмулятор не покажет</h2>
+        <ul class="tm-list">
+          <li>Размер пальца: зона нажатия от 44 пикселей</li>
+          <li>Реальную читаемость: основной текст от 16</li>
+          <li>Клавиатуру, закрывающую полэкрана</li>
+          <li>Скорость на школьном интернете</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольный вопрос: попросите сделать так, чтобы таблица не вылезала на телефоне. Ставлю на то, что предложат спрятать» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: параметры адаптивной сетки</h2>
+        <pre class="tm-code">Ты подбираешь параметры адаптивной сетки для учебного веб-проекта.
+Контекст: страница школьного буфета, сетка карточек с пирогами. Только HTML и CSS, без библиотек. В проекте используется CSS Grid для сеток и Flexbox для рядов. Подход Mobile First: базовые правила для узкого экрана, расширения через `min-width`. Уровень автора — шестое занятие курса.
+Задача: предложи параметры сетки меню так, чтобы на телефоне была одна колонка, на планшете две, на ноутбуке три. Дай два варианта: первый без медиазапросов, на `repeat(auto-fit, minmax(…))`; второй с медиазапросами.
+Ограничения: только `min-width`, никаких `max-width`; ширина колонок в `fr`, не в процентах; никакого `float`, `position: absolute` и библиотек; самый узкий поддерживаемый экран — 360 пикселей.
+Формат ответа: два блока CSS с комментариями на русском. Ниже — таблица: ширина экрана, число колонок, какой вариант её даёт.
+Критерии проверки: минимальная ширина колонки меньше 360; медиазапросы идут по возрастанию ширины; ни в одном варианте нет `max-width` и процентов.</pre>
+        <p><strong>Проверить руками:</strong> минимум меньше 360 · медиазапросы по возрастанию · нет <code>max-width</code> · ширины в <code>fr</code> · проверено сужением до 360 · можешь объяснить <code>auto-fit</code> и <code>minmax</code></p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 6</h3>
+      <dl>
+        <dt>CSS Grid</dt>
+        <dd>Механизм раскладки по строкам и колонкам одновременно. Двумерный, в отличие от Flexbox.</dd>
+        <dt>Грид-контейнер</dt>
+        <dd>Элемент с <code>display: grid</code>. Правила пишутся ему, слушаются его прямыми детьми.</dd>
+        <dt>grid-template-columns</dt>
+        <dd>Свойство, задающее число и ширину колонок сетки.</dd>
+        <dt>fr</dt>
+        <dd>Единица «доля свободного места». <code>1fr 1fr 1fr</code> — три равные колонки. Делит остаток после промежутков и фиксированных размеров.</dd>
+        <dt>repeat()</dt>
+        <dd>Сокращение для одинаковых колонок: <code>repeat(3, 1fr)</code> вместо <code>1fr 1fr 1fr</code>.</dd>
+        <dt>minmax()</dt>
+        <dd>Задаёт границы колонки: не уже первого значения, не шире второго.</dd>
+        <dt>auto-fit</dt>
+        <dd>Вместо числа колонок: «сделай столько, сколько поместится».</dd>
+        <dt>grid-template-rows</dt>
+        <dd>То же, что <code>grid-template-columns</code>, но для строк.</dd>
+        <dt>grid-template-areas</dt>
+        <dd>Схема раскладки словами: каждая строка в кавычках — строка сетки, каждое слово — клетка.</dd>
+        <dt>grid-area</dt>
+        <dd>Свойство элемента: имя области, которую он занимает.</dd>
+        <dt>Медиазапрос</dt>
+        <dd>Блок правил, действующий при выполнении условия: <code>@media (min-width: 600px)</code>.</dd>
+        <dt>min-width</dt>
+        <dd>Условие «ширина окна не меньше указанной». Единственный вид условий на курсе.</dd>
+        <dt>max-width</dt>
+        <dd>Условие «ширина окна не больше указанной». Признак подхода Desktop First, на курсе не используется.</dd>
+        <dt>Точка перелома</dt>
+        <dd>Ширина экрана, на которой меняется раскладка. Выбирается там, где ломается вёрстка, а не по моделям устройств.</dd>
+        <dt>Mobile First</dt>
+        <dd>Порядок работы: базовые правила для узкого экрана, расширения через <code>min-width</code>. Правила накапливаются, а не отменяются.</dd>
+        <dt>viewport</dt>
+        <dd>Строка <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code> в <code>&lt;head&gt;</code>. Без неё мобильный браузер уменьшает страницу целиком, и адаптив не работает.</dd>
+        <dt>overflow-x: auto</dt>
+        <dd>Горизонтальная прокрутка внутри блока. Способ показать широкую таблицу на телефоне, не ломая страницу.</dd>
+        <dt>Зона нажатия</dt>
+        <dd>Область, по которой можно попасть пальцем. Минимум примерно 44 на 44 пикселя.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

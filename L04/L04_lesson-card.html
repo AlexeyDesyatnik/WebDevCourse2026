@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 4. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L04_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L04_trainer_tokens.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 04 · техкарта</p>
+    <h1>Занятие 4. CSS3: селекторы, каскад, переменные</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L04</td></tr><tr><td>Тема</td><td>CSS3: селекторы, каскад, переменные</td></tr><tr><td>Модуль</td><td>Модуль 3. CSS3: Адаптивный дизайн и UI (8 ч)</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Переменные в <code>:root</code>, которые ты пишешь сегодня, — это будущая тёмная тема твоего Dashboard. Требование ТЗ «тёмная тема на CSS-переменных» закрывается за пятнадцать минут, если токены заведены сейчас, и переписыванием всех стилей, если нет</td></tr><tr><td>Артефакт на выходе</td><td>Страница буфета с подключёнными стилями: палитра и шрифты в <code>:root</code>, оформленные шапка, меню, форма и подвал</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима)</td></tr><tr><td>Файл тренажёра</td><td><code>L04_trainer_tokens.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l04-tokens-v1</code>, <code>wdc-l04-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td>Нет</td></tr><tr><td>Опора</td><td>L02: семантические теги, атрибуты. L03: форма, таблица, классы. L01: DevTools, вкладка Styles</td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на внешний вид. <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход и разбор прошлого</td><td>Слайды 1–2. Открывает две вчерашние работы: одну с рабочими подписями, одну с <code>placeholder</code> вместо <code>label</code>. Без фамилий</td><td>Смотрят, находят разницу</td><td>Группа называет, чем плох второй вариант</td></tr><tr><td>4–9</td><td>Теория 5.1–5.2</td><td>Слайд 3. Подключение стилей, части правила. Пишет первое правило вживую</td><td>Слушают, повторяют у себя</td><td>У всех появился блок <code>&lt;style&gt;</code> в <code>&lt;head&gt;</code></td></tr><tr><td>9–15</td><td>Теория 5.3</td><td>Слайд 4. Три селектора, правило про классы и <code>id</code>, имена по роли</td><td>Слушают</td><td>Двое приводят пример хорошего и плохого имени класса</td></tr><tr><td>15–17</td><td>Пауза в теории</td><td>Слайд 5, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>17–25</td><td><strong>Теория 5.4 — ядро занятия</strong></td><td>Слайды 6–8. Каскад, специфичность. <strong>Три разбора в DevTools на разных примерах</strong>, как требует методика</td><td>Смотрят, повторяют разбор у себя</td><td><strong>Точка контроля:</strong> каждый нашёл у себя хотя бы одно перечёркнутое правило и объяснил соседу, почему оно проиграло</td></tr><tr><td>25–27</td><td><strong>Вопрос классу</strong></td><td>Слайд 9. «Правила нет в списке или оно перечёркнуто — в чём разница?» Пауза 10 секунд</td><td>Думают, отвечают трое</td><td>Прозвучало: нет в списке — не совпал селектор; перечёркнуто — проиграло в каскаде</td></tr><tr><td>27–33</td><td>Теория 5.5</td><td>Слайд 10. Наследование, исключение с полями формы</td><td>Слушают</td><td>Группа объясняет, почему отступы не наследуются</td></tr><tr><td>33–35</td><td>Теория 5.6, заход</td><td>Слайд 11. Проблема пяти повторов одного цвета</td><td>Слушают</td><td>—</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–52</td><td>Теория 5.6–5.7</td><td>Слайды 12–14. Переменные, <code>:root</code>, тёмная тема, ошибка с потерянной переменной</td><td>Слушают</td><td>—</td></tr><tr><td>52–67</td><td><strong>Демонстрация</strong></td><td>Десять шагов раздела 6. Обязательно убрать <code>!important</code> после шага 7</td><td>Смотрят, повторяют у себя с шага 1</td><td><strong>Точка контроля:</strong> к 62-й минуте у всех работает хотя бы одна переменная в <code>:root</code></td></tr><tr><td>67–80</td><td>Практика: тренажёр</td><td>Открывает <code>L04_trainer_tokens.html</code>. Помогает точечно</td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 75-й минуте у большинства 7/10 и выше. Кто застрял на тесте 9 — разобрать на весь класс</td></tr><tr><td>80–90</td><td>Практика: свой файл</td><td>Обходит ряды с одной проверкой: просит показать <code>:root</code> и найти в файле цвет значением</td><td>Оформляют <code>index.html</code>, добавляют тёмную тему</td><td><strong>Точка контроля:</strong> у каждого ниже <code>:root</code> нет цветов значениями. Проверяем поиском по файлу</td></tr><tr><td>90–95</td><td>Работа с ИИ</td><td>Слайд 16. Разбирает один ответ модели, включая заявленный контраст и его проверку инструментом</td><td>Запускают промпт, проверяют по шести пунктам</td><td>Хотя бы двое сверили контраст и записали расхождение</td></tr><tr><td>95–100</td><td><strong>Мини-демо и фиксация</strong></td><td>Спрашивает троих: переключи тёмную тему в DevTools и объясни, почему изменились все элементы сразу. Сохранение файла</td><td>Показывают, объясняют, сохраняют</td><td>Файл сохранён. Правило про <code>!important</code> произнесено вслух</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li>Проверить, что у всех сохранился <code>index.html</code> с занятия 3. Кому не хватает — выдать готовый, чтобы не тратить занятие на восстановление.</li><li><strong>Заранее подготовить три примера с конфликтом каскада</strong> для разбора в DevTools. Методика требует повторить разбор трижды на разных примерах — импровизировать здесь нельзя, примеры должны быть подобраны так, чтобы победитель каждый раз определялся разной причиной: специфичностью, порядком, <code>!important</code>.</li><li>Проверить, где в вашем браузере находится инструмент проверки контраста (в DevTools при выборе цвета). Он нужен на минуте 90.</li><li>Подготовить файл поддержки: <code>:root</code> заполнен целиком, <code>body</code> написан, в четырёх правилах ниже цвета оставлены значениями.</li><li>Подготовить задание «плюс» заранее: состояния кнопки, «сломанный каскад» на объяснение соседу, проверка контраста.</li><li>Пройти тренажёр самому. Норматив — 12–16 минут. Отдельно убедиться, что тест 9 действительно ловит потерянную переменную, а тест 10 не срабатывает на шестнадцатеричные цвета.</li><li>Проверить доступ к ИИ-сервису с ученического места. При недоступности — сохранить два ответа заранее, обязательно один с потерянной переменной в тёмном наборе.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L04_presentation.html</code> — слайды 1–16.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 52.</li><li>Браузер с тем же файлом рядом и <strong>заранее открытыми DevTools на вкладке Elements</strong>: панель Styles должна быть видна с первой минуты теории каскада.</li><li>Три подготовленных примера конфликта каскада — открывать по одному на минутах 17–25.</li><li>Тренажёр <code>L04_trainer_tokens.html</code> — открыть на минуте 67.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. «Я написал правило, а оно не работает» — и ученик переписывает его снова и снова.</strong><br>Действие педагога: не смотреть в код. Спросить: «оно есть в панели Styles?» Нет — значит, селектор не совпал, сверь посимвольно. Есть, но перечёркнуто — значит, проиграло, смотри, кто выше. Этот диалог надо провести с первыми тремя обратившимися вслух, на весь класс: дальше половина группы начнёт спрашивать себя сама.</p>
+<p><strong>2. Половина класса дописывает <code>!important</code>, как только что-то не применяется.</strong><br>Действие педагога: пресекать сразу и требовать объяснения, что именно перебивается. Одного публичного разбора обычно достаточно. Если оставить без внимания на этом занятии, к занятию 7 файлы станут неисправимыми.</p>
+<p><strong>3. Тёмная тема включается, но часть элементов остаётся светлой.</strong><br>Действие педагога: два вопроса. «Все ли цвета у тебя через <code>var()</code>?» и «сколько переменных в светлом наборе и сколько в тёмном?» Обе причины покрываются этими вопросами, и ученик находит ошибку сам.</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Смени палитру буфета целиком,</strong> отредактировав только блок <code>:root</code>. Сделай два варианта — тёплый и холодный — и сохрани оба скриншотами. Ниже <code>:root</code> не трогай ни строки: если пришлось что-то править внизу, значит, там остался цвет значением. Найди и вынеси.</li><li><strong>Найди на любом сайте элемент, у которого стиль перебит,</strong> и разбери его в DevTools: какое правило победило и почему. Запиши три строки: селектор победителя, селектор проигравшего, причина (специфичность или порядок).</li><li><strong>Проверь контраст</strong> основного текста своей страницы к фону в обеих темах инструментом в DevTools. Если ниже 4.5:1 — поправь значение переменной. Запиши оба числа.</li></ol>
+<p>Первый пункт — проверка того, что токены заведены честно. Если палитра меняется одной правкой, работа сделана правильно.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «HTML/CSS: … поддержка тёмной темы (CSS-переменные)».</p>
+<p>Это единственное требование итогового ТЗ, которое можно закрыть на четвёртом занятии и больше к нему не возвращаться — при условии, что цвета с самого начала заведены переменными. Методические рекомендации к программе говорят об этом прямо: тогда тёмная тема в модуле 9 делается за пятнадцать минут, а иначе — переписыванием всех стилей накануне защиты.</p>
+<p>Практический вывод: <strong>начинай свой Dashboard на занятии 20 с блока <code>:root</code></strong>, до первого правила. Файл токенов, который ты пишешь сегодня для буфета, можно почти целиком перенести в проект — поменяются только значения.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Адаптивность и качество UI/UX» (5 баллов)</strong> — часть про тёмную тему. Плюс косвенно <strong>«Соответствие ТЗ» (10 баллов)</strong>: тёмная тема прямо названа в требованиях.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L04_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L04_trainer_tokens.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 10 · Тренажёр: DOM и события</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 80px; }
+    header.top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    header.top p { margin: 0; color: var(--tm-muted); font-size: 17px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .course-links, .modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+    .tm-btn {
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .brief, .ref, .status, .tests, .hints, .solution, .gloss, .spec {
+      background: var(--tm-bg);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+      border: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .brief,
+    html[data-theme="dark"] .ref,
+    html[data-theme="dark"] .status,
+    html[data-theme="dark"] .tests,
+    html[data-theme="dark"] .hints,
+    html[data-theme="dark"] .solution,
+    html[data-theme="dark"] .gloss,
+    html[data-theme="dark"] .spec { background: var(--tm-bg-alt); }
+    h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 10px; }
+    p, li { line-height: 1.55; font-size: 17px; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .spec h3 { font-size: 16px; margin: 16px 0 8px; }
+    .spec h3:first-child { margin-top: 0; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks { grid-template-columns: 1fr 1fr; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .blocks-src, .blocks-dst {
+      min-width: 0;
+      background: var(--tm-bg);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 16px;
+      border: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .blocks-src,
+    html[data-theme="dark"] .blocks-dst { background: var(--tm-bg-alt); }
+    .blocks-src h2, .blocks-dst h2 { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+    .layout.is-blocks .pool { flex-direction: column; align-items: stretch; }
+    .layout.is-blocks .chip { max-width: none; width: 100%; }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      resize: vertical;
+      caret-color: var(--tm-text);
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      box-shadow: var(--tm-shadow);
+    }
+    .meter {
+      height: 8px;
+      background: var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .pill.ok { background: var(--tm-green-soft); color: var(--tm-ok); border-color: var(--tm-ok); }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); font-size: 17px; }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .hintbox {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-sm);
+    }
+    .hintbox.open { display: block; }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+    .locked #solBody { display: none; }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    .gloss dt { font-weight: 700; margin-top: 12px; font-size: 15px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; padding: 8px 0; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); }
+    .hide { display: none !important; }
+    .modes button[aria-pressed="true"],
+    .modes button[aria-selected="true"] {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: transparent;
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 52px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .chip.is-picked {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .chip.chip-miss { outline: 3px solid var(--tm-warn); outline-offset: 2px; }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .page-frame {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .page-frame .bar {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      padding: 10px 12px;
+    }
+    .page-frame .mid { padding: 12px; }
+    .slot-lab, .slot__label {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 6px;
+      opacity: 0.85;
+    }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--tm-bg-alt);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <p class="tm-eyebrow">►► ЗАНЯТИЕ 10 · ТРЕНАЖЁР</p>
+        <h1>Меню буфета</h1>
+        <p>Занятие 10 · DOM и события</p>
+      </div>
+      <div class="row">
+        <p id="scoreline">0 из 12 проверок</p>
+        <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+      </div>
+    </header>
+    <nav class="course-links" aria-label="Курс">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+      <a class="tm-btn tm-btn--ghost" href="L10_presentation.html">►► Презентация</a>
+      <a class="tm-btn tm-btn--ghost" href="../L09/L09_presentation.html">►► Занятие 9</a>
+      <a class="tm-btn tm-btn--ghost" href="../L11/L11_presentation.html">►► Занятие 11</a>
+    </nav>
+
+    <div class="modes" role="tablist" aria-label="Как решать">
+      <button type="button" class="tm-btn tm-btn--primary" id="modeCodeBtn" role="tab" aria-selected="true" aria-pressed="true">1. Писать код</button>
+      <button type="button" class="tm-btn tm-btn--ghost" id="modeBlocksBtn" role="tab" aria-selected="false" aria-pressed="false">2. Собрать блоками</button>
+    </div>
+
+    <section class="brief spec">
+      <h2>Заказ</h2>
+      <p><strong>Заказ буфета «Северный пирог».</strong> Нарисуй меню из данных и научи его отвечать на нажатия.</p>
+      <div id="specCode">
+        <h3>Как сделать кодом</h3>
+        <ul class="tm-list">
+          <li><code>renderMenu(pies)</code> рисует карточки в <code>#menu</code> из массива</li>
+          <li>У каждой карточки класс <code>card</code> и атрибут <code>data-id</code></li>
+          <li>Пустой массив — сообщение «Ничего не найдено», а не пустота</li>
+          <li>Кнопки фильтра переключают список</li>
+          <li>Нажатие по карточке — <strong>включая заголовок внутри</strong> — открывает окно с составом</li>
+          <li>Окно закрывается кнопкой и клавишей Escape</li>
+        </ul>
+        <p class="lead">Обработчики вешай на контейнеры: карточек в момент запуска ещё нет.</p>
+      </div>
+      <div id="specBlocks" class="hide">
+        <h3>Как сделать блоками</h3>
+        <p>Слева блоки, справа поля отрисовки, окна и обработчиков. Внизу — страница.</p>
+      </div>
+    </section>
+
+    <section class="ref">
+      <h2>Эталон-цель</h2>
+      <p class="lead">Четыре карточки из данных. Фильтр «сладкое» оставляет две. Нажатие по названию открывает окно. Escape закрывает.</p>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <strong>Прогресс:</strong>
+      <span id="score">0 / 0</span>
+      · подсказок открыто: <span id="hintCount">0</span>/3
+      · <span id="badge" class="pill">ещё собираем</span>
+      <div class="meter"><span id="bar"></span></div>
+      <div class="row">
+        <button type="button" class="tm-btn tm-btn--primary" id="checkBtn">Проверить</button>
+        <button type="button" class="tm-btn tm-btn--ghost" id="resetBtn">Сбросить</button>
+        <button type="button" class="tm-btn tm-btn--ghost" id="saveBtn">Скачать страницу</button>
+      </div>
+      <p id="honesty" class="lead" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="layout" id="layout">
+      <div id="paneCode">
+        <h2>Редактор</h2>
+        <textarea id="editor" spellcheck="false" aria-label="Код страницы"></textarea>
+      </div>
+      <div id="paneBlocks" class="blocks-board hide">
+        <div class="blocks-src">
+          <h2>Блоки кода</h2>
+          <p class="lead">Слева блоки, справа поля. Enter ставит чип в подходящее свободное поле.</p>
+          <div class="pool" id="blockPool" aria-label="Готовые фрагменты"></div>
+        </div>
+        <div class="blocks-dst">
+          <h2>Поля</h2>
+          <div class="page-frame">
+            <div class="bar">Скрипт меню</div>
+            <div class="mid">
+              <div class="slot" data-accept="render"><span class="slot__label">1. Отрисовка меню</span></div>
+              <div class="slot" data-accept="modal"><span class="slot__label">2. Открыть и закрыть окно</span></div>
+              <div class="slot" data-accept="first"><span class="slot__label">3. Первая отрисовка</span></div>
+              <div class="slot" data-accept="filters"><span class="slot__label">4. Обработчик фильтров</span></div>
+              <div class="slot" data-accept="card"><span class="slot__label">5. Нажатие по карточке</span></div>
+              <div class="slot" data-accept="close"><span class="slot__label">6. Закрытие окна</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panePreview">
+        <h2>Результат</h2>
+        <iframe id="preview" title="Превью страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <section class="tests">
+      <h2>Самопроверка</h2>
+      <p class="lead">Проверки нажимают кнопки и карточки в превью программно. Между нажатием и проверкой задержки нет.</p>
+      <div id="testList"></div>
+    </section>
+
+    <section class="hints">
+      <h2>Подсказки</h2>
+      <p class="lead">Три подсказки. На демо — своими словами.</p>
+      <div class="row">
+        <button type="button" class="tm-btn tm-btn--ghost" data-hint="0">1 — вопрос</button>
+        <button type="button" class="tm-btn tm-btn--ghost" data-hint="1">2 — приём</button>
+        <button type="button" class="tm-btn tm-btn--ghost" data-hint="2">3 — фрагмент</button>
+      </div>
+      <div class="hintbox" id="h0">Держи в голове схему: <strong>найти → назначить обработчик → изменить</strong>. Для каждого куска спроси: что я ищу, на что вешаю обработчик, что меняю? И отдельный вопрос: существуют ли карточки в тот момент, когда выполняется твой скрипт?</div>
+      <div class="hintbox" id="h1">Отрисовка: <code>menu.innerHTML = pies.map(...).join("")</code>, в шаблоне обязательно <code>data-id="${pie.id}"</code>, в начале функции — проверка на пустой массив. Обработчики вешаются на контейнеры <code>#filters</code> и <code>#menu</code>, внутри — <code>event.target.closest(...)</code> и проверка на <code>null</code>. Окно: <code>classList.remove("hidden")</code> и <code>classList.add("hidden")</code>, содержимое через <code>textContent</code>.</div>
+      <div class="hintbox" id="h2">
+        <pre class="tm-code">function renderMenu(pies) {
+  if (pies.length === 0) {
+    menu.innerHTML = "&lt;li&gt;Ничего не найдено&lt;/li&gt;";
+    return;
+  }
+  menu.innerHTML = pies
+    .map((pie) => `&lt;li class="card" data-id="${pie.id}"&gt;&lt;h3&gt;${pie.name}&lt;/h3&gt;&lt;/li&gt;`)
+    .join("");
+}
+
+menu.addEventListener("click", (event) =&gt; {
+  const card = event.target.closest(".card");
+  if (card === null) return;
+  const pie = PIES.find((p) =&gt; p.id === card.dataset.id);
+  openModal(pie);
+});</pre>
+      </div>
+    </section>
+
+    <section class="solution locked" id="solutionBox">
+      <h2>Эталонное решение</h2>
+      <p id="solGate">Откроется, когда все проверки зелёные или открыты три подсказки.</p>
+      <div id="solBody" hidden>
+        <p><strong>Почему так:</strong> карточки появляются после запуска скрипта, поэтому обработчик висит на контейнере, а не на каждой карточке. <code>closest(".card")</code> поднимается от заголовка к карточке. <code>data-id</code> связывает разметку с объектом в массиве. Класс <code>hidden</code> прячет готовое окно — его не создают заново. Escape слушают на <code>document</code>.</p>
+        <pre id="solCode" class="tm-code"></pre>
+      </div>
+    </section>
+
+    <section class="gloss" id="glossary">
+      <h2>Глоссарий занятия</h2>
+      <dl>
+        <dt>querySelector</dt>
+        <dd>Найти первый элемент. Не нашёл — <code>null</code>.</dd>
+        <dt>innerHTML</dt>
+        <dd>Разметка внутри элемента. Одно присваивание после <code>map</code> + <code>join</code>, не в цикле.</dd>
+        <dt>addEventListener</dt>
+        <dd>Назначить обработчик. Функцию передают без скобок. Не <code>onclick=</code>.</dd>
+        <dt>closest</dt>
+        <dd>Подняться к ближайшему предку. Нужен, когда нажали по заголовку внутри карточки.</dd>
+        <dt>Делегирование</dt>
+        <dd>Один обработчик на контейнер. Переживает перерисовку списка.</dd>
+      </dl>
+    </section>
+
+    <details class="teacher">
+      <summary>Карточка педагога</summary>
+      <ul>
+        <li><strong>Навык:</strong> отрисовка из данных, делегирование, <code>closest</code>, <code>classList</code>, Escape.</li>
+        <li><strong>Норматив:</strong> 16–20 мин. Код или блоки.</li>
+        <li><strong>Типичные ошибки:</strong> <code>innerHTML</code> в цикле; обработчики на карточках; <code>event.target</code> без <code>closest</code>; нет <code>data-id</code>; <code>onclick=</code>.</li>
+        <li><strong>Готово, когда:</strong> 12 зелёных; нажатие по заголовку и после фильтра. Три подсказки — «с поддержкой».</li>
+        <li><strong>Усложнение:</strong> счётчик «Показано N из M»; класс <code>is-active</code>; <code>tabindex</code> на карточках.</li>
+        <li><strong>Поддержка:</strong> режим блоков; пропуски в обработчиках.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type="text/plain" id="starter"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Меню буфета</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }
+    .filters { display: flex; gap: 8px; margin-bottom: 16px; }
+    .filters button { font: inherit; padding: 8px 16px; border-radius: 999px;
+                      border: 2px solid #e3e7e1; background: #fff; cursor: pointer; }
+    .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; list-style: none; padding-left: 0; }
+    .card { border: 1px solid #e3e7e1; border-radius: 14px; padding: 16px; cursor: pointer; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .price { font-weight: 700; color: #5fa22e; }
+    .modal { position: fixed; inset: 0; background: rgba(17,19,18,.5);
+             display: grid; place-items: center; padding: 16px; }
+    .modal.hidden { display: none; }
+    .modal__box { background: #fff; border-radius: 14px; padding: 24px; max-width: 420px; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <h2>Меню на сегодня</h2>
+
+  <div class="filters" id="filters">
+    <button type="button" data-kind="все">Все</button>
+    <button type="button" data-kind="солёное">Солёное</button>
+    <button type="button" data-kind="сладкое">Сладкое</button>
+  </div>
+
+  <ul class="menu" id="menu"></ul>
+
+  <div class="modal hidden" id="modal">
+    <div class="modal__box">
+      <h3 id="modalTitle"></h3>
+      <p id="modalText"></p>
+      <button type="button" id="modalClose">Закрыть</button>
+    </div>
+  </div>
+
+  <script>
+    const PIES = [
+      { id: "kalitka",  name: "Калитка с картошкой", price: 45, kind: "солёное",
+        parts: "Тесто ржаное, картофельное пюре, сметана, масло" },
+      { id: "rybnik",   name: "Рыбник",              price: 90, kind: "солёное",
+        parts: "Тесто дрожжевое, филе трески, лук, специи" },
+      { id: "brusnika", name: "Брусничный пирог",    price: 70, kind: "сладкое",
+        parts: "Тесто песочное, брусника, сахар, крахмал" },
+      { id: "cherniga", name: "Черничная ватрушка",  price: 60, kind: "сладкое",
+        parts: "Тесто сдобное, творог, черника, сахар" }
+    ];
+
+    const menu = document.querySelector("#menu");
+    const filters = document.querySelector("#filters");
+    const modal = document.querySelector("#modal");
+    const modalTitle = document.querySelector("#modalTitle");
+    const modalText = document.querySelector("#modalText");
+    const modalClose = document.querySelector("#modalClose");
+
+    /* твой код здесь: renderMenu(pies) */
+
+
+    /* твой код здесь: openModal(pie) и closeModal() */
+
+
+    /* твой код здесь: первая отрисовка */
+
+
+    /* твой код здесь: обработчик фильтров */
+
+
+    /* твой код здесь: обработчик нажатия по карточке */
+
+
+    /* твой код здесь: закрытие окна — кнопка и Escape */
+  <\/script>
+
+</body>
+</html>
+</script>
+
+  <script type="text/plain" id="etalon"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Меню буфета</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }
+    .filters { display: flex; gap: 8px; margin-bottom: 16px; }
+    .filters button { font: inherit; padding: 8px 16px; border-radius: 999px;
+                      border: 2px solid #e3e7e1; background: #fff; cursor: pointer; }
+    .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; list-style: none; padding-left: 0; }
+    .card { border: 1px solid #e3e7e1; border-radius: 14px; padding: 16px; cursor: pointer; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .price { font-weight: 700; color: #5fa22e; }
+    .modal { position: fixed; inset: 0; background: rgba(17,19,18,.5);
+             display: grid; place-items: center; padding: 16px; }
+    .modal.hidden { display: none; }
+    .modal__box { background: #fff; border-radius: 14px; padding: 24px; max-width: 420px; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <h2>Меню на сегодня</h2>
+
+  <div class="filters" id="filters">
+    <button type="button" data-kind="все">Все</button>
+    <button type="button" data-kind="солёное">Солёное</button>
+    <button type="button" data-kind="сладкое">Сладкое</button>
+  </div>
+
+  <ul class="menu" id="menu"></ul>
+
+  <div class="modal hidden" id="modal">
+    <div class="modal__box">
+      <h3 id="modalTitle"></h3>
+      <p id="modalText"></p>
+      <button type="button" id="modalClose">Закрыть</button>
+    </div>
+  </div>
+
+  <script>
+    const PIES = [
+      { id: "kalitka",  name: "Калитка с картошкой", price: 45, kind: "солёное",
+        parts: "Тесто ржаное, картофельное пюре, сметана, масло" },
+      { id: "rybnik",   name: "Рыбник",              price: 90, kind: "солёное",
+        parts: "Тесто дрожжевое, филе трески, лук, специи" },
+      { id: "brusnika", name: "Брусничный пирог",    price: 70, kind: "сладкое",
+        parts: "Тесто песочное, брусника, сахар, крахмал" },
+      { id: "cherniga", name: "Черничная ватрушка",  price: 60, kind: "сладкое",
+        parts: "Тесто сдобное, творог, черника, сахар" }
+    ];
+
+    const menu = document.querySelector("#menu");
+    const filters = document.querySelector("#filters");
+    const modal = document.querySelector("#modal");
+    const modalTitle = document.querySelector("#modalTitle");
+    const modalText = document.querySelector("#modalText");
+    const modalClose = document.querySelector("#modalClose");
+
+    function renderMenu(pies) {
+      if (pies.length === 0) {
+        menu.innerHTML = "<li>Ничего не найдено</li>";
+        return;
+      }
+      menu.innerHTML = pies
+        .map((pie) => `
+          <li class="card" data-id="${pie.id}">
+            <h3>${pie.name}</h3>
+            <p class="price">${pie.price} ₽</p>
+          </li>
+        `)
+        .join("");
+    }
+
+    function openModal(pie) {
+      modalTitle.textContent = pie.name;
+      modalText.textContent = pie.parts;
+      modal.classList.remove("hidden");
+    }
+
+    function closeModal() {
+      modal.classList.add("hidden");
+    }
+
+    renderMenu(PIES);
+
+    filters.addEventListener("click", (event) => {
+      const btn = event.target.closest("button");
+      if (btn === null) return;
+
+      const kind = btn.dataset.kind;
+      const list = kind === "все" ? PIES : PIES.filter((pie) => pie.kind === kind);
+      renderMenu(list);
+    });
+
+    menu.addEventListener("click", (event) => {
+      const card = event.target.closest(".card");
+      if (card === null) return;
+
+      const pie = PIES.find((p) => p.id === card.dataset.id);
+      if (pie === undefined) return;
+
+      openModal(pie);
+    });
+
+    modalClose.addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    });
+  <\/script>
+
+</body>
+</html>
+</script>
+
+  <script>
+    (function () {
+      const KEY = "wdc-l10-dom-v1";
+      const MODE_KEY = "wdc-l10-mode-v1";
+      const TOTAL = 12;
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      function fromPlain(id) {
+        return document.getElementById(id).textContent.replace(/^\n/, "").replace(/<\\\/script>/gi, "<" + "/script>");
+      }
+      const starter = fromPlain("starter");
+      const etalon = fromPlain("etalon");
+      const testList = document.getElementById("testList");
+      const scoreEl = document.getElementById("score");
+      const scoreline = document.getElementById("scoreline");
+      const bar = document.getElementById("bar");
+      const badge = document.getElementById("badge");
+      const honesty = document.getElementById("honesty");
+      const hintCountEl = document.getElementById("hintCount");
+      const solBody = document.getElementById("solBody");
+      const solGate = document.getElementById("solGate");
+      const solCode = document.getElementById("solCode");
+      const solutionBox = document.getElementById("solutionBox");
+      solCode.textContent = etalon;
+
+      const openedHints = new Set();
+      let debounceId = 0;
+      let lastPassed = 0;
+      let mode = "code";
+      let picked = null;
+
+      const BLOCKS = [
+        { id: "render-ok", accept: "render", label: "Отрисовка: map + join + пустой случай", show: "innerHTML = map().join(\"\")",
+          html: 'function renderMenu(pies) {\n      if (pies.length === 0) {\n        menu.innerHTML = "<li>Ничего не найдено</li>";\n        return;\n      }\n      menu.innerHTML = pies\n        .map((pie) => `\n          <li class="card" data-id="${pie.id}">\n            <h3>${pie.name}</h3>\n            <p class="price">${pie.price} ₽</p>\n          </li>\n        `)\n        .join("");\n    }' },
+        { id: "render-bad1", accept: "none", label: "Отрисовка: innerHTML внутри цикла", show: "forEach + innerHTML внутри",
+          html: 'function renderMenu(pies) {\n      let html = "";\n      pies.forEach((pie) => {\n        html = html + "<li class=\\"card\\">" + pie.name + "</li>";\n        menu.innerHTML = html;\n      });\n    }' },
+        { id: "render-bad2", accept: "none", label: "Отрисовка: без data-id", show: "карточки без data-id",
+          html: 'function renderMenu(pies) {\n      menu.innerHTML = pies\n        .map((pie) => `<li class="card"><h3>${pie.name}</h3></li>`)\n        .join("");\n    }' },
+        { id: "modal-ok", accept: "modal", label: "Окно: textContent + classList", show: "classList.remove(\"hidden\")",
+          html: 'function openModal(pie) {\n      modalTitle.textContent = pie.name;\n      modalText.textContent = pie.parts;\n      modal.classList.remove("hidden");\n    }\n\n    function closeModal() {\n      modal.classList.add("hidden");\n    }' },
+        { id: "modal-bad", accept: "none", label: "Окно: создаётся заново каждый раз", show: "body.innerHTML +=",
+          html: 'function openModal(pie) {\n      document.body.innerHTML += `<div class="modal"><p>${pie.parts}</p></div>`;\n    }\n\n    function closeModal() {\n      document.body.innerHTML = document.body.innerHTML;\n    }' },
+        { id: "first-ok", accept: "first", label: "Первая отрисовка", show: "renderMenu(PIES)",
+          html: 'renderMenu(PIES);' },
+        { id: "filters-ok", accept: "filters", label: "Фильтр: делегирование на контейнер", show: "filters.addEventListener",
+          html: 'filters.addEventListener("click", (event) => {\n      const btn = event.target.closest("button");\n      if (btn === null) return;\n\n      const kind = btn.dataset.kind;\n      const list = kind === "все" ? PIES : PIES.filter((pie) => pie.kind === kind);\n      renderMenu(list);\n    });' },
+        { id: "filters-bad", accept: "none", label: "Фильтр: обработчик с вызовом функции", show: "addEventListener(\"click\", fn())",
+          html: 'const onFilter = () => renderMenu(PIES);\n    filters.addEventListener("click", onFilter());' },
+        { id: "card-ok", accept: "card", label: "Карточка: делегирование + closest", show: "menu.addEventListener + closest",
+          html: 'menu.addEventListener("click", (event) => {\n      const card = event.target.closest(".card");\n      if (card === null) return;\n\n      const pie = PIES.find((p) => p.id === card.dataset.id);\n      if (pie === undefined) return;\n\n      openModal(pie);\n    });' },
+        { id: "card-bad1", accept: "none", label: "Карточка: обработчик на каждую после отрисовки", show: "querySelectorAll + forEach",
+          html: 'document.querySelectorAll(".card").forEach((card) => {\n      card.addEventListener("click", () => {\n        const pie = PIES.find((p) => p.id === card.dataset.id);\n        openModal(pie);\n      });\n    });' },
+        { id: "close-ok", accept: "close", label: "Закрытие: кнопка и Escape", show: "click + keydown",
+          html: 'modalClose.addEventListener("click", closeModal);\n\n    document.addEventListener("keydown", (event) => {\n      if (event.key === "Escape") {\n        closeModal();\n      }\n    });' }
+      ];
+
+      const PAGE_HEAD = "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"utf-8\">\n" +
+        "  <title>Меню буфета</title>\n  <style>\n" +
+        "    *, *::before, *::after { box-sizing: border-box; }\n" +
+        "    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }\n" +
+        "    .filters { display: flex; gap: 8px; margin-bottom: 16px; }\n" +
+        "    .filters button { font: inherit; padding: 8px 16px; border-radius: 999px;\n" +
+        "                      border: 2px solid #e3e7e1; background: #fff; cursor: pointer; }\n" +
+        "    .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));\n" +
+        "            gap: 16px; list-style: none; padding-left: 0; }\n" +
+        "    .card { border: 1px solid #e3e7e1; border-radius: 14px; padding: 16px; cursor: pointer; }\n" +
+        "    .card h3 { margin: 0 0 8px; font-size: 18px; }\n" +
+        "    .price { font-weight: 700; color: #5fa22e; }\n" +
+        "    .modal { position: fixed; inset: 0; background: rgba(17,19,18,.5);\n" +
+        "             display: grid; place-items: center; padding: 16px; }\n" +
+        "    .modal.hidden { display: none; }\n" +
+        "    .modal__box { background: #fff; border-radius: 14px; padding: 24px; max-width: 420px; width: 100%; }\n" +
+        "  </style>\n</head>\n<body>\n\n" +
+        "  <h2>Меню на сегодня</h2>\n\n" +
+        "  <div class=\"filters\" id=\"filters\">\n" +
+        "    <button type=\"button\" data-kind=\"все\">Все</button>\n" +
+        "    <button type=\"button\" data-kind=\"солёное\">Солёное</button>\n" +
+        "    <button type=\"button\" data-kind=\"сладкое\">Сладкое</button>\n" +
+        "  </div>\n\n" +
+        "  <ul class=\"menu\" id=\"menu\"></ul>\n\n" +
+        "  <div class=\"modal hidden\" id=\"modal\">\n" +
+        "    <div class=\"modal__box\">\n" +
+        "      <h3 id=\"modalTitle\"></h3>\n" +
+        "      <p id=\"modalText\"></p>\n" +
+        "      <button type=\"button\" id=\"modalClose\">Закрыть</button>\n" +
+        "    </div>\n  </div>\n\n  <script>\n" +
+        "    const PIES = [\n" +
+        "      { id: \"kalitka\",  name: \"Калитка с картошкой\", price: 45, kind: \"солёное\",\n" +
+        "        parts: \"Тесто ржаное, картофельное пюре, сметана, масло\" },\n" +
+        "      { id: \"rybnik\",   name: \"Рыбник\",              price: 90, kind: \"солёное\",\n" +
+        "        parts: \"Тесто дрожжевое, филе трески, лук, специи\" },\n" +
+        "      { id: \"brusnika\", name: \"Брусничный пирог\",    price: 70, kind: \"сладкое\",\n" +
+        "        parts: \"Тесто песочное, брусника, сахар, крахмал\" },\n" +
+        "      { id: \"cherniga\", name: \"Черничная ватрушка\",  price: 60, kind: \"сладкое\",\n" +
+        "        parts: \"Тесто сдобное, творог, черника, сахар\" }\n" +
+        "    ];\n\n" +
+        "    const menu = document.querySelector(\"#menu\");\n" +
+        "    const filters = document.querySelector(\"#filters\");\n" +
+        "    const modal = document.querySelector(\"#modal\");\n" +
+        "    const modalTitle = document.querySelector(\"#modalTitle\");\n" +
+        "    const modalText = document.querySelector(\"#modalText\");\n" +
+        "    const modalClose = document.querySelector(\"#modalClose\");\n\n    ";
+
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+
+      function slotHtml(accept) {
+        const chip = document.querySelector('#paneBlocks .slot[data-accept="' + accept + '"] .chip');
+        if (!chip) return "";
+        const item = findBlock(chip.dataset.id);
+        return item ? item.html : "";
+      }
+
+      function htmlFromBlocks() {
+        return PAGE_HEAD +
+          slotHtml("render") + "\n\n    " +
+          slotHtml("modal") + "\n\n    " +
+          slotHtml("first") + "\n\n    " +
+          slotHtml("filters") + "\n\n    " +
+          slotHtml("card") + "\n\n    " +
+          slotHtml("close") +
+          "\n  </scr" + "ipt>\n\n</body>\n</html>";
+      }
+
+      function flashMiss(chip) {
+        chip.classList.add("chip-miss");
+        setTimeout(function () { chip.classList.remove("chip-miss"); }, 400);
+      }
+
+      function makeChip(item, uid) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.dataset.id = item.id;
+        b.dataset.uid = uid;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (picked === b) {
+            b.classList.remove("is-picked");
+            picked = null;
+            return;
+          }
+          document.querySelectorAll(".chip.is-picked").forEach(function (c) { c.classList.remove("is-picked"); });
+          picked = b;
+          b.classList.add("is-picked");
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          placeChipById(item.id, b);
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", uid);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        b.addEventListener("dragover", function (e) { e.preventDefault(); });
+        b.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slot = b.closest(".slot");
+          if (picked && slot) {
+            placeChip(slot, picked);
+            return;
+          }
+          if (picked && picked.parentElement !== document.getElementById("blockPool")) {
+            document.getElementById("blockPool").appendChild(picked);
+            picked.classList.remove("is-picked");
+            picked = null;
+            editor.value = htmlFromBlocks();
+            previewDoc();
+          }
+        });
+        return b;
+      }
+
+      function placeChipById(id, chip) {
+        const block = findBlock(id);
+        if (!block || block.accept === "none") {
+          flashMiss(chip);
+          return;
+        }
+        const slot = Array.prototype.find.call(
+          document.querySelectorAll("#paneBlocks .slot"),
+          function (s) {
+            return s.dataset.accept === block.accept && !s.querySelector(".chip");
+          }
+        );
+        if (!slot) {
+          flashMiss(chip);
+          return;
+        }
+        placeChip(slot, chip);
+      }
+
+      function fillBlocks() {
+        const pool = document.getElementById("blockPool");
+        pool.innerHTML = "";
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.querySelectorAll(".chip").forEach(function (c) { c.remove(); });
+        });
+        shuffle(BLOCKS).forEach(function (item, i) {
+          pool.appendChild(makeChip(item, "b" + i + item.id));
+        });
+      }
+
+      function placeChip(slot, chip) {
+        const old = slot.querySelector(".chip");
+        if (old) document.getElementById("blockPool").appendChild(old);
+        slot.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        editor.value = htmlFromBlocks();
+        previewDoc();
+      }
+
+      function bindBlocks() {
+        const pool = document.getElementById("blockPool");
+        const pane = document.getElementById("paneBlocks");
+        function returnToPool() {
+          if (!picked || picked.parentElement === pool) return;
+          pool.appendChild(picked);
+          picked.classList.remove("is-picked");
+          picked = null;
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+        pool.addEventListener("click", returnToPool);
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          returnToPool();
+        });
+        pane.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (picked) placeChip(slot, picked);
+            else if (slot.querySelector(".chip") && !picked) {
+              const chip = slot.querySelector(".chip");
+              document.getElementById("blockPool").appendChild(chip);
+              editor.value = htmlFromBlocks();
+              previewDoc();
+            }
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(slot, picked);
+          });
+        });
+      }
+
+      function setMode(next) {
+        mode = next;
+        const isCode = next === "code";
+        document.getElementById("modeCodeBtn").setAttribute("aria-pressed", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-pressed", String(!isCode));
+        document.getElementById("modeCodeBtn").setAttribute("aria-selected", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-selected", String(!isCode));
+        document.getElementById("modeCodeBtn").className = "tm-btn " + (isCode ? "tm-btn--primary" : "tm-btn--ghost");
+        document.getElementById("modeBlocksBtn").className = "tm-btn " + (isCode ? "tm-btn--ghost" : "tm-btn--primary");
+        document.getElementById("paneCode").classList.toggle("hide", !isCode);
+        document.getElementById("paneBlocks").classList.toggle("hide", isCode);
+        document.querySelector(".layout").classList.toggle("is-blocks", !isCode);
+        document.getElementById("specCode").classList.toggle("hide", !isCode);
+        document.getElementById("specBlocks").classList.toggle("hide", isCode);
+        try { localStorage.setItem(MODE_KEY, next); } catch (e) {}
+        if (isCode) {
+          const hasChip = !!document.querySelector("#paneBlocks .slot .chip");
+          if (hasChip) {
+            editor.value = htmlFromBlocks();
+          } else {
+            try { editor.value = localStorage.getItem(KEY) || starter; } catch (e) { editor.value = starter; }
+          }
+          previewDoc();
+        } else {
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+      }
+
+      function previewDoc() {
+        const baseHref = new URL("./", window.location.href).href;
+        let html = editor.value;
+        if (/<head>/i.test(html)) {
+          html = html.replace(/<head>/i, '<head><base href="' + baseHref + '">');
+        }
+        preview.srcdoc = html;
+        if (mode === "code") {
+          try { localStorage.setItem(KEY, editor.value); } catch (e) {}
+        }
+      }
+
+      function schedulePreview() {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(previewDoc, 280);
+      }
+
+      editor.addEventListener("input", schedulePreview);
+
+      function stripComments(src) {
+        return src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/.*$/gm, " ");
+      }
+
+      function innerHtmlInLoop(src) {
+        const clean = stripComments(src);
+        if (/\.forEach\s*\([\s\S]{0,500}?innerHTML\s*=/.test(clean)) return true;
+        if (/\bfor\s*\([^)]*\)\s*\{[\s\S]{0,500}?innerHTML\s*=/.test(clean)) return true;
+        return false;
+      }
+
+      function isOpen(modal) {
+        return !!(modal && !modal.classList.contains("hidden"));
+      }
+
+      function probe(doc, win, src) {
+        const menu = doc.querySelector("#menu");
+        const modal = doc.querySelector("#modal");
+        const modalText = doc.querySelector("#modalText");
+        const modalClose = doc.querySelector("#modalClose");
+        let pies = [];
+        try {
+          const fromWin = win.eval("PIES");
+          if (Array.isArray(fromWin)) pies = fromWin;
+        } catch (e) {
+          pies = [];
+        }
+        const ids = pies.map(function (p) { return p.id; });
+
+        const cards0 = menu ? menu.querySelectorAll(".card") : [];
+        const nCards = cards0.length;
+        let firstTextOk = false;
+        let dataIdOk = false;
+        if (nCards >= 1 && pies[0]) {
+          const t = cards0[0].textContent || "";
+          firstTextOk = t.indexOf(pies[0].name) !== -1 && t.indexOf(String(pies[0].price)) !== -1;
+        }
+        if (nCards > 0) {
+          dataIdOk = Array.prototype.every.call(cards0, function (card) {
+            const id = card.getAttribute("data-id");
+            return !!(id && ids.indexOf(id) !== -1);
+          });
+        }
+
+        let emptyOk = false;
+        try {
+          const render = typeof win.renderMenu === "function" ? win.renderMenu : win.eval("renderMenu");
+          if (typeof render === "function") {
+            render([]);
+            emptyOk = !!(menu && menu.textContent && menu.textContent.trim().length > 0);
+          }
+        } catch (e) {
+          emptyOk = false;
+        }
+
+        const loopBad = innerHtmlInLoop(src);
+
+        let sweetOk = false;
+        const sweetBtn = doc.querySelector('[data-kind="сладкое"]');
+        if (sweetBtn) {
+          sweetBtn.click();
+          sweetOk = !!(menu && menu.querySelectorAll(".card").length === 2);
+        }
+
+        let allOk = false;
+        const allBtn = doc.querySelector('[data-kind="все"]');
+        if (allBtn) {
+          allBtn.click();
+          allOk = !!(menu && menu.querySelectorAll(".card").length === 4);
+        }
+
+        if (modal) modal.classList.add("hidden");
+        let cardClickOk = false;
+        const card = menu && menu.querySelector(".card");
+        if (card) {
+          card.click();
+          cardClickOk = isOpen(modal);
+        }
+
+        if (modal) modal.classList.add("hidden");
+        let h3Ok = false;
+        const h3 = menu && menu.querySelector(".card h3");
+        if (h3) {
+          h3.click();
+          h3Ok = isOpen(modal);
+        }
+
+        if (modal) modal.classList.add("hidden");
+        let partsOk = false;
+        const cardsNow = menu ? menu.querySelectorAll(".card") : [];
+        if (cardsNow.length >= 2 && pies[1]) {
+          cardsNow[1].click();
+          const text = modalText ? (modalText.textContent || "") : "";
+          partsOk = text.indexOf(pies[1].parts) !== -1;
+        }
+
+        if (modal) modal.classList.add("hidden");
+        let afterFilterOk = false;
+        if (sweetBtn) {
+          sweetBtn.click();
+          const c = menu && menu.querySelector(".card");
+          if (c) {
+            c.click();
+            afterFilterOk = isOpen(modal);
+          }
+        }
+
+        let closeOk = false;
+        try {
+          if (modalClose && modal && win) {
+            if (allBtn) allBtn.click();
+            const c = menu && menu.querySelector(".card");
+            if (c) {
+              if (!isOpen(modal)) c.click();
+              modalClose.click();
+              const byBtn = !isOpen(modal);
+              c.click();
+              const opened = isOpen(modal);
+              const KE = win.KeyboardEvent;
+              const ev = new KE("keydown", { key: "Escape", bubbles: true });
+              doc.dispatchEvent(ev);
+              const byEsc = !isOpen(modal);
+              closeOk = byBtn && opened && byEsc;
+            }
+          }
+        } catch (e) {
+          closeOk = false;
+        }
+
+        return {
+          nCards: nCards,
+          firstTextOk: firstTextOk,
+          dataIdOk: dataIdOk,
+          emptyOk: emptyOk,
+          loopBad: loopBad,
+          sweetOk: sweetOk,
+          allOk: allOk,
+          cardClickOk: cardClickOk,
+          h3Ok: h3Ok,
+          partsOk: partsOk,
+          afterFilterOk: afterFilterOk,
+          closeOk: closeOk
+        };
+      }
+
+      function testsFor(doc, win, src) {
+        const live = probe(doc, win, src);
+        return [
+          {
+            ok: live.nCards === 4,
+            title: "Меню нарисовано",
+            hint: "Контейнер пустой. Нужна функция отрисовки: собрать разметку через map, склеить через join, положить в menu.innerHTML — и вызвать её один раз после объявления"
+          },
+          {
+            ok: live.firstTextOk,
+            title: "Данные подставлены",
+            hint: "Карточки есть, но данных в них нет. Внутри map подставляй значения через шаблонную строку: `${pie.name}`"
+          },
+          {
+            ok: live.dataIdOk,
+            title: "Карточки связаны с данными",
+            hint: "Без data-id невозможно понять, на какую карточку нажали. Добавь атрибут в шаблон: data-id=\"${pie.id}\""
+          },
+          {
+            ok: live.emptyOk,
+            title: "Пустой случай обработан",
+            hint: "При пустом результате фильтра человек увидит пустоту без объяснения. Проверь pies.length === 0 в начале функции и выведи сообщение"
+          },
+          {
+            ok: !live.loopBad,
+            title: "Отрисовка за одно присваивание",
+            hint: "Присваивание innerHTML внутри цикла заставляет браузер перестраивать дерево на каждом шаге. Собери всю строку через map и join, положи один раз"
+          },
+          {
+            ok: live.sweetOk,
+            title: "Фильтр работает",
+            hint: "Кнопки фильтра не переключают список. Повесь обработчик на контейнер #filters, прочитай dataset.kind у нажатой кнопки и вызови отрисовку с отфильтрованным массивом"
+          },
+          {
+            ok: live.allOk,
+            title: "Возврат ко всем работает",
+            hint: "Вариант «все» — особый случай: фильтровать не надо, надо отрисовать исходный массив целиком"
+          },
+          {
+            ok: live.cardClickOk,
+            title: "Окно открывается",
+            hint: "Нажатие по карточке ничего не делает. Повесь обработчик на #menu — карточек в момент запуска скрипта ещё нет, и вешать на них напрямую нельзя"
+          },
+          {
+            ok: live.h3Ok,
+            title: "Работает нажатие по любому месту карточки",
+            hint: "Нажатие по краю карточки срабатывает, а по заголовку нет. Значит, ты берёшь event.target напрямую — а это то, по чему нажали, то есть сам заголовок. Поднимись до карточки: event.target.closest(\".card\")"
+          },
+          {
+            ok: live.partsOk,
+            title: "Состав подставлен верно",
+            hint: "В окно попадает не тот состав. Найди пирог по data-id нажатой карточки через find и возьми его поле parts"
+          },
+          {
+            ok: live.afterFilterOk,
+            title: "Работает после фильтрации",
+            hint: "До фильтра нажатие работало, после — перестало. Значит, обработчики назначены на сами карточки, а перерисовка их уничтожила. Вешай один обработчик на контейнер #menu"
+          },
+          {
+            ok: live.closeOk,
+            title: "Оба способа закрытия работают",
+            hint: "Окно не закрывается одним из способов. Кнопка: modalClose.addEventListener(\"click\", closeModal). Клавиша: обработчик keydown на document с проверкой event.key === \"Escape\""
+          }
+        ];
+      }
+
+      function maybeUnlock(done) {
+        const unlocked = done || openedHints.size >= 3;
+        if (!unlocked) return;
+        solBody.hidden = false;
+        solutionBox.classList.remove("locked");
+        solGate.textContent = done
+          ? "Эталон открыт: все проверки пройдены."
+          : "Эталон открыт: использованы три подсказки.";
+      }
+
+      function renderTests(results) {
+        testList.innerHTML = "";
+        let passed = 0;
+        results.forEach(function (t, i) {
+          if (t.ok) passed += 1;
+          const div = document.createElement("div");
+          div.className = "tm-test " + (t.ok ? "tm-test--ok" : "tm-test--fail");
+          div.style.animationDelay = (i * 40) + "ms";
+          const mark = document.createElement("span");
+          mark.className = "tm-test__mark";
+          mark.textContent = t.ok ? "✅" : "❌";
+          const body = document.createElement("div");
+          const title = document.createElement("div");
+          title.textContent = t.title;
+          body.appendChild(title);
+          if (!t.ok) {
+            const hint = document.createElement("div");
+            hint.className = "tm-test__hint";
+            hint.textContent = t.hint;
+            body.appendChild(hint);
+          }
+          div.appendChild(mark);
+          div.appendChild(body);
+          testList.appendChild(div);
+        });
+        lastPassed = passed;
+        const total = results.length;
+        scoreEl.textContent = passed + " / " + total;
+        scoreline.textContent = passed + " из " + total + " проверок";
+        bar.style.width = (passed / total * 100) + "%";
+        const done = passed === total;
+        badge.textContent = done ? "Задача сдана" : "ещё собираем";
+        badge.className = "pill" + (done ? " ok" : "");
+        maybeUnlock(done);
+        return done;
+      }
+
+      function run() {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        clearTimeout(debounceId);
+        const source = editor.value;
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const doc = preview.contentDocument;
+          const win = preview.contentWindow;
+          if (!doc || !doc.body) {
+            renderTests([{ ok: false, title: "Документ не разобрался", hint: "Проверьте незакрытые теги и скобки в script." }]);
+            return;
+          }
+          renderTests(testsFor(doc, win, source));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(finish, 60);
+        });
+        previewDoc();
+        setTimeout(function () { if (!finished) finish(); }, 1200);
+      }
+
+      document.getElementById("checkBtn").addEventListener("click", run);
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!window.confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        if (mode === "blocks") {
+          fillBlocks();
+          editor.value = htmlFromBlocks();
+        } else {
+          editor.value = starter;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+        }
+        previewDoc();
+        testList.innerHTML = "";
+        scoreEl.textContent = "0 / 0";
+        scoreline.textContent = "0 из 12 проверок";
+        bar.style.width = "0";
+        badge.textContent = "ещё собираем";
+        badge.className = "pill";
+      });
+      document.getElementById("saveBtn").addEventListener("click", function () {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "l10-dom.html";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const root = document.documentElement;
+        const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+      });
+      document.querySelectorAll("[data-hint]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const n = btn.getAttribute("data-hint");
+          openedHints.add(n);
+          document.getElementById("h" + n).classList.add("open");
+          hintCountEl.textContent = String(openedHints.size);
+          honesty.textContent = openedHints.size
+            ? "Открыты подсказки: " + Array.from(openedHints).map(function (x) { return Number(x) + 1; }).join(", ") + "."
+            : "";
+          maybeUnlock(lastPassed === TOTAL);
+        });
+      });
+
+      fillBlocks();
+      bindBlocks();
+      document.getElementById("modeCodeBtn").addEventListener("click", function () { setMode("code"); });
+      document.getElementById("modeBlocksBtn").addEventListener("click", function () { setMode("blocks"); });
+      try {
+        editor.value = localStorage.getItem(KEY) || starter;
+      } catch (e) {
+        editor.value = starter;
+      }
+      try {
+        const savedMode = localStorage.getItem(MODE_KEY);
+        if (savedMode === "blocks" || savedMode === "code") mode = savedMode;
+      } catch (e) {}
+      setMode(mode);
+    })();
+  </script>
+</body>
+</html>

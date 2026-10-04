@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 22 · Чек-лист спринта 3 · MVP</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-pill.is-done { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    .course-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    h2 { font-size: 1.15rem; margin: 0 0 12px; }
+    .mark { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .2em .7em; margin-left: .4em; vertical-align: middle; }
+    html[data-theme="dark"] .mark { color: var(--tm-green); }
+    .item { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--tm-border); }
+    .item.is-base { border-left: 4px solid var(--tm-green-dark); padding-left: 10px; }
+    .item input { width: 22px; height: 22px; margin-top: 4px; accent-color: var(--tm-green); }
+    .item input:disabled { opacity: .7; cursor: default; }
+    .item__title { font-weight: 600; }
+    .item__how { margin: 6px 0 0; color: var(--tm-muted); font-size: .95em; }
+    .item__how strong { color: var(--tm-text); font-weight: 700; }
+    .tm-progress { display: grid; grid-template-columns: repeat(23, 1fr); gap: 3px; margin: 12px 0 0; }
+    .tm-progress__cell { height: 12px; border: 0; border-radius: var(--tm-radius-pill); background: var(--tm-border); padding: 0; cursor: pointer; }
+    .tm-progress__cell.is-on { background: var(--tm-green); }
+    .tm-progress__cell.is-base { box-shadow: inset 0 0 0 2px var(--tm-green-dark); background: var(--tm-border); }
+    .tm-progress__cell.is-base.is-on { background: var(--tm-green-dark); box-shadow: none; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
+    .result p { margin: 0 0 8px; }
+    .result--ok { color: var(--tm-ok); font-weight: 700; }
+    .result--fail { color: var(--tm-fail); font-weight: 700; }
+    .advice { margin: 12px 0 0; padding: 12px 14px; background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); color: var(--tm-text); }
+    .extra { border-top: 2px dashed var(--tm-border); }
+    .note { color: var(--tm-muted); font-size: .95em; margin: 0 0 12px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+    .scenario { background: var(--tm-bg-alt); border-radius: var(--tm-radius-sm); padding: 8px 12px 4px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 22 · ЧЕК-ЛИСТ</span>
+  <h1 class="topbar__title">Спринт 3: MVP</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 23</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<nav class="course-links" aria-label="Соседние материалы">
+  <a class="tm-btn tm-btn--ghost" href="L22_presentation.html">Презентация</a>
+  <a class="tm-btn tm-btn--ghost" href="../L21/L21_checklist.html">Занятие 21</a>
+  <a class="tm-btn tm-btn--ghost" href="../L23/L23_trainer_qa.html">Занятие 23</a>
+</nav>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► СПРИНТ 3 ИЗ ЧЕТЫРЁХ</p>
+  <p>Сегодня контрольная точка: MVP. Отметь то, что уже работает, затем пройди сценарий приёмки — <strong>в приватном окне браузера</strong>. Пункты с пометкой <strong>базовый блок</strong> обязательны. Пункт 23 засчитывается только при всех восьми шагах сценария. Чек-лист сам проект не проверяет.</p>
+</section>
+
+<div class="tm-card">
+  <p class="tm-eyebrow">►► ПРОГРЕСС</p>
+  <div class="tm-progress" id="bar" aria-label="Прогресс по пунктам. Тёмно-зелёные деления — базовый блок."></div>
+</div>
+
+<div id="groups"></div>
+
+<section class="tm-card" id="scenarioCard">
+  <p class="tm-eyebrow">►► СЦЕНАРИЙ ПРИЁМКИ</p>
+  <p class="note">Восемь отдельных чекбоксов. Отмечай только после реального выполнения, по публичной ссылке, в приватном окне. Частичного прохождения нет: пункт 23 закрывается, когда отмечены все восемь.</p>
+  <div id="scenarioList"></div>
+</section>
+
+<section class="tm-card extra">
+  <p class="tm-eyebrow">►► ЕСЛИ ОСТАНЕТСЯ ВРЕМЯ</p>
+  <p class="note">Эти пункты не влияют на закрытие спринта и на MVP. Отметь, если успел.</p>
+  <div id="extraList"></div>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+</div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+
+<details class="teacher tm-card">
+  <summary>Карточка педагога</summary>
+  <ul class="tm-list">
+    <li><strong>Навык:</strong> сохранение, тёмная тема, приёмка MVP своими руками.</li>
+    <li><strong>Зачёт:</strong> пункты 1, 2, 6, 7, 10, 23 и не меньше 17 из 23. Пункт 23 — только при восьми шагах сценария.</li>
+    <li><strong>Пункты 1 и 2 оба обязательны:</strong> нет сохранения вообще и сохранение только при добавлении — разные ошибки.</li>
+    <li><strong>Первый визит:</strong> только приватное окно. В обычном хранилище уже заполнено.</li>
+    <li><strong>Если MVP не достигнут:</strong> тот же текст про сокращение объёма, без осуждения.</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  const DRAFT_KEY = "wdc-l22-checklist-v1";
+  const BASE = [1, 2, 6, 7, 10, 23];
+  const TOTAL = 23;
+  const MIN = 17;
+  const ADVICE = "На занятии 23 объём проекта сокращается, а не догоняется. Вычеркни вторую часть backlog целиком, упрости обязательные задачи до минимума, а несделанное запиши в «известные ограничения» README. Проект из четырёх работающих возможностей защищается; из десяти начатых — нет.";
+  const GROUPS = [
+    {
+      title: "Группа 1. Сохранение и восстановление",
+      items: [
+        { n: 1, base: true, t: "Запись переживает перезагрузку страницы", how: "Добавь запись, нажми Ctrl+F5: она на месте" },
+        { n: 2, base: true, t: "Сохранение вызывается после каждого изменения, а не только при добавлении", how: "Измени или удали запись, перезагрузи: изменение сохранилось" },
+        { n: 3, base: false, t: "В хранилище лежит читаемый JSON", how: "DevTools → Application → Local Storage: в значении видны фигурные скобки и имена полей, а не [object Object]" },
+        { n: 4, base: false, t: "Ключ с префиксом проекта и версией", how: "Там же: имя ключа вида p0N-items-v1, а не items или data" },
+        { n: 5, base: false, t: "Данные восстанавливаются до отрисовки, при загрузке", how: "Обнови страницу и смотри: список появляется сразу заполненным, а не пустым с последующим наполнением" },
+        { n: 6, base: true, t: "Испорченное значение не роняет страницу", how: "В Application сотри в значении последнюю скобку, обнови: страница работает, список пуст, в консоли предупреждение. Верни или очисти ключ" },
+        { n: 7, base: true, t: "Первый визит работает", how: "Открой публичную ссылку в приватном окне: пустой список с объяснением, консоль чистая" }
+      ]
+    },
+    {
+      title: "Группа 2. Тёмная тема",
+      items: [
+        { n: 8, base: false, t: "Тема переключается кнопкой", how: "Нажми переключатель: цвета сменились целиком, включая карточки и подвал" },
+        { n: 9, base: false, t: "Тема сделана переопределением токенов", how: "Открой style.css: блок html[data-theme=\"dark\"] содержит те же имена переменных, что и :root, и не дублирует правила ниже" },
+        { n: 10, base: true, t: "Выбор темы сохраняется", how: "Переключи тему, обнови страницу: тема осталась" },
+        { n: 11, base: false, t: "Тема применяется до отрисовки", how: "Обнови страницу с тёмной темой: белой вспышки быть не должно" },
+        { n: 12, base: false, t: "У кнопки темы есть aria-label", how: "DevTools → Elements, найди кнопку: атрибут на месте, текст осмысленный" }
+      ]
+    },
+    {
+      title: "Группа 3. Микроанимации",
+      items: [
+        { n: 13, base: false, t: "Есть анимация наведения", how: "Наведи курсор на карточку: изменение плавное и туда, и обратно" },
+        { n: 14, base: false, t: "Есть анимация нажатия", how: "Нажми и подержи кнопку: она реагирует" },
+        { n: 15, base: false, t: "transition в базовом правиле, а не внутри :hover", how: "Наведи и отведи курсор: обратное изменение такое же плавное, без рывка" },
+        { n: 16, base: false, t: "Длительности в пределах 120–250 мс, анимируются transform и opacity", how: "Поиск по style.css на transition: значения в этом диапазоне, среди свойств нет width, height, margin, all" },
+        { n: 17, base: false, t: "Есть блок prefers-reduced-motion", how: "Поиск по style.css: блок присутствует в конце файла" },
+        { n: 18, base: false, t: "Анимаций не больше трёх, список выглядит спокойно", how: "Проведи курсором по списку сверху вниз: ничего не прыгает и не рябит" }
+      ]
+    },
+    {
+      title: "Группа 4. Завершение и приёмка",
+      items: [
+        { n: 19, base: false, t: "Вторая функция отрефакторена, протокол заполнен", how: "Открой BOARD.md или свой протокол: четыре случая, во всех «совпало»" },
+        { n: 20, base: false, t: "Не меньше двух коммитов, работа велась в ветках", how: "git log --oneline --graph; на странице репозитория закрытые PR" },
+        { n: 21, base: false, t: "В консоли нет ошибок, на 320 px ничего не выезжает", how: "DevTools → Console и режим устройства, по публичной ссылке" },
+        { n: 22, base: false, t: "BOARD.md обновлён", how: "Открой на странице репозитория: закрытое в «Сделано», дата изменена" },
+        { n: 23, base: true, derived: true, t: "Сценарий приёмки пройден самостоятельно", how: "Восемь шагов ниже, в приватном окне, по публичной ссылке" }
+      ]
+    }
+  ];
+  const SCENARIO = [
+    { n: 1, t: "Открыл публичную ссылку в приватном окне — пусто и работает" },
+    { n: 2, t: "Добавил запись — появилась" },
+    { n: 3, t: "Отправил пустую форму — сообщение, запись не добавилась" },
+    { n: 4, t: "Обновил страницу — запись на месте" },
+    { n: 5, t: "Переключил тему и обновил — тема сохранилась" },
+    { n: 6, t: "Network → Offline, обновил — фолбэк и честная пометка" },
+    { n: 7, t: "Ширина 320 px — один столбец, прокрутки нет" },
+    { n: 8, t: "Console — пусто" }
+  ];
+  const EXTRA = [
+    { n: 1, t: "Третья микроанимация: появление карточки при добавлении." },
+    { n: 2, t: "Кэш последнего успешного ответа API, если не сделан на занятии 21." },
+    { n: 3, t: "Проверка совместимости: новое необязательное поле и значение по умолчанию при чтении." },
+    { n: 4, t: "Черновик README.md: название, ссылка, стек, две строки про рефакторинги." }
+  ];
+
+  let checked = [];
+  let scenario = [];
+  let extra = [];
+
+  const groupsEl = document.getElementById("groups");
+  const extraEl = document.getElementById("extraList");
+  const scenarioEl = document.getElementById("scenarioList");
+  const testsEl = document.getElementById("tests");
+  const scoreEl = document.getElementById("score");
+  const barEl = document.getElementById("bar");
+
+  function has(arr, n) { return arr.indexOf(n) !== -1; }
+  function toggle(arr, n, on) {
+    const i = arr.indexOf(n);
+    if (on && i === -1) arr.push(n);
+    if (!on && i !== -1) arr.splice(i, 1);
+    arr.sort(function (a, b) { return a - b; });
+  }
+  function scenarioDone() {
+    return scenario.length === 8 && [1, 2, 3, 4, 5, 6, 7, 8].every(function (n) { return has(scenario, n); });
+  }
+  function syncItem23() {
+    toggle(checked, 23, scenarioDone());
+  }
+  function effectiveChecked() {
+    const list = checked.filter(function (n) { return n !== 23; });
+    if (scenarioDone()) list.push(23);
+    list.sort(function (a, b) { return a - b; });
+    return list;
+  }
+
+  function saveDraft() {
+    const data = {
+      checked: checked.filter(function (n) { return n !== 23; }),
+      scenario: scenario.slice(),
+      extra: extra.slice(),
+      updatedAt: "занятие 22"
+    };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") return;
+    if (Array.isArray(data.checked)) checked = data.checked.map(Number).filter(function (n) { return n >= 1 && n <= 22; });
+    if (Array.isArray(data.scenario)) scenario = data.scenario.map(Number).filter(function (n) { return n >= 1 && n <= 8; });
+    if (Array.isArray(data.extra)) extra = data.extra.map(Number).filter(function (n) { return n >= 1 && n <= EXTRA.length; });
+    syncItem23();
+  }
+
+  function renderItem(item) {
+    const row = document.createElement("label");
+    row.className = "item" + (item.base ? " is-base" : "");
+    row.id = "item-" + item.n;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    if (item.derived) {
+      input.checked = scenarioDone();
+      input.disabled = true;
+      input.title = "Отметь все восемь шагов сценария приёмки";
+    } else {
+      input.checked = has(checked, item.n);
+      input.addEventListener("change", function () {
+        toggle(checked, item.n, input.checked);
+        paintBar();
+        saveDraft();
+      });
+    }
+    const body = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "item__title";
+    title.textContent = item.n + ". " + item.t;
+    if (item.base) {
+      const mark = document.createElement("span");
+      mark.className = "mark";
+      mark.textContent = "базовый блок";
+      title.appendChild(document.createTextNode(" "));
+      title.appendChild(mark);
+    }
+    const how = document.createElement("p");
+    how.className = "item__how";
+    const k = document.createElement("strong");
+    k.textContent = "Как проверить. ";
+    how.appendChild(k);
+    how.appendChild(document.createTextNode(item.how));
+    body.appendChild(title);
+    body.appendChild(how);
+    row.appendChild(input);
+    row.appendChild(body);
+    return row;
+  }
+
+  function renderScenario() {
+    scenarioEl.innerHTML = "";
+    SCENARIO.forEach(function (item) {
+      const row = document.createElement("label");
+      row.className = "item";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = has(scenario, item.n);
+      input.addEventListener("change", function () {
+        toggle(scenario, item.n, input.checked);
+        syncItem23();
+        const box = document.querySelector("#item-23 input");
+        if (box) box.checked = scenarioDone();
+        paintBar();
+        saveDraft();
+      });
+      const body = document.createElement("div");
+      body.className = "item__title";
+      body.textContent = item.n + ". " + item.t;
+      row.appendChild(input);
+      row.appendChild(body);
+      scenarioEl.appendChild(row);
+    });
+  }
+
+  function render() {
+    groupsEl.innerHTML = "";
+    GROUPS.forEach(function (g) {
+      const card = document.createElement("section");
+      card.className = "tm-card";
+      const h = document.createElement("h2");
+      h.textContent = g.title;
+      card.appendChild(h);
+      g.items.forEach(function (item) { card.appendChild(renderItem(item)); });
+      groupsEl.appendChild(card);
+    });
+    extraEl.innerHTML = "";
+    EXTRA.forEach(function (item) {
+      const row = document.createElement("label");
+      row.className = "item";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = has(extra, item.n);
+      input.addEventListener("change", function () {
+        toggle(extra, item.n, input.checked);
+        saveDraft();
+      });
+      const body = document.createElement("div");
+      body.className = "item__title";
+      body.textContent = item.t;
+      row.appendChild(input);
+      row.appendChild(body);
+      extraEl.appendChild(row);
+    });
+    renderScenario();
+    paintBar();
+  }
+
+  function paintBar() {
+    const on = effectiveChecked();
+    barEl.innerHTML = "";
+    for (let i = 1; i <= TOTAL; i++) {
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "tm-progress__cell";
+      if (BASE.indexOf(i) !== -1) cell.classList.add("is-base");
+      if (has(on, i)) cell.classList.add("is-on");
+      cell.title = "Пункт " + i;
+      cell.addEventListener("click", function () {
+        const el = document.getElementById(i === 23 ? "scenarioCard" : "item-" + i);
+        if (el) el.scrollIntoView({ block: "center" });
+      });
+      barEl.appendChild(cell);
+    }
+    scoreEl.textContent = on.length + " / " + TOTAL;
+  }
+
+  function missingBase() {
+    const on = effectiveChecked();
+    return BASE.filter(function (n) { return !has(on, n); });
+  }
+
+  function runChecks() {
+    const on = effectiveChecked();
+    const n = on.length;
+    const scen = scenario.length;
+    const miss = missingBase();
+    const baseOk = miss.length === 0;
+    const closed = baseOk && n >= MIN;
+    const lines = [];
+    lines.push("Закрыто " + n + " из " + TOTAL);
+    lines.push("Сценарий приёмки: " + scen + " из 8");
+    if (baseOk) lines.push("Базовый блок: закрыт");
+    else lines.push("Базовый блок: не закрыт — не хватает: " + miss.join(", "));
+    if (closed) {
+      lines.push("MVP достигнут");
+    } else {
+      const why = [];
+      if (!baseOk) why.push("пункты базового блока " + miss.join(", "));
+      if (n < MIN) why.push("отметок " + n + " из " + TOTAL + ", нужно не меньше " + MIN);
+      if (!scenarioDone()) why.push("сценарий приёмки " + scen + " из 8 — пункт 23 засчитывается только при всех восьми");
+      lines.push("MVP не достигнут: " + why.join("; "));
+    }
+    let html = lines.map(function (t, i) {
+      const last = i === lines.length - 1;
+      const cls = last ? (closed ? "result--ok" : "result--fail") : "";
+      return "<p class=\"" + cls + "\">" + t + "</p>";
+    }).join("");
+    if (!closed) {
+      html += "<p class=\"advice\">" + ADVICE + "</p>";
+    }
+    testsEl.innerHTML = html;
+    scoreEl.classList.toggle("is-done", closed);
+  }
+
+  loadDraft();
+  render();
+  document.getElementById("checkBtn").addEventListener("click", runChecks);
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Сбросить все отметки чек-листа и сценария приёмки?")) return;
+    checked = [];
+    scenario = [];
+    extra = [];
+    testsEl.innerHTML = "";
+    scoreEl.classList.remove("is-done");
+    render();
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  });
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+})();
+</script>
+</body>
+</html>

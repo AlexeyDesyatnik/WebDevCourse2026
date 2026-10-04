@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 12. Асинхронность и работа с API. Мини-проект</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 12</strong>
+      <span>Асинхронность и работа с API. Мини-проект</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 18</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Сегодня страница покажет данные, которых в её коде нет. И это форма промежуточного контроля» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 4 · ЗАНЯТИЕ 12</p>
+        <h1>Асинхронность и работа с API</h1>
+        <p class="lead">Занятие 12 из 24. <strong>Контрольная точка модуля:</strong> мини-проект с данными от сервера.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L12_trainer_api.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L11/L11_presentation.html">►► Занятие 11</a>
+          <a class="tm-btn tm-btn--ghost" href="../L13/L13_presentation.html">►► Занятие 13</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «В настоящем приложении данные приходят откуда-то ещё. И приходят не сразу» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Не переписывать же страницу каждое утро»</h2>
+        <p>Марина Петровна: «Меню меняется каждый день». Пока шесть пирогов зашиты в код: изменилось меню — правь программу</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Даже с нулевой задержкой отложенный код идёт после обычного. Кто объяснит?» -->
+        <p class="tm-eyebrow">►► КРЮЧОК</p>
+        <h2>Я писал сверху вниз. Вывелось не так</h2>
+        <p>В консоли: «начали», «закончили», «прошло ноль секунд», «прошла секунда». Хотя в коде порядок другой</p>
+        <pre class="tm-code">console.log("1. начали");
+setTimeout(() =&gt; console.log("2"), 1000);
+setTimeout(() =&gt; console.log("3"), 0);
+console.log("4. закончили");</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Поставил чайник и ушёл делать уроки. Свисток позвал — вернулся» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Асинхронность</h2>
+        <ul class="tm-list">
+          <li>Запрос к серверу занимает время</li>
+          <li>Браузер не останавливается — иначе страница замрёт целиком</li>
+          <li>Он запускает долгое дело и <strong>идёт дальше</strong></li>
+          <li>Результат обрабатывается, когда придёт</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Первая из трёх точек, где ломается это занятие. Дальше разберём, как ждать правильно» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Использовать результат, не дождавшись</h2>
+        <p>Через полсекунды переменная изменится. Но вывод уже произошёл — там <code>null</code></p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <pre class="tm-code">let menu = null;
+setTimeout(() =&gt; { menu = ["Калитка", "Рыбник"]; }, 500);
+console.log(menu.length);   // ошибка</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Талон в буфете. Не пирог, а обещание, что пирог будет» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2><code>Promise</code>: обещание результата</h2>
+        <ul class="tm-list">
+          <li>Результата пока нет, но он будет</li>
+          <li><strong>Ровно два исхода:</strong> получилось или нет</li>
+          <li><code>resolve</code> — получилось, <code>reject</code> — нет</li>
+          <li>Обещание можно вернуть из функции и передать дальше</li>
+        </ul>
+        <pre class="tm-code">return new Promise((resolve, reject) =&gt; {
+<span class="hl">  resolve(MENU);</span>
+});</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Без async браузер скажет прямо: await is only valid in async functions» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>async</code> и <code>await</code></h2>
+        <ul class="tm-list">
+          <li><code>await</code> — «подожди здесь результат»</li>
+          <li>Браузер при этом не заблокирован</li>
+          <li><code>async</code> перед функцией <strong>обязателен</strong></li>
+          <li>Код читается сверху вниз, как обычный</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">async function loadMenu() {</span>
+<span class="hl">  const menu = await getMenu();</span>
+  renderMenu(menu);
+}</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>Сеть работает. Сервер ответил. А <span class="hl">данных нет</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Вторая точка поломки. Сейчас покажу режим «ошибка сервера» без этой проверки» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Проверять надо <strong>что</strong> ответил сервер</h2>
+        <ul class="tm-list">
+          <li>Для запроса код 404 или 500 — успех: ответ получен</li>
+          <li>В <code>catch</code> при этом <strong>ничего не попадёт</strong></li>
+          <li>Код ответа проверяем вручную</li>
+          <li><code>throw</code> бросает ошибку сознательно</li>
+        </ul>
+        <pre class="tm-code">if (!response.ok) {
+<span class="hl">  throw new Error("сервер ответил " + response.status);</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Третья точка поломки. Без обработки человек смотрит на крутящийся кружок вечно» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>try</code>, <code>catch</code>, <code>finally</code></h2>
+        <ul class="tm-list">
+          <li><code>try</code> — попробуй</li>
+          <li><code>catch</code> — если сломалось</li>
+          <li><code>finally</code> — <strong>в любом случае</strong>: сюда убираем индикатор</li>
+          <li>Без <code>catch</code> функция оборвётся молча, индикатор зависнет</li>
+        </ul>
+        <pre class="tm-code">try {
+  const response = await getMenuFromServer(mode);
+} catch (error) {
+<span class="hl">  renderMenu(FALLBACK.items);</span>
+} finally {
+<span class="hl">  btn.disabled = false;</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Подумайте, что видит человек в разных ситуациях» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Сколько состояний у экрана, который получает данные извне?</h2>
+        <p>Обсуждаем вслух. Большинство назовёт одно или два</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Приложение с одним состоянием кажется сломанным в трёх случаях из четырёх» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Четыре состояния</h2>
+        <ul class="tm-list">
+          <li><strong>Загрузка</strong> — индикатор и заблокированная кнопка</li>
+          <li><strong>Данные</strong> — то, ради чего всё</li>
+          <li><strong>Пусто</strong> — ответ пришёл, данных нет</li>
+          <li><strong>Ошибка</strong> — сеть или сервер подвели</li>
+        </ul>
+        <p>Новички делают только второе</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас включу медленный режим без индикатора. Считайте, сколько раз захочется нажать» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Нет индикатора — нажмут пять раз</h2>
+        <p>Две секунды тишины. Человек не знает, работает ли кнопка. Уходит пять запросов, результаты накладываются</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <pre class="tm-code">async function loadMenu() {
+  const r = await getMenuFromServer("slow");
+  renderMenu(r.data.items);
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Вот это вы покажете на защите, когда откажет интернет. И это требование ТЗ, а не запасной вариант» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Фолбэк: план на случай, когда сети нет</h2>
+        <ul class="tm-list">
+          <li>Константа с сохранённым ответом</li>
+          <li>При сбое показываем её</li>
+          <li><strong>И честно говорим, что данные из копии</strong></li>
+          <li>Пишется <strong>раньше</strong> запроса, а не «если останется время»</li>
+        </ul>
+        <pre class="tm-code">} catch (error) {
+<span class="hl">  renderMenu(FALLBACK.items);</span>
+<span class="hl">  showNotice("Меню из сохранённой копии", true);</span>
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Тихая подмена данных хуже честной ошибки. Ошибку человек понимает, подмену — нет» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Фолбэк без сообщения</h2>
+        <p>Человек видит вчерашнее меню и думает, что оно сегодняшнее. Приходит за рыбником, которого не пекли</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Нет пометки</p>
+          <pre class="tm-code">} catch (error) {
+  renderMenu(FALLBACK.items);
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Запишите. Этот список пригодится вам на занятии 21 и на защите» -->
+        <p class="tm-eyebrow">►► ЧЕК-ЛИСТ</p>
+        <h2>Пять пунктов для любого запроса</h2>
+        <ul class="tm-list">
+          <li><strong>1. Отправили</strong> — показали загрузку, заблокировали кнопку</li>
+          <li><strong>2. Дождались</strong> — <code>await</code> в <code>async</code>-функции</li>
+          <li><strong>3. Проверили ответ</strong> — код ответа и пустой список</li>
+          <li><strong>4. Вывели данные</strong> — на страницу, а не в консоль</li>
+          <li><strong>5. Предусмотрели ошибку</strong> — <code>catch</code>, фолбэк, пометка</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Это форма промежуточного контроля модуля. Проверяю открытием страницы: на ней должны быть данные» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА · КОНТРОЛЬНАЯ ТОЧКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Меню приходит «с сервера», а не из кода</li>
+          <li>Четыре состояния интерфейса</li>
+          <li>Пять режимов проверки: работает, медленно, пусто, ошибка, нет сети</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> данные видны на странице; все пять режимов дают осмысленное поведение; при сбое — меню из копии с пометкой</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L12_trainer_api.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольная проверка: попросите написать загрузку, не упоминая ошибки. Получите чистый счастливый путь — и найдёте, чего в нём нет» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: что может пойти не так</h2>
+        <pre class="tm-code">Ты составляешь список проверок для кода начинающего разработчика.
+Контекст: учебная страница школьного буфета получает «меню дня» от сервера. Чистый JavaScript, без библиотек. Ученик знает: функции, массивы объектов, DOM, addEventListener, Promise, async/await, try/catch. В коде используется учебная функция вместо fetch, возвращающая объект с полями ok, status, data.
+Задача: перечисли, что может пойти не так при загрузке данных, и что должен увидеть человек в каждом случае.
+Ограничения: не предлагай библиотеки, axios, React и серверный код; не переписывай мой код; рассматривай только то, что видит пользователь на экране; не больше шести случаев; пиши по-русски.
+Формат ответа: таблица из четырёх колонок — что случилось, что увидит пользователь без обработки, что должен увидеть, какой код это обеспечивает (одна-две строки).
+Критерии проверки: перечислены как минимум сбой сети, ошибочный код ответа, пустой ответ и долгое ожидание; для каждого случая описано, что видно на экране, а не только что в консоли.</pre>
+        <p><strong>Проверить руками:</strong> все четыре случая перечислены · различает сбой сети и код ответа · описано, что видно на экране · нет советов про библиотеки · проверено в тренажёре · нет лишнего</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 12</h3>
+      <dl>
+        <dt>Синхронный код</dt>
+        <dd>Выполняется строка за строкой, по порядку. Всё, что ты писал до этого занятия.</dd>
+        <dt>Асинхронный код</dt>
+        <dd>Запускает долгое дело и не ждёт его, продолжая работу. Результат обрабатывается, когда придёт.</dd>
+        <dt>setTimeout</dt>
+        <dd>Отложить выполнение на указанное время. Самый простой пример асинхронности.</dd>
+        <dt>Promise</dt>
+        <dd>Обещание, что результат появится позже. Ровно два исхода: получилось или нет.</dd>
+        <dt>resolve</dt>
+        <dd>Вызвать, когда получилось. Передаваемое значение станет результатом.</dd>
+        <dt>reject</dt>
+        <dd>Вызвать, когда не получилось. Передаваемое значение станет причиной ошибки.</dd>
+        <dt>then / catch</dt>
+        <dd>Что делать при успехе и при неудаче обещания. Более старая запись.</dd>
+        <dt>async</dt>
+        <dd>Слово перед функцией, разрешающее использовать внутри await.</dd>
+        <dt>await</dt>
+        <dd>«Подожди здесь результат». Останавливает выполнение функции, не блокируя браузер.</dd>
+        <dt>try / catch</dt>
+        <dd>«Попробуй выполнить» и «если сломалось, сделай вот это».</dd>
+        <dt>finally</dt>
+        <dd>Блок, выполняющийся в любом случае: и при успехе, и при ошибке. Место для скрытия индикатора.</dd>
+        <dt>throw</dt>
+        <dd>Бросить ошибку сознательно. Нужен, когда сервер ответил кодом ошибки.</dd>
+        <dt>fetch</dt>
+        <dd>Встроенная функция запроса данных у сервера. Возвращает Promise.</dd>
+        <dt>response.ok</dt>
+        <dd>true, если код ответа 200–299. Проверять вручную: ошибочный код не попадает в catch.</dd>
+        <dt>response.status</dt>
+        <dd>Числовой код ответа сервера: 200, 404, 500.</dd>
+        <dt>JSON</dt>
+        <dd>Текстовый формат обмена данными. Похож на объект JavaScript, но это строка.</dd>
+        <dt>JSON.parse / JSON.stringify</dt>
+        <dd>Превратить текст в объект и наоборот.</dd>
+        <dt>Состояние загрузки</dt>
+        <dd>То, что видит человек, пока данных ещё нет: индикатор и заблокированная кнопка.</dd>
+        <dt>Состояние «пусто»</dt>
+        <dd>Ответ пришёл, данных нет. Не ошибка: сообщение спокойное.</dd>
+        <dt>Фолбэк</dt>
+        <dd>Запасной источник данных на случай, когда основной недоступен. В проекте обязателен и пишется раньше запроса.</dd>
+        <dt>Чек-лист запроса</dt>
+        <dd>Отправили → дождались → проверили ответ → вывели данные → предусмотрели сообщение об ошибке.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

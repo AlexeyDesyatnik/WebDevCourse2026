@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 8. JavaScript: основы языка</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 8</strong>
+      <span>JavaScript: основы языка</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «Семь занятий страница только показывала. Сегодня она начнёт считать» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 4 · ЗАНЯТИЕ 8</p>
+        <h1>JavaScript: основы языка</h1>
+        <p class="lead">Занятие 8 из 24. Начинается самый большой модуль программы: страница учится думать.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L07/L07_presentation.html">►► Занятие 7</a>
+          <a class="tm-btn tm-btn--primary" href="L08_trainer_js.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L09/L09_presentation.html">►► Занятие 9</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сегодня разметку вам выдадут готовой. Писать будете только логику — это и есть новая тема» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Пусть сразу считает, сколько выйдет»</h2>
+        <p>Марина Петровна: «А то ребёнок берёт три калитки и шаньгу, а на кассе выясняется, что денег не хватает»</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас я поставлю его в head и покажу, что будет. Смотрите на консоль» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Скрипт подключают в конце <code>&lt;body&gt;</code></h2>
+        <ul class="tm-list">
+          <li>Браузер читает документ сверху вниз</li>
+          <li>Скрипт в <code>&lt;head&gt;</code> выполнится <strong>до</strong> разметки</li>
+          <li>Найти кнопку, которой ещё нет, нельзя</li>
+        </ul>
+        <pre class="tm-code">&lt;body&gt;
+  &lt;button id="btn"&gt;Посчитать&lt;/button&gt;
+<span class="hl">  &lt;script&gt;
+    const btn = document.getElementById("btn");
+  &lt;/script&gt;</span>
+&lt;/body&gt;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Пишите const. Меняете на let только когда действительно понадобилось менять» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Переменные: <code>const</code> по умолчанию</h2>
+        <ul class="tm-list">
+          <li><code>const</code> — значение не меняется</li>
+          <li><code>let</code> — меняется</li>
+          <li><code>var</code> — устаревшее, на курсе не пишем</li>
+          <li>Имя говорит, что внутри: <code>price</code>, а не <code>x</code></li>
+        </ul>
+        <pre class="tm-code"><span class="hl">const PRICE = 45;</span>
+let count = 3;
+let total = PRICE * count;</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>Сейчас сорок пять плюс десять даст <span class="hl">четыреста пятьдесят один</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Это главная ловушка занятия. Из неё растёт половина сегодняшних ошибок» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Число и строка — разные вещи</h2>
+        <ul class="tm-list">
+          <li>Число складывают: <code>45 + 10</code> = <code>55</code></li>
+          <li>Строку склеивают: <code>"45" + 10</code> = <code>"4510"</code></li>
+          <li><strong>Значение из поля ввода — всегда строка</strong></li>
+          <li>Даже если поле <code>type="number"</code></li>
+        </ul>
+        <pre class="tm-code">console.log(typeof input.value);
+<span class="hl">// "string", даже если введено 3</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Не надейтесь, что оператор разберётся. Преобразуйте на входе» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Преобразуй сразу при получении</h2>
+        <p><code>Number()</code> превращает строку в число. Не получилось — вернёт <code>NaN</code>, и оно заразно: попадёт во всё вычисление</p>
+        <pre class="tm-code">const raw = input.value;   // "3"
+<span class="hl">const count = Number(raw); // 3</span>
+const total = PRICE * count;</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Подсказка: что могло лежать в поле?» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>На странице «Итого: NaN ₽». Что случилось?</h2>
+        <p>Обсуждаем вслух. Ответ не показываем</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Функцию можно проверить прямо в консоли, до того как подключать к странице» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Функция: положил данные — получил результат</h2>
+        <ul class="tm-list">
+          <li><code>(price, count)</code> — параметры, вход</li>
+          <li><code>return</code> — то, что функция отдаёт</li>
+          <li>Вызвать можно сколько угодно раз, с разными данными</li>
+        </ul>
+        <pre class="tm-code">function calcTotal(price, count) {
+  const sum = price * count;
+<span class="hl">  return sum;</span>
+}
+calcTotal(45, 3);   // 135</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «console.log — показать себе. return — отдать программе. Разные вещи» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>console.log</code> вместо <code>return</code></h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>В консоли всё верно, а на странице «undefined». Функция показала результат, но не отдала его</p>
+          <pre class="tm-code">function calcTotal(price, count) {
+  console.log(price * count);
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Поставите тройку первой — скидка в тридцать не сработает никогда. Проверьте на пятёрке» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Условие и строгое сравнение</h2>
+        <ul class="tm-list">
+          <li><code>if (count &gt;= 5)</code> … <code>else if (count &gt;= 3)</code></li>
+          <li>Проверяются сверху вниз, срабатывает первое</li>
+          <li>Порядок: <strong>от большего к меньшему</strong></li>
+          <li>Только <code>===</code> и <code>!==</code>. <code>==</code> прячет ошибки</li>
+        </ul>
+        <pre class="tm-code">if (count &gt;= 5) {
+<span class="hl">  return 30;</span>
+} else if (count &gt;= 3) {
+  return 10;
+}</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Скидка при любом количестве. Ищется только чтением или проверкой на разных данных» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Одинарное <code>=</code> в условии</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Записывает 3 в переменную, и условие истинно <strong>всегда</strong>. Ни ошибки, ни предупреждения — программа просто считает неверно</p>
+          <pre class="tm-code">if (count = 3) {
+  total = total - 10;
+}</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Обычные кавычки — и на странице появится сам текст ${total}. Проверьте, какие набрали» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Шаблонная строка</h2>
+        <p>Обратные кавычки — клавиша слева от единицы. Внутри <code>${…}</code> можно писать любое выражение</p>
+        <pre class="tm-code"><span class="hl">`${count} шт. × ${price} ₽ = ${total} ₽`</span>
+// 3 шт. × 45 ₽ = 135 ₽</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Загорелась лампочка на панели — прочитайте её, а не заклеивайте изолентой» -->
+        <p class="tm-eyebrow">►► ЗАЧЕМ</p>
+        <h2>Консоль — не место для ошибок, а инструмент</h2>
+        <ul class="tm-list">
+          <li>Не гадай, что в переменной — <strong>выведи и посмотри</strong></li>
+          <li>Ошибка называет тип, описание и <strong>номер строки</strong></li>
+          <li><code>Cannot read properties of null</code> — скрипт выше разметки или опечатка в <code>id</code></li>
+          <li><code>alert</code> для отладки не используем: он блокирует страницу</li>
+        </ul>
+        <pre class="tm-code">console.log("count:", count, typeof count);</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Разметка выдана. Ваша работа сегодня — только скрипт» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Пишешь функцию подсчёта суммы со скидкой</li>
+          <li>Подключаешь к кнопке, выводишь на страницу</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> значение преобразовано через <code>Number()</code>, вычисление в функции с <code>return</code>, проверено на 1, 3 и 5 штуках, консоль чистая, нет <code>var</code>, <code>==</code> и <code>alert</code></p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L07/L07_presentation.html">►► Занятие 7</a>
+          <a class="tm-btn tm-btn--primary" href="L08_trainer_js.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L09/L09_presentation.html">►► Занятие 9</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сегодня ИИ работает на объяснение, а не на генерацию. Сначала пишете сами, потом просите разобрать и сравниваете. Расхождение — самое ценное» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: объясни мой код построчно</h2>
+        <pre class="tm-code">Ты объясняешь готовый код построчно ученику, который первый день пишет на JavaScript.
+Контекст: страница школьного буфета, счётчик суммы заказа. Только чистый JavaScript, без библиотек и фреймворков. Ученик знает: переменные `const` и `let`, типы число и строка, функции, условие `if`.
+Задача: объясни мой код построчно — что делает каждая строка и что сломается, если её убрать.
+Ограничения: не переписывай мой код и не предлагай улучшений; не используй слова, которых нет в моём коде, без объяснения; не упоминай `var`, стрелочные функции и методы массивов — мы их ещё не проходили; пиши по-русски, короткими предложениями.
+Формат ответа: таблица из трёх колонок — строка кода, что делает, что сломается без неё.
+Критерии проверки: каждая строка моего кода разобрана; в объяснении нет терминов без пояснения; ничего не добавлено сверх того, что есть в коде.
+
+Вот мой код:
+[вставь сюда свою функцию]</pre>
+        <p><strong>Проверить руками:</strong> совпадает ли с твоим пониманием · разобрана каждая строка · нет терминов без пояснения · код не переписан · верно ли про типы · проверь «что сломается» экспериментом</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 8</h3>
+      <dl>
+        <dt>JavaScript</dt>
+        <dd>Язык программирования браузера. Третий слой страницы: поведение.</dd>
+        <dt>Скрипт</dt>
+        <dd>Код на JavaScript, подключённый к странице. Ставится в конце <code>&lt;body&gt;</code>.</dd>
+        <dt>Переменная</dt>
+        <dd>Именованное хранилище для значения.</dd>
+        <dt>const</dt>
+        <dd>Объявление переменной, значение которой не будет меняться. Берётся по умолчанию.</dd>
+        <dt>let</dt>
+        <dd>Объявление переменной, значение которой будет меняться.</dd>
+        <dt>var</dt>
+        <dd>Устаревшее объявление. На курсе не используется; встречается в старом коде и в ответах ИИ.</dd>
+        <dt>Тип данных</dt>
+        <dd>Какого сорта значение: число, строка, логическое.</dd>
+        <dt>Число</dt>
+        <dd>Значение для счёта. Дробные пишутся через точку.</dd>
+        <dt>Строка</dt>
+        <dd>Текст в кавычках. Значение из поля ввода — всегда строка.</dd>
+        <dt>Логическое значение</dt>
+        <dd><code>true</code> или <code>false</code>. Результат любого сравнения.</dd>
+        <dt>typeof</dt>
+        <dd>Оператор, возвращающий название типа значения.</dd>
+        <dt>Number()</dt>
+        <dd>Преобразование строки в число.</dd>
+        <dt>NaN</dt>
+        <dd>«Не число». Результат неудачного преобразования. Распространяется на всё вычисление.</dd>
+        <dt>null</dt>
+        <dd>«Здесь намеренно пусто».</dd>
+        <dt>undefined</dt>
+        <dd>«Сюда ничего не положили». Возвращается функцией без <code>return</code>.</dd>
+        <dt>Оператор</dt>
+        <dd>Знак действия: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>, <code>&gt;</code>, <code>===</code>, <code>&amp;&amp;</code>.</dd>
+        <dt>Склейка</dt>
+        <dd>Поведение <code>+</code> со строками: <code>"45" + 10</code> даёт <code>"4510"</code>.</dd>
+        <dt>Шаблонная строка</dt>
+        <dd>Строка в обратных кавычках со вставкой значений через <code>${…}</code>.</dd>
+        <dt>Функция</dt>
+        <dd>Кусок кода с именем, который принимает данные и возвращает результат.</dd>
+        <dt>Параметр</dt>
+        <dd>Данные, которые функция принимает на вход. Живут только внутри неё.</dd>
+        <dt>return</dt>
+        <dd>То, что функция отдаёт наружу. Завершает выполнение функции.</dd>
+        <dt>Стрелочная функция</dt>
+        <dd>Краткая запись: <code>const calc = (a, b) =&gt; a * b</code>.</dd>
+        <dt>Условие (if)</dt>
+        <dd>Развилка: если условие истинно — одно, иначе — другое.</dd>
+        <dt>===</dt>
+        <dd>Строгое сравнение: сравнивает значение и тип. На курсе используется только оно.</dd>
+        <dt>==</dt>
+        <dd>Нестрогое сравнение: приводит типы друг к другу. Прячет ошибки, на курсе не используется.</dd>
+        <dt>console.log</dt>
+        <dd>Вывод значения в консоль. Показать себе, а не отдать программе.</dd>
+        <dt>Консоль</dt>
+        <dd>Вкладка DevTools с сообщениями браузера. Первое место, куда смотрят при поломке.</dd>
+        <dt>addEventListener</dt>
+        <dd>Назначение обработчика события. Единственный способ, принятый на курсе. Подробно — на занятии 10.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

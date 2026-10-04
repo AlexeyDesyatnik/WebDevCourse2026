@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Кружок веб-разработки · занятия</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 80px; }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .topbar__text { flex: 1; min-width: 16rem; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 52px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 12px;
+    }
+    .lead {
+      margin: 0;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 42ch;
+      line-height: 1.45;
+    }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    a.tm-btn--primary, a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary { color: #111312; }
+    a.tm-btn--ghost, html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+    @media (min-width: 720px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card:hover { box-shadow: var(--tm-shadow-lift); }
+    .num {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+    }
+    html[data-theme="dark"] .num { color: var(--tm-green); }
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card p { margin: 0; color: var(--tm-muted); font-size: 15px; line-height: 1.45; }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="topbar__text">
+        <p class="tm-eyebrow">►► Кружок · 24 занятия</p>
+        <h1>Веб-разработка</h1>
+        <p class="lead">Откройте занятие: презентация, практика и техкарта рядом. Темы итогового Dashboard — отдельной витриной.</p>
+      </div>
+      <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+    </header>
+
+    <div class="grid">
+      <article class="tm-card">
+        <span class="num">►► Занятие 1 · модуль 1</span>
+        <h2>Как устроен сайт</h2>
+        <p>Клиент и сервер, DevTools, правило про ИИ. Код руками не пишем.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L01/L01_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L01/L01_trainer_devtools.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L01/L01_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 2 · модуль 2</span>
+        <h2>HTML5: структура и семантика</h2>
+        <p>Каркас страницы: html, head, body, шапка, один main, подвал, alt.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L02/L02_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L02/L02_trainer_semantic.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L02/L02_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 3 · модуль 2</span>
+        <h2>Формы, таблицы, медиа</h2>
+        <p>Запись в кружок: форма с подписями, таблица меню, фото в figure.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L03/L03_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L03/L03_trainer_form.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L03/L03_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 4 · модуль 3</span>
+        <h2>Селекторы, каскад, переменные</h2>
+        <p>Тема карточки буфета: :root, var(), .card h1 побеждает общее h1.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L04/L04_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L04/L04_trainer_tokens.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L04/L04_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 5 · модуль 3</span>
+        <h2>Flexbox</h2>
+        <p>Герой и ряд карточек пирогов. gap, перенос.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L05/L05_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L05/L05_trainer_flex.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L05/L05_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 6 · модуль 3</span>
+        <h2>CSS Grid и адаптив</h2>
+        <p>Сначала одна колонка, с 720 px — три.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L06/L06_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L06/L06_trainer_grid.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L06/L06_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 7 · модуль 3</span>
+        <h2>Анимации и UI-кит</h2>
+        <p>Кнопки, карточка, transition и одно появление.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L07/L07_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L07/L07_trainer_uikit.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L07/L07_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 8 · модуль 4</span>
+        <h2>Основы JavaScript</h2>
+        <p>Счётчик порций на странице. const, функция, клик.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L08/L08_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L08/L08_trainer_js.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L08/L08_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 9 · модуль 4</span>
+        <h2>Объекты и массивы</h2>
+        <p>Меню из данных: filter и список на экране.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L09/L09_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L09/L09_trainer_data.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L09/L09_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 10 · модуль 4</span>
+        <h2>DOM и события</h2>
+        <p>Модалка «состав пирога». classList, Escape.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L10/L10_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L10/L10_trainer_dom.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L10/L10_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 11 · модуль 4</span>
+        <h2>Валидация форм</h2>
+        <p>preventDefault, пустое имя, «@» в почте, ошибка на странице.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L11/L11_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L11/L11_trainer_validate.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L11/L11_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 12 · модуль 4</span>
+        <h2>fetch и мини-проект</h2>
+        <p>Меню из данных, сбой сети, фолбэк JSON. Промежуточный контроль.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L12/L12_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L12/L12_trainer_api.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L12/L12_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 13 · модуль 5</span>
+        <h2>Git</h2>
+        <p>Commit, diff, ветка. Сообщение описывает реальное изменение.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L13/L13_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L13/L13_trainer_git.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L13/L13_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 14 · модуль 5</span>
+        <h2>Pull Request и ревью</h2>
+        <p>Чужой фрагмент: onclick, var, путь. Промежуточный контроль.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L14/L14_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L14/L14_trainer_pr.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L14/L14_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 15 · модуль 6</span>
+        <h2>Деплой и README</h2>
+        <p>Относительные пути, хостинг статики. Промежуточный контроль.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L15/L15_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L15/L15_trainer_deploy.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L15/L15_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 16 · модуль 7</span>
+        <h2>Prompt Engineering</h2>
+        <p>Банк промптов: контекст, ограничения, критерии.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L16/L16_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L16/L16_trainer_prompts.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L16/L16_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 17 · модуль 7</span>
+        <h2>Прототип и аудит</h2>
+        <p>Галлюцинация setTheming. Протокол аудита.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L17/L17_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L17/L17_trainer_audit.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L17/L17_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 18 · модуль 8</span>
+        <h2>Agile/Scrum, канбан</h2>
+        <p>Стори, три колонки, MVP-граница.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L18/L18_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L18/L18_trainer_kanban.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L18/L18_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 19 · модуль 8</span>
+        <h2>Планирование проекта</h2>
+        <p>Спринт-план занятий 20–23.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L19/L19_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L19/L19_trainer_plan.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L19/L19_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Витрина · модуль 9</span>
+        <h2>Шесть тем Dashboard</h2>
+        <p>P01–P06. Седьмую не выдумываем. Сложность на карточках.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="projects/index.html">►► Витрина тем</a>
+          <a class="tm-btn tm-btn--ghost" href="projects/tz.html">ТЗ программы</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 20 · модуль 9</span>
+        <h2>Старт проекта</h2>
+        <p>Каркас с заглушками, тема в :root, правило работающего билда.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L20/L20_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L20/L20_checklist.html">Чек-лист</a>
+          <a class="tm-btn tm-btn--ghost" href="L20/L20_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 21 · модуль 9</span>
+        <h2>Логика</h2>
+        <p>Состояние, рендер, fetch. Данные на экране, не в консоли.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L21/L21_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L21/L21_checklist.html">Чек-лист</a>
+          <a class="tm-btn tm-btn--ghost" href="L21/L21_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 22 · модуль 9</span>
+        <h2>MVP</h2>
+        <p>localStorage, data-theme, микроанимация. Контрольная точка.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L22/L22_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L22/L22_checklist.html">Чек-лист</a>
+          <a class="tm-btn tm-btn--ghost" href="L22/L22_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 23 · модуль 9</span>
+        <h2>Тест и деплой</h2>
+        <p>Взаимный тест на чужом устройстве, баг-репорт, ограничения README.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L23/L23_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L23/L23_trainer_qa.html">Тренажёр</a>
+          <a class="tm-btn tm-btn--ghost" href="L23/L23_lesson-card.html">Карта</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► Занятие 24 · модуль 9</span>
+        <h2>Публичная защита</h2>
+        <p>3–5 мин: проблема, демо, код, ИИ, улучшение. Лист 30 баллов.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="L24/L24_presentation.html">►► Презентация</a>
+          <a class="tm-btn tm-btn--ghost" href="L24/L24_trainer_defense.html">Карточка защиты</a>
+          <a class="tm-btn tm-btn--ghost" href="L24/L24_lesson-card.html">Карта</a>
+        </div>
+      </article>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

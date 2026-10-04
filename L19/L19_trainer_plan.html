@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 19 · Тренажёр: спринт-план</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 17px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-pill.is-done { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, .opt:focus-visible, .task-card:focus-visible, .zone:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .6em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    .brief .tm-eyebrow { margin: 0 0 8px; display: inline-block; }
+    .hide { display: none !important; }
+    .modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-code-bg); color: var(--tm-code-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 15px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+    h2 { font-size: 1.2rem; margin: 0 0 10px; letter-spacing: -0.02em; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+
+    .case-meter { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 0 0 16px; }
+    .case-meter__seg { height: 10px; border-radius: var(--tm-radius-pill); background: var(--tm-border); }
+    .case-meter__seg.is-on { background: var(--tm-green); }
+
+    .case { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--tm-border); }
+    .case:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+    .case__q { font-weight: 700; margin: 0 0 10px; }
+    .opts { display: grid; gap: 8px; }
+    .opt {
+      text-align: left; font: inherit; font-weight: 600; padding: 12px 14px;
+      border: 2px solid var(--tm-border); border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt); color: var(--tm-text); cursor: pointer;
+    }
+    .opt.is-on { border-color: var(--tm-green); background: var(--tm-green-soft); }
+
+    .sprint-layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 960px) {
+      .sprint-layout { grid-template-columns: minmax(240px, 280px) 1fr; align-items: start; }
+    }
+    .pool {
+      min-height: 120px; padding: 10px; border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt);
+    }
+    .pool.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .zones { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 720px) { .zones { grid-template-columns: 1fr 1fr; } }
+    .zone {
+      min-height: 170px; padding: 12px; border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt);
+    }
+    .zone.is-over, .zone.is-target { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .zone__head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+    .zone__title { margin: 0; font-size: 1rem; }
+    .zone__count { font-size: 14px; font-weight: 700; color: var(--tm-muted); }
+    .zone__count.is-hot { color: var(--tm-fail); }
+
+    .task-card {
+      position: relative; display: block; width: 100%; text-align: left; font: inherit;
+      padding: 10px 12px; margin-bottom: 8px; border: 2px solid var(--tm-green-dark);
+      border-radius: var(--tm-radius-sm); background: var(--tm-bg); color: var(--tm-text);
+      cursor: grab; box-shadow: var(--tm-shadow);
+    }
+    .task-card:last-child { margin-bottom: 0; }
+    .task-card:active { cursor: grabbing; }
+    .task-card.is-picked {
+      outline: 3px solid var(--tm-green);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .task-card.is-dep { border-color: var(--tm-green); background: var(--tm-green-soft); box-shadow: var(--tm-shadow-lift); }
+    .task-card__num { font-weight: 800; color: var(--tm-green-dark); margin-right: .35em; }
+    html[data-theme="dark"] .task-card__num { color: var(--tm-green); }
+    .task-card__deps { display: block; margin-top: 4px; font-size: 13px; color: var(--tm-muted); }
+    .task-card__tip {
+      display: none; position: absolute; left: 8px; right: 8px; bottom: calc(100% + 6px);
+      z-index: 3; padding: 8px 10px; border-radius: var(--tm-radius-sm);
+      background: var(--tm-ink); color: var(--tm-bg); font-size: 13px; line-height: 1.4;
+      box-shadow: var(--tm-shadow-lift); pointer-events: none;
+    }
+    html[data-theme="dark"] .task-card__tip { background: var(--tm-green-soft); color: var(--tm-text); }
+    .task-card:hover .task-card__tip,
+    .task-card:focus-visible .task-card__tip { display: block; }
+
+    .crit { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--tm-border); }
+    .crit:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+    .why { margin: 8px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .why--ok { color: var(--tm-ok); }
+    .why--bad { color: var(--tm-fail); }
+    .etalon-block { margin-top: 18px; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 19 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Спринт-план 20–23</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 11</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Перед тобой чужой проект — панель задач. Сначала разбери шесть ситуаций планирования. Потом разложи двенадцать задач по четырём спринтам так, чтобы ни одна не оказалась раньше той, от которой зависит. В конце выбери верный критерий «Готово, если» для каждого спринта. Порог: 5 ситуаций из 6, ни одной нарушенной зависимости, 3 верных критерия из 4.</p>
+  <ul class="tm-list">
+    <li>Тема карточек — «Дедлайн-доска» (P02). Это учебный сценарий, не твой репозиторий.</li>
+    <li>Кнопка «Проверить» смотрит все три вкладки сразу. Переключение вкладок ответы не сбрасывает.</li>
+    <li>Зависимости на карточках названы специально: знать их — ещё не значит разложить верно.</li>
+  </ul>
+</section>
+
+<div class="modes" role="tablist" aria-label="Часть задания">
+  <button class="tm-btn tm-btn--primary" id="tabCases" role="tab" aria-selected="true" aria-controls="panelCases" type="button">Ситуации</button>
+  <button class="tm-btn tm-btn--ghost" id="tabSprints" role="tab" aria-selected="false" aria-controls="panelSprints" type="button">Спринты</button>
+  <button class="tm-btn tm-btn--ghost" id="tabCriteria" role="tab" aria-selected="false" aria-controls="panelCriteria" type="button">Критерии</button>
+</div>
+
+<main>
+  <section class="tm-card" id="panelCases" role="tabpanel" aria-labelledby="tabCases">
+    <p class="tm-eyebrow">►► СИТУАЦИИ</p>
+    <p class="lead">Шесть карточек. Серые деления полосы — ещё без ответа.</p>
+    <div class="case-meter" id="caseMeter" aria-hidden="true"></div>
+    <div id="cases"></div>
+  </section>
+
+  <section class="tm-card hide" id="panelSprints" role="tabpanel" aria-labelledby="tabSprints">
+    <p class="tm-eyebrow">►► СПРИНТЫ</p>
+    <p class="lead">Двенадцать задач панели «Дедлайн-доска». Перетащи карточку в зону или кликни по карточке, затем по занятию — на тачпаде так надёжнее. При наведении видны зависимости; их не прячем. Счётчик зоны краснеет, если задач больше пяти.</p>
+    <div class="sprint-layout">
+      <div>
+        <p class="pane-label" id="poolLabel"><strong>Ещё не в спринте</strong></p>
+        <div class="pool" id="pool" tabindex="0" aria-labelledby="poolLabel"></div>
+      </div>
+      <div class="zones" id="zones"></div>
+    </div>
+  </section>
+
+  <section class="tm-card hide" id="panelCriteria" role="tabpanel" aria-labelledby="tabCriteria">
+    <p class="tm-eyebrow">►► КРИТЕРИИ</p>
+    <p class="lead">Для каждого спринта — один вариант «Готово, если».</p>
+    <div id="criteria"></div>
+  </section>
+</main>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Показать разбор</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► РАЗБОР</p>
+  <p>Эталон открывается после порога или трёх подсказок. Зависимости проверяются порядком, а не копированием колонки «верный спринт»: задачу 9 можно поставить и в 21-й, и в 22-й.</p>
+  <div id="solBody"></div>
+</section>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Декомпозиция</dt>
+    <dd>Разбиение большой задачи на несколько маленьких, каждая из которых делается и проверяется отдельно.</dd>
+    <dt>User story</dt>
+    <dd>Формулировка задачи глазами пользователя: кто, чего хочет и зачем.</dd>
+    <dt>Критерий приёмки</dt>
+    <dd>Проверяемое условие, по которому видно, что задача закончена.</dd>
+    <dt>Зависимость</dt>
+    <dd>Ситуация, когда одна задача не может быть сделана раньше другой.</dd>
+  </dl>
+</section>
+
+<details class="teacher">
+  <summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> декомпозиция ТЗ на 4 спринта, порядок по зависимостям, критерий «Готово, если».</li>
+    <li><strong>Норматив:</strong> 15–25 мин. Редактора и превью нет — это сценарий, не подмена проекта.</li>
+    <li><strong>Типичные ошибки:</strong> тема по названию; <code>localStorage</code> в спринте 1; «работает» вместо действия; семь задач в спринт; жёсткое копирование эталонной колонки (задача 9 только в 22).</li>
+    <li><strong>Готово, когда:</strong> тесты 2–7 ≥ 5/6; тесты 8, 9, 10 зелёные; тест 11 ≥ 3/4. Не требовать 11/11: три верных критерия — порог.</li>
+    <li><strong>Усложнение:</strong> свой план P03–P06 без подглядывания в банк, схема зависимостей стрелками.</li>
+    <li><strong>Поддержка:</strong> готовые 12 карточек и вопрос «всё ли нужное уже выше?»; критерии по формуле «открываю — нажимаю — вижу».</li>
+    <li><strong>Ловушка теста 9:</strong> спринт задачи ≥ max(спринты зависимостей). Не сверять с колонкой эталона.</li>
+    <li><strong>ИИ:</strong> модель проверяет порядок и время, план не составляет. Руками: каждая названная зависимость существует; новых возможностей нет.</li>
+  </ul>
+</details>
+
+<script>
+  (function () {
+    /* Сценарий L19: без #editor, #panePreview и ключа режима.
+       Черновик: wdc-l19-plan-v1 = { answers, sprints, criteria, tab, hintsOpened }.
+       Педагог: новый тест — объект в TESTS с name / success / fail / run. */
+
+    const DRAFT_KEY = "wdc-l19-plan-v1";
+    const TABS = ["cases", "sprints", "criteria"];
+    const SPRINTS = [20, 21, 22, 23];
+
+    const CASES = [
+      {
+        q: "Ты выбираешь тему. Что смотришь в первую очередь?",
+        ok: "В",
+        options: [
+          { id: "А", t: "Название и картинку", why: "неверно. Название ярче описания и ничего не говорит о работе." },
+          { id: "Б", t: "Сколько там задач: где меньше, ту и беру", why: "неверно. Требования ТЗ одинаковы для всех шести, объём работы тот же." },
+          { id: "В", t: "Блоки «Подводные камни» и «Идея защиты»", why: "верно. Первый показывает, где ты застрянешь, второй — что будешь показывать через месяц." },
+          { id: "Г", t: "Какую взяли одноклассники, чтобы советоваться", why: "неверно как основание: советоваться можно и по разным темам, а делать придётся своё." }
+        ]
+      },
+      {
+        q: "Какая формулировка — настоящая user story?",
+        ok: "Б",
+        options: [
+          { id: "А", t: "«Нужен фильтр по статусу»", why: "неверно. Нет ни роли, ни пользы: непонятно, кому и зачем." },
+          { id: "Б", t: "«Я как участник команды хочу видеть только свои задачи, чтобы не искать их среди чужих»", why: "верно. Все три части: кто, что, зачем." },
+          { id: "В", t: "«Я как пользователь хочу удобный интерфейс, чтобы было приятно»", why: "неверно. Формально три части, содержания нет: из этого не выводится ни одна задача." },
+          { id: "Г", t: "«Система должна отображать список задач»", why: "неверно. Это описание системы, а не потребности человека; «зачем» отсутствует." }
+        ]
+      },
+      {
+        q: "История «хочу добавить задачу через форму» разложилась на одну строку: «сделать форму». Что не так?",
+        ok: "Б",
+        options: [
+          { id: "А", t: "Ничего, форма — это одна задача", why: "неверно. За такую строку нельзя взяться: непонятно, с чего начинается и чем заканчивается." },
+          { id: "Б", t: "Декомпозиции нет: строка переписана другими словами", why: "верно. Разложить надо минимум на разметку, обработчик с валидацией и добавление с перерисовкой." },
+          { id: "В", t: "Надо было написать «сделать форму и валидацию»", why: "неверно. Союз «и» соединяет два дела: это по-прежнему не декомпозиция, а две задачи в одной строке." },
+          { id: "Г", t: "Форму вообще не надо делать отдельной задачей", why: "неверно. Надо, просто не одной." }
+        ]
+      },
+      {
+        q: "Ты поставил задачу «сохранение в localStorage» в спринт 1, вместе с каркасом. Что произойдёт на занятии 20?",
+        ok: "Б",
+        options: [
+          { id: "А", t: "Всё нормально: сохранение независимо от остального", why: "неверно. Оно зависит от того, что сохраняет." },
+          { id: "Б", t: "Сохранять будет нечего: ни формы, ни добавления записей ещё нет", why: "верно. Сохранение всегда идёт после того, что оно сохраняет." },
+          { id: "В", t: "Придётся сначала сделать форму, но это быстро", why: "неверно как вывод: «сначала сделать форму» и означает, что порядок неверный." },
+          { id: "Г", t: "localStorage не работает без публикации", why: "неверно. Он работает и локально, дело не в этом." }
+        ]
+      },
+      {
+        q: "Какой критерий «Готово, если» годится для спринта с формой?",
+        ok: "В",
+        options: [
+          { id: "А", t: "«Форма реализована»", why: "неверно. Проверить нечем: «реализована» знает только автор." },
+          { id: "Б", t: "«Всё работает корректно»", why: "неверно. То же самое, только длиннее." },
+          { id: "В", t: "«Ввожу название и нажимаю \"Добавить\" — карточка появляется; нажимаю с пустым полем — под полем сообщение, карточка не появляется»", why: "верно. Действия проверяющего плюс граничный случай." },
+          { id: "Г", t: "«Форма выглядит красиво и удобно»", why: "неверно. Оценка вместо проверки." }
+        ]
+      },
+      {
+        q: "Ты оценил спринт: пять задач по 10 минут, ровно 50 минут занятия. Что не так?",
+        ok: "В",
+        options: [
+          { id: "А", t: "Ничего, ровно влезает", why: "неверно. Ровно влезает означает нулевой запас: любая ошибка ломает весь план." },
+          { id: "Б", t: "Надо добавить шестую, время же есть", why: "неверно и ровно наоборот полезному." },
+          { id: "В", t: "Нет запаса на отладку и на коммит с публикацией; задачи разной сложности не могут занимать одинаково", why: "верно. Реалистично — три задачи плюс пять минут на завершение занятия." },
+          { id: "Г", t: "Надо перенести всё на домашнюю работу", why: "неверно. План строится на времени, которое точно есть: четыре занятия по 50 минут." }
+        ]
+      }
+    ];
+
+    const TASKS = [
+      { id: 1, text: "Репозиторий, файлы проекта, деплой работает", deps: [], ref: 20 },
+      { id: 2, text: "Три колонки на Grid, адаптив от 320 px", deps: [1], ref: 20 },
+      { id: 3, text: "Токены цвета в :root", deps: [1], ref: 20 },
+      { id: 4, text: "Массив TASKS с заглушками, карточки рисуются из него", deps: [2], ref: 20 },
+      { id: 5, text: "Форма добавления: название и срок, label с for", deps: [2], ref: 21 },
+      { id: 6, text: "Валидация: пустое поле даёт сообщение под полем", deps: [5], ref: 21 },
+      { id: 7, text: "Добавление задачи в массив и перерисовка доски", deps: [4, 5], ref: 21 },
+      { id: 8, text: "Кнопка «→»: смена статуса и перерисовка", deps: [4, 7], ref: 22 },
+      { id: 9, text: "Подсветка просроченных задач", deps: [4], ref: 22 },
+      { id: 10, text: "Сохранение и восстановление в localStorage", deps: [7, 8], ref: 22 },
+      { id: 11, text: "Тёмная тема через data-theme, микроанимация наведения", deps: [3], ref: 22 },
+      { id: 12, text: "Взаимное тестирование, багфикс, README, финальный деплой", deps: "all", ref: 23 }
+    ];
+
+    const CRITS = [
+      {
+        sprint: 20,
+        ok: "Б",
+        options: [
+          { id: "А", t: "«Каркас готов»", why: "не проверяется: «готов» ничем не определено." },
+          { id: "Б", t: "«Открываю публичную ссылку с телефона — вижу три колонки с карточками; на 320 px колонки идут в столбик»", why: "верно." },
+          { id: "В", t: "«Вёрстка сделана аккуратно и адаптивно»", why: "оценка вместо действия." }
+        ]
+      },
+      {
+        sprint: 21,
+        ok: "В",
+        options: [
+          { id: "А", t: "«Логика работает»", why: "не проверяется." },
+          { id: "Б", t: "«Форма добавляет задачи»", why: "есть действие, но нет граничного случая: пустое поле не проверяется. Это самый частый уровень формулировки — действия уже есть, а границы ещё нет." },
+          { id: "В", t: "«Ввожу название и срок, нажимаю \"Добавить\" — карточка появляется; нажимаю с пустым названием — под полем сообщение, карточка не появляется»", why: "верно." }
+        ]
+      },
+      {
+        sprint: 22,
+        ok: "А",
+        options: [
+          { id: "А", t: "«Добавляю задачу со вчерашним сроком — она подсвечена; нажимаю \"→\" дважды — карточка доезжает до \"Сделано\"; перезагружаю — всё на месте»", why: "верно." },
+          { id: "Б", t: "«MVP достигнут»", why: "не проверяется: под это подходит что угодно." },
+          { id: "В", t: "«Все запланированные функции реализованы»", why: "не проверяется и не про пользователя." }
+        ]
+      },
+      {
+        sprint: 23,
+        ok: "Б",
+        options: [
+          { id: "А", t: "«Багов нет»", why: "недостижимо и непроверяемо: отсутствие всех дефектов доказать нельзя." },
+          { id: "Б", t: "«Одноклассник открыл проект на своём телефоне и не нашёл дефектов, кроме записанных в \"известные ограничения\" README»", why: "верно." },
+          { id: "В", t: "«Проект готов к защите»", why: "не проверяется." }
+        ]
+      }
+    ];
+
+    const HINTS = [
+      { kind: "text", body: "Про каждую задачу спроси: что ей нужно, чтобы её вообще можно было начать? Ответ на этот вопрос и есть её место в плане. Про каждый критерий спроси: что нажмёт другой человек и что увидит?" },
+      { kind: "text", body: "Раскладывай не по интересу, а по порядку «снизу вверх»: сначала то, от чего зависят другие (каркас, данные), потом то, что зависит от них (отрисовка, формы), потом то, что зависит от действий (сохранение), и в самом конце — свободные задачи, которые ни от чего не зависят: тема оформления, анимации. Свободные задачи ставятся туда, где осталось место, и первыми режутся при нехватке времени." },
+      { kind: "code", body: "Порядок почти любого проекта на курсе:\n\n  каркас и деплой          ← ни от чего не зависит, всегда первым\n  структура данных         ← нужна раньше любой отрисовки\n  отрисовка из данных      ← зависит от каркаса и данных\n  форма и валидация        ← зависит от каркаса\n  добавление и изменение   ← зависит от данных и формы\n  сохранение в localStorage← зависит от добавления и изменения\n  тема, анимации, иконка   ← свободные, ставятся в остаток\n\nКритерий: «<что открываю> — <что нажимаю> — <что вижу>»,\nплюс граничный случай: пустое поле, пустой список, нет сети." }
+    ];
+
+    const state = {
+      answers: [null, null, null, null, null, null],
+      sprints: {},
+      criteria: ["", "", "", ""],
+      tab: "cases",
+      hintsOpened: 0
+    };
+    let pickedId = null;
+    let typeTimer = null;
+    let lastResults = [];
+    let lastCritOk = 0;
+
+    const scoreEl = document.getElementById("score");
+    const barEl = document.getElementById("bar");
+    const testsEl = document.getElementById("tests");
+    const hintsEl = document.getElementById("hints");
+    const honestyEl = document.getElementById("honesty");
+    const etalonBtn = document.getElementById("etalonBtn");
+    const etalonBox = document.getElementById("etalonBox");
+    const solBody = document.getElementById("solBody");
+    const poolEl = document.getElementById("pool");
+    const zonesEl = document.getElementById("zones");
+
+    function taskById(id) {
+      return TASKS.find(function (t) { return t.id === Number(id); });
+    }
+
+    function depIds(task) {
+      if (task.deps === "all") {
+        return TASKS.filter(function (t) { return t.id !== task.id; }).map(function (t) { return t.id; });
+      }
+      return task.deps.slice();
+    }
+
+    function depsLabel(task) {
+      if (task.deps === "all") return "все";
+      if (!task.deps.length) return "—";
+      return task.deps.join(", ");
+    }
+
+    function depsTip(task) {
+      if (task.deps === "all") return "Зависит от всех предыдущих задач: 1–11. Ставить можно только когда они уже выше.";
+      if (!task.deps.length) return "Ни от чего не зависит. Обычно это каркас и деплой — им нужно место в первом спринте.";
+      return "Зависит от задач: " + task.deps.join(", ") + ". Спринт этой задачи не может быть раньше максимального спринта зависимостей.";
+    }
+
+    function emptyState() {
+      return {
+        answers: [null, null, null, null, null, null],
+        sprints: {},
+        criteria: ["", "", "", ""],
+        tab: "cases",
+        hintsOpened: 0
+      };
+    }
+
+    function saveDraft() {
+      const data = {
+        answers: state.answers.slice(),
+        sprints: Object.assign({}, state.sprints),
+        criteria: state.criteria.slice(),
+        tab: state.tab,
+        hintsOpened: state.hintsOpened
+      };
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+    }
+
+    function scheduleSave() {
+      clearTimeout(typeTimer);
+      typeTimer = setTimeout(saveDraft, 280);
+    }
+
+    function loadDraft() {
+      let data = null;
+      try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+      if (!data || !Array.isArray(data.answers) || data.answers.length !== 6) return;
+      if (!data.sprints || typeof data.sprints !== "object" || Array.isArray(data.sprints)) return;
+      if (!Array.isArray(data.criteria) || data.criteria.length !== 4) return;
+      state.answers = data.answers.map(function (a) {
+        return a === "А" || a === "Б" || a === "В" || a === "Г" ? a : null;
+      });
+      state.sprints = {};
+      Object.keys(data.sprints).forEach(function (id) {
+        const n = Number(data.sprints[id]);
+        if (taskById(id) && SPRINTS.indexOf(n) !== -1) state.sprints[String(id)] = n;
+      });
+      state.criteria = data.criteria.map(function (c) {
+        return c === "А" || c === "Б" || c === "В" ? c : "";
+      });
+      state.tab = TABS.indexOf(data.tab) !== -1 ? data.tab : "cases";
+      state.hintsOpened = Math.max(0, Math.min(3, Number(data.hintsOpened) || 0));
+    }
+
+    function setTab(tab) {
+      state.tab = tab;
+      const map = {
+        cases: { btn: "tabCases", panel: "panelCases" },
+        sprints: { btn: "tabSprints", panel: "panelSprints" },
+        criteria: { btn: "tabCriteria", panel: "panelCriteria" }
+      };
+      TABS.forEach(function (name) {
+        const on = name === tab;
+        const btn = document.getElementById(map[name].btn);
+        const panel = document.getElementById(map[name].panel);
+        btn.className = "tm-btn " + (on ? "tm-btn--primary" : "tm-btn--ghost");
+        btn.setAttribute("aria-selected", String(on));
+        panel.classList.toggle("hide", !on);
+      });
+      scheduleSave();
+    }
+
+    function paintCaseMeter() {
+      const box = document.getElementById("caseMeter");
+      box.innerHTML = "";
+      state.answers.forEach(function (a) {
+        const seg = document.createElement("span");
+        seg.className = "case-meter__seg" + (a ? " is-on" : "");
+        box.appendChild(seg);
+      });
+    }
+
+    function renderCases() {
+      const root = document.getElementById("cases");
+      root.innerHTML = "";
+      CASES.forEach(function (item, i) {
+        const card = document.createElement("article");
+        card.className = "case";
+        const q = document.createElement("p");
+        q.className = "case__q";
+        q.textContent = "Ситуация " + (i + 1) + ". " + item.q;
+        const opts = document.createElement("div");
+        opts.className = "opts";
+        opts.setAttribute("role", "radiogroup");
+        opts.setAttribute("aria-label", "Ситуация " + (i + 1));
+        item.options.forEach(function (opt) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "opt" + (state.answers[i] === opt.id ? " is-on" : "");
+          btn.setAttribute("role", "radio");
+          btn.setAttribute("aria-checked", String(state.answers[i] === opt.id));
+          btn.textContent = opt.id + ") " + opt.t;
+          btn.addEventListener("click", function () {
+            state.answers[i] = opt.id;
+            renderCases();
+            scheduleSave();
+          });
+          opts.appendChild(btn);
+        });
+        card.appendChild(q);
+        card.appendChild(opts);
+        root.appendChild(card);
+      });
+      paintCaseMeter();
+    }
+
+    function bindDrop(el, sprint) {
+      el.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        el.classList.add("is-over");
+      });
+      el.addEventListener("dragleave", function () { el.classList.remove("is-over"); });
+      el.addEventListener("drop", function (e) {
+        e.preventDefault();
+        el.classList.remove("is-over");
+        const id = e.dataTransfer.getData("text/plain");
+        if (!taskById(id)) return;
+        placeTask(id, sprint);
+      });
+      el.addEventListener("click", function () {
+        if (pickedId) placeTask(pickedId, sprint);
+      });
+      el.addEventListener("keydown", function (e) {
+        if ((e.key === "Enter" || e.key === " ") && pickedId) {
+          e.preventDefault();
+          placeTask(pickedId, sprint);
+        }
+      });
+    }
+
+    function highlightDeps(id, on) {
+      document.querySelectorAll(".task-card.is-dep").forEach(function (n) {
+        n.classList.remove("is-dep");
+      });
+      if (!on || !id) return;
+      const task = taskById(id);
+      if (!task) return;
+      depIds(task).forEach(function (dep) {
+        const node = document.querySelector('.task-card[data-id="' + dep + '"]');
+        if (node) node.classList.add("is-dep");
+      });
+    }
+
+    function makeCard(task) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "task-card" + (pickedId === String(task.id) ? " is-picked" : "");
+      btn.dataset.id = String(task.id);
+      btn.draggable = true;
+      const tip = document.createElement("span");
+      tip.className = "task-card__tip";
+      tip.textContent = depsTip(task);
+      const title = document.createElement("span");
+      const num = document.createElement("span");
+      num.className = "task-card__num";
+      num.textContent = "#" + task.id;
+      title.appendChild(num);
+      title.appendChild(document.createTextNode(task.text));
+      const deps = document.createElement("span");
+      deps.className = "task-card__deps";
+      deps.textContent = "Зависит от: " + depsLabel(task);
+      btn.appendChild(tip);
+      btn.appendChild(title);
+      btn.appendChild(deps);
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        pickedId = pickedId === String(task.id) ? null : String(task.id);
+        renderBoard();
+      });
+      btn.addEventListener("dragstart", function (e) {
+        e.dataTransfer.setData("text/plain", String(task.id));
+        e.dataTransfer.effectAllowed = "move";
+        pickedId = String(task.id);
+      });
+      btn.addEventListener("mouseenter", function () { highlightDeps(task.id, true); });
+      btn.addEventListener("mouseleave", function () { highlightDeps(task.id, false); });
+      btn.addEventListener("focus", function () { highlightDeps(task.id, true); });
+      btn.addEventListener("blur", function () { highlightDeps(task.id, false); });
+      return btn;
+    }
+
+    function placeTask(id, sprint) {
+      if (sprint === null) delete state.sprints[String(id)];
+      else state.sprints[String(id)] = sprint;
+      pickedId = null;
+      renderBoard();
+      scheduleSave();
+    }
+
+    function renderBoard() {
+      poolEl.innerHTML = "";
+      zonesEl.innerHTML = "";
+      TASKS.forEach(function (task) {
+        if (!state.sprints[String(task.id)]) poolEl.appendChild(makeCard(task));
+      });
+      if (!poolEl.children.length) {
+        const empty = document.createElement("p");
+        empty.className = "lead";
+        empty.textContent = "Все задачи в спринтах. Чтобы вернуть — перетащи сюда или кликни карточку, затем эту зону.";
+        poolEl.appendChild(empty);
+      }
+      poolEl.classList.toggle("is-target", !!pickedId);
+      SPRINTS.forEach(function (sprint) {
+        const ids = TASKS.filter(function (t) { return state.sprints[String(t.id)] === sprint; });
+        const zone = document.createElement("div");
+        zone.className = "zone" + (pickedId ? " is-target" : "");
+        zone.tabIndex = 0;
+        zone.dataset.sprint = String(sprint);
+        const head = document.createElement("div");
+        head.className = "zone__head";
+        const h = document.createElement("h3");
+        h.className = "zone__title";
+        h.textContent = "Занятие " + sprint;
+        const count = document.createElement("span");
+        count.className = "zone__count" + (ids.length > 5 ? " is-hot" : "");
+        count.textContent = "Задач: " + ids.length;
+        head.appendChild(h);
+        head.appendChild(count);
+        zone.appendChild(head);
+        ids.forEach(function (task) { zone.appendChild(makeCard(task)); });
+        bindDrop(zone, sprint);
+        zonesEl.appendChild(zone);
+      });
+    }
+
+    function renderCriteria() {
+      const root = document.getElementById("criteria");
+      root.innerHTML = "";
+      CRITS.forEach(function (item, i) {
+        const box = document.createElement("article");
+        box.className = "crit";
+        const h = document.createElement("h2");
+        h.textContent = "Спринт " + item.sprint;
+        const opts = document.createElement("div");
+        opts.className = "opts";
+        opts.setAttribute("role", "radiogroup");
+        opts.setAttribute("aria-label", "Критерий спринта " + item.sprint);
+        item.options.forEach(function (opt) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "opt" + (state.criteria[i] === opt.id ? " is-on" : "");
+          btn.setAttribute("role", "radio");
+          btn.setAttribute("aria-checked", String(state.criteria[i] === opt.id));
+          btn.textContent = opt.id + ") " + opt.t;
+          btn.addEventListener("click", function () {
+            state.criteria[i] = opt.id;
+            renderCriteria();
+            scheduleSave();
+          });
+          opts.appendChild(btn);
+        });
+        box.appendChild(h);
+        box.appendChild(opts);
+        root.appendChild(box);
+      });
+    }
+
+    function unansweredCases() {
+      const list = [];
+      state.answers.forEach(function (a, i) { if (!a) list.push(i + 1); });
+      return list;
+    }
+
+    function unplacedTasks() {
+      return TASKS.filter(function (t) { return !state.sprints[String(t.id)]; }).map(function (t) { return t.id; });
+    }
+
+    function depViolations() {
+      const bad = [];
+      TASKS.forEach(function (task) {
+        const sprint = state.sprints[String(task.id)];
+        if (!sprint) return;
+        const deps = depIds(task);
+        let maxDep = 0;
+        let missing = false;
+        deps.forEach(function (id) {
+          const ds = state.sprints[String(id)];
+          if (!ds) missing = true;
+          else if (ds > maxDep) maxDep = ds;
+        });
+        if (missing || sprint < maxDep) bad.push(task.id);
+      });
+      return bad;
+    }
+
+    function sprintIds(n) {
+      return TASKS.filter(function (t) { return state.sprints[String(t.id)] === n; }).map(function (t) { return t.id; });
+    }
+
+    function criteriaOkCount() {
+      let n = 0;
+      CRITS.forEach(function (item, i) { if (state.criteria[i] === item.ok) n += 1; });
+      return n;
+    }
+
+    function runOne(t) {
+      let ok = false;
+      let extra = {};
+      try {
+        extra = t.run() || {};
+        ok = !!extra.ok;
+      } catch (e) {
+        ok = false;
+        extra = {};
+      }
+      return {
+        name: t.name,
+        success: t.success,
+        fail: typeof t.fail === "function" ? t.fail(extra) : t.fail,
+        ok: ok
+      };
+    }
+
+    const TESTS = [
+      {
+        name: "Отвечены все шесть ситуаций",
+        success: "Все шесть ситуаций пройдены",
+        fail: function (x) {
+          return "Без ответа: " + (x.n || unansweredCases().length) + ". Серые деления в полосе прогресса — неотвеченные";
+        },
+        run: function () {
+          const n = unansweredCases().length;
+          return { ok: n === 0, n: n };
+        }
+      },
+      {
+        name: "Ситуация 1: по чему выбирают тему",
+        success: "Верно: подводные камни и идея защиты",
+        fail: "Требования ТЗ у всех шести одинаковы, объём работы тот же. Что тогда различается и по чему выбирать?",
+        run: function () { return { ok: state.answers[0] === "В" }; }
+      },
+      {
+        name: "Ситуация 2: настоящая user story",
+        success: "Верно: кто, что, зачем — и всё содержательно",
+        fail: "Проверь каждый вариант: названа ли роль, есть ли действие человека, можно ли из «зачем» вывести задачу",
+        run: function () { return { ok: state.answers[1] === "Б" }; }
+      },
+      {
+        name: "Ситуация 3: декомпозиции нет",
+        success: "Верно: строка переписана, а не разложена",
+        fail: "Спроси себя: за что браться первым и когда эта задача закончена? Если ответа нет — что с ней не так?",
+        run: function () { return { ok: state.answers[2] === "Б" }; }
+      },
+      {
+        name: "Ситуация 4: зависимость сохранения",
+        success: "Верно: сохранять нечего, пока нечего менять",
+        fail: "На занятии 20 у тебя есть каркас. Что именно будет записываться в хранилище, если записей ещё никто не создаёт?",
+        run: function () { return { ok: state.answers[3] === "Б" }; }
+      },
+      {
+        name: "Ситуация 5: критерий приёмки",
+        success: "Верно: действия проверяющего плюс граничный случай",
+        fail: "Критерий проверяет другой человек. Что он должен нажать и что увидеть? И что будет, если оставить поле пустым?",
+        run: function () { return { ok: state.answers[4] === "В" }; }
+      },
+      {
+        name: "Ситуация 6: оценка времени",
+        success: "Верно: нужен запас на отладку и завершение занятия",
+        fail: "Пять задач ровно на 50 минут. Что произойдёт, если хотя бы одна пойдёт не так? И когда ты будешь коммитить?",
+        run: function () { return { ok: state.answers[5] === "В" }; }
+      },
+      {
+        name: "Все двенадцать задач разложены",
+        success: "Все задачи распределены",
+        fail: function (x) {
+          return "Не распределено: " + (x.n || unplacedTasks().length) + ". Перетащи оставшиеся карточки в спринты";
+        },
+        run: function () {
+          const left = unplacedTasks();
+          return { ok: left.length === 0, n: left.length };
+        }
+      },
+      {
+        name: "Ни одной нарушенной зависимости",
+        success: "Порядок верный: ничто не ждёт того, чего ещё нет",
+        fail: function (x) {
+          return "Нарушений: " + (x.n || depViolations().length) + ". Пройди сверху вниз с одним вопросом — «всё ли, что нужно этой задаче, стоит выше?» Наведи на карточку, там названы её зависимости";
+        },
+        run: function () {
+          /* Тест 9: спринт задачи >= max(спринты зависимостей). Не сверка с эталонной колонкой. */
+          const bad = depViolations();
+          return { ok: bad.length === 0 && unplacedTasks().length === 0, n: bad.length };
+        }
+      },
+      {
+        name: "В спринте 20 есть деплой, в спринте 23 только задача 12",
+        success: "Первый спринт с деплоем, последний без новой функциональности",
+        fail: "Проверь два крайних спринта: публичная ссылка должна ожить в первый день, а на последнем рабочем занятии новых возможностей не добавляют",
+        run: function () {
+          const s20 = sprintIds(20);
+          const s23 = sprintIds(23);
+          const ok = s20.indexOf(1) !== -1 && s23.length === 1 && s23[0] === 12;
+          return { ok: ok };
+        }
+      },
+      {
+        name: "Все четыре критерия выбраны верно",
+        success: "Все критерии проверяемы",
+        fail: function (x) {
+          return "Верно " + (x.n || 0) + " из 4. Годный критерий отвечает на вопрос: что должен нажать другой человек и что он увидит. «Готово», «работает», «реализовано» на этот вопрос не отвечают";
+        },
+        run: function () {
+          const n = criteriaOkCount();
+          return { ok: n === 4, n: n };
+        }
+      }
+    ];
+
+    function thresholdMet(list) {
+      const sit = list.slice(1, 7).filter(function (r) { return r.ok; }).length >= 5;
+      const must = list[7] && list[7].ok && list[8] && list[8].ok && list[9] && list[9].ok;
+      return sit && must && lastCritOk >= 3;
+    }
+
+    function unlockEtalon(reason) {
+      etalonBtn.disabled = false;
+      etalonBox.classList.remove("hide");
+      if (!solBody.dataset.ready) {
+        solBody.innerHTML = buildEtalon();
+        solBody.dataset.ready = "1";
+      }
+      honestyEl.textContent = reason === "подсказки"
+        ? "Разбор открыт: использованы три подсказки. Подсказок открыто: " + state.hintsOpened + ". Это не штраф, но на защите объясните решение своими словами."
+        : "Задача сдана. Подсказок открыто: " + state.hintsOpened + ". Честность важнее очков.";
+    }
+
+    function buildEtalon() {
+      const parts = [];
+      parts.push("<div class=\"etalon-block\"><h2>Ситуации</h2>");
+      CASES.forEach(function (item, i) {
+        parts.push("<p><strong>Ситуация " + (i + 1) + ".</strong> " + esc(item.q) + "</p><ul>");
+        item.options.forEach(function (opt) {
+          const mark = opt.id === item.ok ? "why--ok" : "why--bad";
+          parts.push("<li><strong>" + opt.id + ")</strong> " + esc(opt.t) + " — <span class=\"" + mark + "\">" + esc(opt.why) + "</span></li>");
+        });
+        parts.push("</ul>");
+      });
+      parts.push("</div><div class=\"etalon-block\"><h2>Эталонная раскладка</h2>");
+      parts.push("<p>Колонка «верный спринт» — удобный образец, не единственный путь. Тест 9 смотрит только порядок: спринт задачи не меньше максимального спринта её зависимостей. Задача 9 зависит только от 4, поэтому корректна и в 21-м, и в 22-м.</p>");
+      SPRINTS.forEach(function (sprint) {
+        parts.push("<p><strong>Занятие " + sprint + "</strong></p><ul>");
+        TASKS.filter(function (t) { return t.ref === sprint; }).forEach(function (t) {
+          parts.push("<li><strong>#" + t.id + "</strong> " + esc(t.text) + " — зависит от: " + esc(depsLabel(t)) + ". " + esc(depsTip(t)) + "</li>");
+        });
+        parts.push("</ul>");
+      });
+      parts.push("</div><div class=\"etalon-block\"><h2>Критерии</h2>");
+      CRITS.forEach(function (item) {
+        parts.push("<p><strong>Спринт " + item.sprint + "</strong></p><ul>");
+        item.options.forEach(function (opt) {
+          const mark = opt.id === item.ok ? "why--ok" : "why--bad";
+          parts.push("<li><strong>" + opt.id + ")</strong> " + esc(opt.t) + " — <span class=\"" + mark + "\">" + esc(opt.why) + "</span></li>");
+        });
+        parts.push("</ul>");
+      });
+      parts.push("</div>");
+      return parts.join("");
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderResults(list) {
+      lastResults = list;
+      lastCritOk = criteriaOkCount();
+      const passed = list.filter(function (r) { return r.ok; }).length;
+      testsEl.innerHTML = list.map(function (r) {
+        return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+          '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + "</span>" +
+          "<div><div>" + (r.ok ? r.success : r.name) + "</div>" +
+          (r.ok ? "" : '<div class="tm-test__hint">' + r.fail + "</div>") +
+          "</div></div>";
+      }).join("");
+      scoreEl.textContent = passed + " / " + list.length;
+      barEl.style.width = (passed / list.length * 100) + "%";
+      const done = thresholdMet(list);
+      scoreEl.classList.toggle("is-done", done);
+      if (done) unlockEtalon("порог");
+      else if (state.hintsOpened >= 3) unlockEtalon("подсказки");
+      else {
+        honestyEl.textContent = state.hintsOpened
+          ? "Подсказок открыто: " + state.hintsOpened + ". Порог: ситуации 2–7 ≥ 5/6; тесты 8, 9, 10 обязательны; критерии ≥ 3/4."
+          : "";
+      }
+    }
+
+    function runChecks() {
+      clearTimeout(typeTimer);
+      saveDraft();
+      renderResults(TESTS.map(runOne));
+    }
+
+    function replayHints() {
+      hintsEl.innerHTML = "";
+      for (let i = 0; i < state.hintsOpened; i += 1) appendHint(i);
+      if (state.hintsOpened >= 3) unlockEtalon("подсказки");
+    }
+
+    function appendHint(i) {
+      const item = HINTS[i];
+      const wrap = document.createElement("div");
+      wrap.className = "hint";
+      const title = document.createElement("p");
+      title.innerHTML = "<strong>Подсказка " + (i + 1) + ".</strong>";
+      wrap.appendChild(title);
+      if (item.kind === "code") {
+        const pre = document.createElement("pre");
+        pre.className = "tm-code";
+        pre.textContent = item.body;
+        wrap.appendChild(pre);
+      } else {
+        const p = document.createElement("p");
+        p.textContent = item.body;
+        wrap.appendChild(p);
+      }
+      hintsEl.appendChild(wrap);
+    }
+
+    function currentPlanText() {
+      const lines = ["# Спринт-план (черновик тренажёра L19)", ""];
+      lines.push("## Ситуации");
+      state.answers.forEach(function (a, i) {
+        lines.push((i + 1) + ". " + (a || "—"));
+      });
+      lines.push("", "## Спринты");
+      SPRINTS.forEach(function (sprint) {
+        lines.push("", "### Занятие " + sprint);
+        const ids = sprintIds(sprint);
+        if (!ids.length) lines.push("- (пусто)");
+        ids.forEach(function (id) {
+          const t = taskById(id);
+          lines.push("- #" + id + " " + t.text);
+        });
+      });
+      lines.push("", "## Критерии");
+      CRITS.forEach(function (item, i) {
+        lines.push("Спринт " + item.sprint + ": " + (state.criteria[i] || "—"));
+      });
+      return lines.join("\n");
+    }
+
+    document.getElementById("tabCases").addEventListener("click", function () { setTab("cases"); });
+    document.getElementById("tabSprints").addEventListener("click", function () { setTab("sprints"); });
+    document.getElementById("tabCriteria").addEventListener("click", function () { setTab("criteria"); });
+
+    document.getElementById("checkBtn").addEventListener("click", runChecks);
+
+    document.getElementById("hintBtn").addEventListener("click", function () {
+      if (state.hintsOpened >= HINTS.length) return;
+      appendHint(state.hintsOpened);
+      state.hintsOpened += 1;
+      honestyEl.textContent = "Подсказок открыто: " + state.hintsOpened + ".";
+      if (state.hintsOpened >= 3) unlockEtalon("подсказки");
+      scheduleSave();
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", function () {
+      if (!confirm("Сбросить ответы, раскладку и критерии? Черновик в памяти тоже очистится.")) return;
+      const fresh = emptyState();
+      state.answers = fresh.answers;
+      state.sprints = fresh.sprints;
+      state.criteria = fresh.criteria;
+      state.tab = fresh.tab;
+      state.hintsOpened = 0;
+      pickedId = null;
+      lastResults = [];
+      lastCritOk = 0;
+      hintsEl.innerHTML = "";
+      testsEl.innerHTML = "";
+      solBody.innerHTML = "";
+      delete solBody.dataset.ready;
+      etalonBox.classList.add("hide");
+      etalonBtn.disabled = true;
+      scoreEl.textContent = "0 / 11";
+      scoreEl.classList.remove("is-done");
+      barEl.style.width = "0";
+      honestyEl.textContent = "";
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+      renderCases();
+      renderBoard();
+      renderCriteria();
+      setTab("cases");
+    });
+
+    document.getElementById("dlBtn").addEventListener("click", function () {
+      const blob = new Blob([currentPlanText()], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "l19_sprint_plan.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    etalonBtn.addEventListener("click", function () {
+      if (etalonBtn.disabled) return;
+      etalonBox.classList.remove("hide");
+      etalonBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.getElementById("themeBtn").addEventListener("click", function () {
+      const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+    });
+
+    loadDraft();
+    bindDrop(poolEl, null);
+    renderCases();
+    renderBoard();
+    renderCriteria();
+    setTab(state.tab);
+    replayHints();
+  })();
+</script>
+</body>
+</html>

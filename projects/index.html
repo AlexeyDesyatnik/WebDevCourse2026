@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Темы Dashboard · кружок веб-разработки</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 80px; }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 52px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 12px;
+    }
+    .lead {
+      margin: 0 0 8px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 42ch;
+      line-height: 1.45;
+    }
+    .note {
+      margin: 0 0 28px;
+      color: var(--tm-muted);
+      font-size: 15px;
+      max-width: 52ch;
+    }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    a.tm-btn--primary, a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary { color: #111312; }
+    a.tm-btn--ghost, html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .grid { display: grid; gap: 20px; }
+    @media (min-width: 720px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card:hover { box-shadow: var(--tm-shadow-lift); }
+    .num {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+    }
+    html[data-theme="dark"] .num { color: var(--tm-green); }
+    .tm-pill {
+      display: inline-block;
+      width: fit-content;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card p { margin: 0; color: var(--tm-muted); font-size: 15px; line-height: 1.45; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    footer { margin-top: 36px; color: var(--tm-muted); font-size: 15px; }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="topbar" aria-label="Курс">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+      <a class="tm-btn tm-btn--ghost" href="../L20/L20_presentation.html">Занятие 20</a>
+      <a class="tm-btn tm-btn--primary" href="tz.html">►► ТЗ программы</a>
+      <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+    </nav>
+    <p class="tm-eyebrow">►► Модуль 9 · Dashboard</p>
+    <h1>Шесть тем Dashboard</h1>
+    <p class="lead">Выберите одну. Седьмую не выдумываем: все закрывают одно ТЗ программы.</p>
+    <p class="note">Сначала откройте ТЗ программы: что обязательно и как ставят 30 баллов. Потом — ТЗ своей темы.</p>
+    <div class="grid">
+      <article class="tm-card">
+        <span class="num">►► P01</span>
+        <span class="tm-pill">базовый</span>
+        <h2>Ритм 21</h2>
+        <p>Трекер привычек: отметка за сегодня, серия дней, совет или погода с API. Для кружка «здоровые привычки» без регистрации.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="P01.html">►► ТЗ P01</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► P02</span>
+        <span class="tm-pill">базовый</span>
+        <h2>Дедлайн-доска</h2>
+        <p>Три колонки задач: очередь, в работе, готово. Создание, смена статуса, удаление. Не календарь привычек.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="P02.html">►► ТЗ P02</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► P03</span>
+        <span class="tm-pill">повышенный</span>
+        <h2>Диванный зал</h2>
+        <p>Поиск фильма или сериала, карточки, список «посмотрим». Нужен fetch и фолбэк, если сеть режет каталог.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="P03.html">►► ТЗ P03</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► P04</span>
+        <span class="tm-pill">повышенный</span>
+        <h2>Пиксельный штаб</h2>
+        <p>Библиотека игр с часами и оценкой плюс лента скидок. Считать среднее, не делить на ноль.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="P04.html">►► ТЗ P04</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► P05</span>
+        <span class="tm-pill">высокий</span>
+        <h2>Классный штаб</h2>
+        <p>Объявления, дежурные на неделю, дни рождения, погода. Несколько коллекций. Без телефонов в данных.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="P05.html">►► ТЗ P05</a>
+        </div>
+      </article>
+      <article class="tm-card">
+        <span class="num">►► P06</span>
+        <span class="tm-pill">высокий</span>
+        <h2>Банк добрых дел</h2>
+        <p>Акции волонтёров, запись, сумма часов, витрина книг. Формулу часов зафиксировать в README.</p>
+        <div class="links">
+          <a class="tm-btn tm-btn--primary" href="P06.html">►► ТЗ P06</a>
+        </div>
+      </article>
+    </div>
+    <footer>Модуль 9 · занятия 20–24 · педагог не выдаёт готовый код Dashboard</footer>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

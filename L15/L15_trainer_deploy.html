@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 15 · Тренажёр: пути и деплой</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { padding: 16px 20px 72px; }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 16px;
+      margin-bottom: 18px;
+    }
+    .topbar__title {
+      flex: 1 1 200px;
+      margin: 0;
+      font-size: 1.45rem;
+      line-height: 1.15;
+    }
+    .topbar__right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: clamp(16px, 2vw, 24px);
+      margin-bottom: 14px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .55em;
+      line-height: 1.55;
+      font-size: 17px;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .hide { display: none !important; }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .pane {
+      background: var(--tm-bg-alt);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      padding: 14px;
+      min-width: 0;
+    }
+    .pane__label { margin: 0 0 8px; font-weight: 700; font-size: 15px; }
+    .pane__help { margin: 8px 0 0; color: var(--tm-muted); font-size: 14px; }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .status-line { color: var(--tm-muted); font-size: 15px; margin: 0 0 12px; }
+    .meter {
+      height: 4px;
+      background: var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      overflow: hidden;
+      margin: 0 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); font-size: 16px; }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .hint { margin: 0 0 10px; line-height: 1.55; font-size: 16px; }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); }
+    .layout.is-blocks .pool { flex-direction: column; align-items: stretch; }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: var(--tm-radius-sm);
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .layout.is-blocks .chip { width: 100%; }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .chip.is-picked {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .slot-lab { display: block; font-size: 12px; font-weight: 700; margin: 0 0 6px; color: var(--tm-muted); }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      padding: 6px;
+      background: var(--tm-bg);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .slot.is-err { border-color: var(--tm-fail); }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    .teacher { color: var(--tm-muted); font-size: 15px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    h2 { font-size: 1.15rem; margin: 0 0 8px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+    <span class="tm-eyebrow">►► Занятие 15 · тренажёр</span>
+    <h1 class="topbar__title">Пути и деплой</h1>
+    <div class="topbar__right">
+      <span class="tm-pill" id="score">0 / 13</span>
+      <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+    </div>
+  </header>
+
+  <section class="brief tm-card">
+    <p class="tm-eyebrow">►► Заказ</p>
+    <ul class="tm-list">
+      <li>Страница буфета готова, но написана так, что после публикации сломается.</li>
+      <li>Подключи внешнюю таблицу стилей <code>style.css</code> и приведи все пути к относительным.</li>
+      <li>Проверка идёт как на сервере: путь с диска и путь со слэшем в начале — ошибка, даже если локально «вроде работает».</li>
+    </ul>
+  </section>
+
+  <div class="modes" role="tablist" aria-label="Режим работы">
+    <button class="tm-btn tm-btn--primary" id="modeCode" role="tab" aria-selected="true" type="button">1. Писать код</button>
+    <button class="tm-btn tm-btn--ghost" id="modeBlocks" role="tab" aria-selected="false" type="button">2. Собрать блоками</button>
+  </div>
+
+  <main class="layout" id="layout">
+    <section class="pane" id="paneCode">
+      <label class="pane__label" for="editor">Твой код</label>
+      <textarea id="editor" spellcheck="false" aria-describedby="editorHelp"></textarea>
+      <p class="pane__help" id="editorHelp">Пиши здесь. Превью обновляется само.</p>
+    </section>
+
+    <section class="blocks-board hide" id="paneBlocks">
+      <div class="pane" id="blockPoolPane">
+        <p class="pane__label">Блоки</p>
+        <p class="pane__help">Кликни или нажми Enter — чип встанет в свободный слот того же типа. Лишние варианты воспроизводят типичные ошибки публикации.</p>
+        <div id="blockPool" class="pool"></div>
+      </div>
+      <div class="pane" id="slotsPane">
+        <p class="pane__label">Страница</p>
+        <div id="slots" class="slots">
+          <span class="slot-lab">Таблица стилей в &lt;head&gt;</span>
+          <div class="slot" data-accept="link"></div>
+          <span class="slot-lab">Картинка меню</span>
+          <div class="slot" data-accept="img"></div>
+          <span class="slot-lab">Скрипт в конце &lt;body&gt;</span>
+          <div class="slot" data-accept="script"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" id="panePreview">
+      <p class="pane__label">Что видит браузер</p>
+      <iframe id="preview" title="Предпросмотр страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+    </section>
+  </main>
+
+  <p class="status-line" id="statusLine">Подсказок открыто: 0/3 · ещё собираем</p>
+  <div class="meter"><span id="bar"></span></div>
+
+  <div class="toolbar">
+    <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+    <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+    <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+    <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать</button>
+    <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Эталон</button>
+  </div>
+
+  <section class="tests tm-card" id="tests" aria-live="polite"></section>
+  <section class="hints tm-card" id="hints"></section>
+  <section class="etalon hide tm-card" id="etalonBox">
+    <h2>Эталонное решение</h2>
+    <p>Стили живут в соседнем <code>style.css</code>, пути — только имена файлов. Слэш в начале уводит запрос в корень сайта, путь с <code>C:</code> существует только на твоём диске. У <code>&lt;link&gt;</code> обязателен <code>rel="stylesheet"</code>, иначе браузер молча пропустит строку. Скрипт — последний элемент <code>body</code>, чтобы к моменту выполнения разметка уже была.</p>
+    <pre class="tm-code" id="solCode"></pre>
+  </section>
+
+  <section class="gloss tm-card">
+    <h2>Глоссарий занятия</h2>
+    <dl>
+      <dt>Относительный путь</dt>
+      <dd>Имя файла от текущей страницы: <code>style.css</code>, без слэша и без диска.</dd>
+      <dt>Деплой</dt>
+      <dd>Файлы лежат на сервере и открываются по адресу <code>https://…</code>, а не через <code>file://</code>.</dd>
+      <dt>Путь от корня</dt>
+      <dd><code>/style.css</code> ищет файл в корне сайта, минуя папку проекта — после публикации будет 404.</dd>
+      <dt>Регистр имени</dt>
+      <dd>Windows не различает <code>Pie.SVG</code> и <code>pie.svg</code>, сервер различает.</dd>
+    </dl>
+  </section>
+
+  <details class="teacher tm-card">
+    <summary>Карточка педагога</summary>
+    <ul>
+      <li><strong>Навык:</strong> подключить внешний CSS, заменить абсолютные пути и пути со слэшем на относительные.</li>
+      <li><strong>Норматив:</strong> 20–35 мин. Код или блоки. Scaffolding — инструкция, не публикация на платформе.</li>
+      <li><strong>Типичные ошибки:</strong> <code>C:\Users\…</code>; слэш в начале; <code>Pie.SVG</code>; забытый <code>rel</code>; стили внутри <code>&lt;style&gt;</code>.</li>
+      <li><strong>Готово, когда:</strong> 13 зелёных и вслух: почему слэш в начале ломает ссылку после публикации.</li>
+      <li><strong>Усложнение:</strong> найти в Network, какой именно запрос дал 404 (симуляция в DevTools своей страницы).</li>
+      <li><strong>Поддержка:</strong> режим блоков; сначала только <code>link-rel</code>, потом картинка, потом скрипт.</li>
+    </ul>
+  </details>
+
+  <script type="text/plain" id="starter">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный пирог</title>
+
+  <!-- твой код здесь: подключи внешнюю таблицу стилей style.css -->
+
+</head>
+<body>
+  <header class="site-header">
+    <h1>Северный пирог</h1>
+    <p class="tagline">Буфет школы № 12</p>
+  </header>
+
+  <main>
+    <section class="menu">
+      <h2>Меню дня</h2>
+      <img src="/pie.svg" alt="Калитка с картошкой на деревянной доске" width="96" height="96">
+      <article class="card">
+        <h3>Калитка с картошкой</h3>
+        <p class="price">45 ₽</p>
+      </article>
+      <article class="card">
+        <h3>Рыбник</h3>
+        <p class="price">90 ₽</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Пн–пт, 9:00–15:30</p>
+  </footer>
+
+  <script src="C:\Users\Ученик\Desktop\script.js"><\/script>
+</body>
+</html>
+  </script>
+
+  <script type="text/plain" id="etalon">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Северный пирог</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Северный пирог</h1>
+    <p class="tagline">Буфет школы № 12</p>
+  </header>
+
+  <main>
+    <section class="menu">
+      <h2>Меню дня</h2>
+      <img src="pie.svg" alt="Калитка с картошкой на деревянной доске" width="96" height="96">
+      <article class="card">
+        <h3>Калитка с картошкой</h3>
+        <p class="price">45 ₽</p>
+      </article>
+      <article class="card">
+        <h3>Рыбник</h3>
+        <p class="price">90 ₽</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Пн–пт, 9:00–15:30</p>
+  </footer>
+
+  <script src="script.js"><\/script>
+</body>
+</html>
+  </script>
+
+  <script>
+    (function () {
+      const DRAFT_KEY = "wdc-l15-deploy-v1";
+      const MODE_KEY = "wdc-l15-mode-v1";
+      const BASE = location.href.replace(/[^/]*$/, "");
+
+      function readSlot(id) {
+        const raw = document.getElementById(id).textContent;
+        return raw.replace(/<\\\/script>/g, "<" + "/script>").trim();
+      }
+      const STARTER = readSlot("starter");
+      const ETALON = readSlot("etalon");
+
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      const layout = document.getElementById("layout");
+      const paneCode = document.getElementById("paneCode");
+      const paneBlocks = document.getElementById("paneBlocks");
+      const slotsRoot = document.getElementById("slots");
+      const pool = document.getElementById("blockPool");
+      const testsEl = document.getElementById("tests");
+      const hintsEl = document.getElementById("hints");
+      const scoreEl = document.getElementById("score");
+      const bar = document.getElementById("bar");
+      const statusLine = document.getElementById("statusLine");
+      const etalonBtn = document.getElementById("etalonBtn");
+      const etalonBox = document.getElementById("etalonBox");
+      const solCode = document.getElementById("solCode");
+      const modeCode = document.getElementById("modeCode");
+      const modeBlocks = document.getElementById("modeBlocks");
+      solCode.textContent = ETALON;
+
+      const BLOCKS = [
+        { id: "link-rel", accept: "link", label: "Подключение стилей, относительный путь", show: "<link rel=\"stylesheet\" href=\"style.css\">", html: "<link rel=\"stylesheet\" href=\"style.css\">" },
+        { id: "link-root", accept: "link", label: "Подключение стилей, путь от корня", show: "href=\"/style.css\"", html: "<link rel=\"stylesheet\" href=\"/style.css\">" },
+        { id: "link-abs", accept: "link", label: "Подключение стилей, путь с диска", show: "href с C:\\", html: "<link rel=\"stylesheet\" href=\"C:\\Users\\Ученик\\Desktop\\style.css\">" },
+        { id: "link-norel", accept: "link", label: "Подключение стилей без rel", show: "<link href=\"style.css\">", html: "<link href=\"style.css\">" },
+        { id: "img-rel", accept: "img", label: "Картинка, относительный путь", show: "src=\"pie.svg\"", html: "<img src=\"pie.svg\" alt=\"Калитка с картошкой на деревянной доске\" width=\"96\" height=\"96\">" },
+        { id: "img-root", accept: "img", label: "Картинка, путь от корня", show: "src=\"/pie.svg\"", html: "<img src=\"/pie.svg\" alt=\"Калитка с картошкой на деревянной доске\" width=\"96\" height=\"96\">" },
+        { id: "img-caps", accept: "img", label: "Картинка, имя с заглавными", show: "src=\"Pie.SVG\"", html: "<img src=\"Pie.SVG\" alt=\"Калитка с картошкой на деревянной доске\" width=\"96\" height=\"96\">" },
+        { id: "script-rel", accept: "script", label: "Скрипт, относительный путь", show: "src=\"script.js\"", html: "<script src=\"script.js\"><\/script>" },
+        { id: "script-abs", accept: "script", label: "Скрипт, путь с диска", show: "src с C:\\", html: "<script src=\"C:\\Users\\Ученик\\Desktop\\script.js\"><\/script>" }
+      ];
+
+      const HINTS = [
+        "Представь, что твоя страница лежит не на твоём компьютере, а в чужой папке на сервере. Какие из путей в твоём коде там что-нибудь найдут? Путь, начинающийся с C: или со слэша, — это адрес, которого там нет.",
+        "Правило одно: путь внутри проекта — это имя файла и ничего больше. href=\"style.css\", src=\"pie.svg\", src=\"script.js\". Ни слэша в начале, ни диска, ни file://. И у <link> обязателен атрибут rel=\"stylesheet\" — без него браузер молча пропустит строку, и ошибки в консоли не будет.",
+        "<!-- в <head> -->\n<link rel=\"stylesheet\" href=\"style.css\">\n\n<!-- в <body> -->\n<img src=\"pie.svg\" alt=\"Калитка с картошкой на деревянной доске\" width=\"96\" height=\"96\">\n\n<!-- перед </body> -->\n<script src=\"script.js\"><\/script>"
+      ];
+
+      let hintsOpened = 0;
+      let typeTimer = null;
+      let lastPassed = 0;
+      let picked = null;
+
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+      function slotOf(accept) {
+        return slotsRoot.querySelector('.slot[data-accept="' + accept + '"]');
+      }
+      function part(name) {
+        const slot = slotOf(name);
+        const id = slot && slot.dataset.filled;
+        const b = findBlock(id);
+        return b ? b.html : "";
+      }
+      function htmlFromBlocks() {
+        return [
+          "<!DOCTYPE html>",
+          "<html lang=\"ru\">",
+          "<head>",
+          "  <meta charset=\"utf-8\">",
+          "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+          "  <title>Северный пирог</title>",
+          "  " + part("link"),
+          "</head>",
+          "<body>",
+          "  <header class=\"site-header\">",
+          "    <h1>Северный пирог</h1>",
+          "    <p class=\"tagline\">Буфет школы № 12</p>",
+          "  </header>",
+          "  <main>",
+          "    <section class=\"menu\">",
+          "      <h2>Меню дня</h2>",
+          "      " + part("img"),
+          "      <article class=\"card\">",
+          "        <h3>Калитка с картошкой</h3>",
+          "        <p class=\"price\">45 ₽</p>",
+          "      </article>",
+          "      <article class=\"card\">",
+          "        <h3>Рыбник</h3>",
+          "        <p class=\"price\">90 ₽</p>",
+          "      </article>",
+          "    </section>",
+          "  </main>",
+          "  <footer class=\"site-footer\">",
+          "    <p>Пн–пт, 9:00–15:30</p>",
+          "  </footer>",
+          "  " + part("script"),
+          "</body>",
+          "</html>"
+        ].join("\n");
+      }
+      function currentHtml() {
+        return layout.classList.contains("is-blocks") ? htmlFromBlocks() : editor.value;
+      }
+      function withBase(html) {
+        const tag = '<base href="' + BASE + '">';
+        if (/<head[^>]*>/i.test(html)) {
+          return html.replace(/<head([^>]*)>/i, "<head$1>" + tag);
+        }
+        if (/<html[^>]*>/i.test(html)) {
+          return html.replace(/<html([^>]*)>/i, "<html$1><head>" + tag + "</head>");
+        }
+        return "<head>" + tag + "</head>" + html;
+      }
+      function previewDoc(html) {
+        preview.srcdoc = withBase(html);
+      }
+      function slotsMap() {
+        return {
+          link: (slotOf("link") && slotOf("link").dataset.filled) || "",
+          img: (slotOf("img") && slotOf("img").dataset.filled) || "",
+          script: (slotOf("script") && slotOf("script").dataset.filled) || ""
+        };
+      }
+      function saveDraft() {
+        const data = { code: editor.value, slots: slotsMap(), hintsOpened: hintsOpened };
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+      }
+      function schedulePreview() {
+        clearTimeout(typeTimer);
+        typeTimer = setTimeout(function () {
+          previewDoc(currentHtml());
+          saveDraft();
+        }, 280);
+      }
+
+      function stripComments(src) {
+        return src
+          .replace(/<!--[\s\S]*?-->/g, "")
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/(^|[^:\\])\/\/[^\n]*/g, "$1");
+      }
+      function attrVals(src, attr) {
+        const re = new RegExp("\\b" + attr + "\\s*=\\s*[\"']([^\"']+)[\"']", "gi");
+        const out = [];
+        let m;
+        while ((m = re.exec(src))) out.push(m[1]);
+        return out;
+      }
+      function isRelPath(p) {
+        return p.charAt(0) !== "/" && !/C:/i.test(p) && !/file:/i.test(p);
+      }
+
+      /* Тесты: исходник — после удаления комментариев; DOM — в iframe; тест 3 — getComputedStyle */
+      const TESTS = [
+        {
+          name: "Внешняя таблица стилей подключена",
+          hint: "В <head> нет тега <link rel=\"stylesheet\">. Стили лежат в отдельном файле style.css — его надо подключить, а не переписывать в страницу",
+          run: function (src, doc) {
+            return !!doc.querySelector('link[rel="stylesheet"]');
+          }
+        },
+        {
+          name: "Атрибут rel на месте",
+          hint: "Тег <link> есть, но без rel=\"stylesheet\" браузер не понимает, что это стили, и молча игнорирует строку. Ошибки в консоли при этом не будет — это тот самый случай",
+          run: function (src, doc) {
+            const link = doc.querySelector("link");
+            return !!link && String(link.getAttribute("rel") || "").trim().toLowerCase() === "stylesheet";
+          }
+        },
+        {
+          name: "Стили подгрузились: карточка получила оформление из style.css",
+          hint: "Тег подключения есть, но стили не применились. Проверь путь: файл style.css лежит рядом со страницей, значит путь — просто имя файла, без слэша и без папок",
+          run: function (src, doc, win) {
+            const card = doc.querySelector(".card");
+            if (!card || !win) return false;
+            return win.getComputedStyle(card).paddingLeft === "20px";
+          }
+        },
+        {
+          name: "Путь к стилям относительный — сработает и после публикации",
+          hint: "Путь к стилям начинается со слэша или ведёт на диск. На сервере такого адреса нет: в Network будет 404. Убери всё, кроме имени файла",
+          run: function (src) {
+            const hrefs = attrVals(src, "href");
+            return hrefs.length > 0 && hrefs.every(isRelPath);
+          }
+        },
+        {
+          name: "Картинка подключена относительным путём",
+          hint: "У картинки путь от корня или с диска. Проект лежит не в корне сайта, а в папке — слэш в начале уводит браузер не туда",
+          run: function (src) {
+            const srcs = [];
+            const tags = src.match(/<img\b[^>]*>/gi) || [];
+            tags.forEach(function (tag) {
+              const m = tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+              if (m) srcs.push(m[1]);
+            });
+            return srcs.length > 0 && srcs.every(isRelPath);
+          }
+        },
+        {
+          name: "Скрипт подключён относительным путём",
+          hint: "Путь к скрипту ведёт на диск C:. Такой папки на сервере нет ни у кого, кроме тебя",
+          run: function (src) {
+            const srcs = [];
+            const tags = src.match(/<script\b[^>]*>/gi) || [];
+            tags.forEach(function (tag) {
+              const m = tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+              if (m) srcs.push(m[1]);
+            });
+            return srcs.length > 0 && srcs.every(isRelPath);
+          }
+        },
+        {
+          name: "Абсолютных путей в файле не осталось",
+          hint: "В файле ещё остался путь, начинающийся с C: или file://. Найди поиском по коду — их бывает больше одного",
+          run: function (src) {
+            return !/C:\\/i.test(src) && !/C:\//i.test(src) && !/file:/i.test(src);
+          }
+        },
+        {
+          name: "Имена файлов строчными — на сервере найдутся",
+          hint: "В пути есть заглавные буквы. Windows не различает регистр, а сервер различает: Pie.SVG и pie.svg для него разные файлы",
+          run: function (src) {
+            const vals = attrVals(src, "href").concat(attrVals(src, "src"));
+            if (!vals.length) return false;
+            return vals.every(function (v) { return v === v.toLowerCase(); });
+          }
+        },
+        {
+          name: "Картинка pie.svg отображается",
+          hint: "Картинка не загрузилась. Открой превью: на её месте значок сломанного изображения. Дело в пути или в регистре имени",
+          run: function (src, doc) {
+            const img = doc.querySelector("img");
+            return !!(img && img.complete && img.naturalWidth > 0);
+          }
+        },
+        {
+          name: "alt описывает картинку словами",
+          hint: "alt пустой или слишком общий. Он читается вслух незрячим пользователем: «Калитка с картошкой на деревянной доске» — годится, «картинка» — нет",
+          run: function (src) {
+            const m = src.match(/<img\b[^>]*\balt\s*=\s*["']([^"']*)["']/i) || src.match(/\balt\s*=\s*["']([^"']*)["'][^>]*\bsrc/i);
+            const alt = m ? m[1].trim() : "";
+            const bad = ["картинка", "изображение", "фото", "pie"];
+            return alt.length > 10 && bad.indexOf(alt.toLowerCase()) === -1;
+          }
+        },
+        {
+          name: "Подключение стилей в <head>",
+          hint: "<link> попал в <body>. Страница успеет отрисоваться без стилей и мигнёт при загрузке. Перенеси в <head>",
+          run: function (src, doc) {
+            return !!doc.head.querySelector('link[rel="stylesheet"]');
+          }
+        },
+        {
+          name: "Скрипт подключён в конце body",
+          hint: "Скрипт стоит выше разметки: когда он выполнится, элементов ещё не будет и querySelector вернёт null",
+          run: function (src, doc) {
+            const last = doc.body.lastElementChild;
+            if (last && last.tagName === "SCRIPT") return true;
+            const s = doc.querySelector("script[src]");
+            if (s && s.parentNode === doc.body && !s.nextElementSibling) return true;
+            return false;
+          }
+        },
+        {
+          name: "Стили вынесены во внешний файл, в разметке их нет",
+          hint: "В странице остался тег <style>. Стили должны жить только в style.css — иначе их снова придётся копировать на каждую новую страницу",
+          run: function (src) {
+            return !/<\s*style\b/i.test(src);
+          }
+        }
+      ];
+
+      function runOne(t, src, doc, frame) {
+        let ok = false;
+        try { ok = !!t.run(src, doc, frame.contentWindow); }
+        catch (e) { ok = false; }
+        return { name: t.name, hint: t.hint, ok: ok };
+      }
+      function unlockEtalon(why) {
+        etalonBtn.disabled = false;
+        etalonBox.classList.remove("hide");
+        statusLine.textContent = why;
+      }
+      function renderResults(list) {
+        const passed = list.filter(function (r) { return r.ok; }).length;
+        lastPassed = passed;
+        testsEl.innerHTML = list.map(function (r) {
+          return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+            '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + "</span>" +
+            "<div><div>" + r.name + "</div>" +
+            (r.ok ? "" : '<div class="tm-test__hint">' + r.hint + "</div>") +
+            "</div></div>";
+        }).join("");
+        scoreEl.textContent = passed + " / " + list.length;
+        bar.style.width = (passed / list.length * 100) + "%";
+        const done = passed === list.length;
+        const honesty = "Подсказок открыто: " + hintsOpened + "/3";
+        statusLine.textContent = done
+          ? "Задача сдана. " + honesty
+          : honesty + " · ещё собираем";
+        if (done) unlockEtalon("Задача сдана. " + honesty);
+      }
+      function runChecks() {
+        const html = currentHtml();
+        let finished = false;
+        function go() {
+          if (finished) return;
+          finished = true;
+          preview.removeEventListener("load", go);
+          const doc = preview.contentDocument;
+          if (!doc || !doc.body) {
+            renderResults([{ name: "Документ не разобрался", hint: "Проверь незакрытые теги.", ok: false }]);
+            return;
+          }
+          const src = stripComments(html);
+          renderResults(TESTS.map(function (t) { return runOne(t, src, doc, preview); }));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(go, 60);
+        });
+        preview.srcdoc = withBase(html);
+        setTimeout(function () { if (!finished) go(); }, 1200);
+      }
+
+      function makeChip(item) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.dataset.id = item.id;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (b.parentElement && b.parentElement.classList.contains("slot")) {
+            returnChip(b);
+            return;
+          }
+          placeChip(item.id);
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            placeChip(item.id);
+          }
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", item.id);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        return b;
+      }
+      function flashSlotError(block) {
+        const slot = slotOf(block.accept);
+        const el = slot || pool;
+        el.classList.add("is-err");
+        setTimeout(function () { el.classList.remove("is-err"); }, 400);
+      }
+      function returnChip(chip) {
+        const slot = chip.closest(".slot");
+        if (slot) delete slot.dataset.filled;
+        pool.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        previewDoc(currentHtml());
+        saveDraft();
+      }
+      function placeChip(chipId) {
+        const block = findBlock(chipId);
+        if (!block) return;
+        const chip = document.querySelector('.chip[data-id="' + chipId + '"]');
+        if (!chip) return;
+        const slot = [...slotsRoot.querySelectorAll(".slot")]
+          .filter(function (s) { return s.dataset.accept === block.accept && !s.dataset.filled; })[0];
+        if (!slot) { flashSlotError(block); return; }
+        const old = slot.querySelector(".chip");
+        if (old) pool.appendChild(old);
+        slot.appendChild(chip);
+        slot.dataset.filled = chipId;
+        chip.classList.remove("is-picked");
+        picked = null;
+        previewDoc(currentHtml());
+        saveDraft();
+      }
+      function fillBlocks() {
+        pool.innerHTML = "";
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          slot.innerHTML = "";
+          delete slot.dataset.filled;
+        });
+        shuffle(BLOCKS).forEach(function (item) { pool.appendChild(makeChip(item)); });
+      }
+      function restoreSlots(map) {
+        if (!map) return;
+        ["link", "img", "script"].forEach(function (accept) {
+          const id = map[accept];
+          if (id) placeChip(id);
+        });
+      }
+      function bindSlots() {
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          if (picked && picked.closest(".slot")) returnChip(picked);
+        });
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            const inner = slot.querySelector(".chip");
+            if (inner && !picked) returnChip(inner);
+            else if (picked) placeChip(picked.dataset.id);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(picked.dataset.id);
+          });
+        });
+      }
+      function setMode(mode) {
+        const isBlocks = mode === "blocks";
+        layout.classList.toggle("is-blocks", isBlocks);
+        paneCode.classList.toggle("hide", isBlocks);
+        paneBlocks.classList.toggle("hide", !isBlocks);
+        modeCode.setAttribute("aria-selected", String(!isBlocks));
+        modeBlocks.setAttribute("aria-selected", String(isBlocks));
+        modeCode.className = "tm-btn " + (isBlocks ? "tm-btn--ghost" : "tm-btn--primary");
+        modeBlocks.className = "tm-btn " + (isBlocks ? "tm-btn--primary" : "tm-btn--ghost");
+        try { localStorage.setItem(MODE_KEY, isBlocks ? "blocks" : "editor"); } catch (e) {}
+        previewDoc(currentHtml());
+      }
+      function replayHints() {
+        hintsEl.innerHTML = "";
+        for (let i = 0; i < hintsOpened; i += 1) {
+          const p = document.createElement("p");
+          p.className = "hint";
+          p.textContent = "Подсказка " + (i + 1) + ". " + HINTS[i];
+          hintsEl.appendChild(p);
+        }
+        if (hintsOpened >= HINTS.length) unlockEtalon("Эталон открыт: использованы три подсказки. Подсказок открыто: 3/3");
+      }
+      function loadDraft() {
+        let data = null;
+        try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) {}
+        if (!data || typeof data !== "object") {
+          editor.value = STARTER;
+          return;
+        }
+        editor.value = data.code || STARTER;
+        restoreSlots(data.slots || {});
+        hintsOpened = data.hintsOpened || 0;
+        replayHints();
+      }
+
+      editor.addEventListener("input", schedulePreview);
+      document.getElementById("checkBtn").addEventListener("click", function () {
+        clearTimeout(typeTimer);
+        runChecks();
+      });
+      document.getElementById("hintBtn").addEventListener("click", function () {
+        if (hintsOpened >= HINTS.length) return;
+        const p = document.createElement("p");
+        p.className = "hint";
+        p.textContent = "Подсказка " + (hintsOpened + 1) + ". " + HINTS[hintsOpened];
+        hintsEl.appendChild(p);
+        hintsOpened += 1;
+        if (hintsOpened === HINTS.length) unlockEtalon("Эталон открыт: использованы три подсказки. Подсказок открыто: 3/3");
+        saveDraft();
+        statusLine.textContent = "Подсказок открыто: " + hintsOpened + "/3";
+      });
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        editor.value = STARTER;
+        fillBlocks();
+        hintsOpened = 0;
+        hintsEl.innerHTML = "";
+        testsEl.innerHTML = "";
+        scoreEl.textContent = "0 / " + TESTS.length;
+        bar.style.width = "0";
+        etalonBtn.disabled = true;
+        etalonBox.classList.add("hide");
+        statusLine.textContent = "Подсказок открыто: 0/3 · ещё собираем";
+        saveDraft();
+        previewDoc(currentHtml());
+      });
+      document.getElementById("dlBtn").addEventListener("click", function () {
+        const blob = new Blob([currentHtml()], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "l15_moya_rabota.html";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      etalonBtn.addEventListener("click", function () {
+        etalonBox.classList.remove("hide");
+        etalonBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+      modeCode.addEventListener("click", function () { setMode("editor"); });
+      modeBlocks.addEventListener("click", function () { setMode("blocks"); });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const root = document.documentElement;
+        const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+      });
+
+      fillBlocks();
+      bindSlots();
+      loadDraft();
+      let savedMode = "editor";
+      try {
+        const m = localStorage.getItem(MODE_KEY);
+        if (m === "blocks" || m === "editor") savedMode = m;
+      } catch (e) {}
+      setMode(savedMode);
+    })();
+  </script>
+</body>
+</html>

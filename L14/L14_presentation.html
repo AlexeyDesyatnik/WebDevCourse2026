@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 14. GitHub: Pull Request и Code Review</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 14</strong>
+      <span>GitHub: Pull Request и Code Review</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 17</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Сегодня контрольная точка программы. К концу занятия у каждого должен быть принятый Pull Request. Не написанный код — именно принятый PR.» -->
+        <p class="tm-eyebrow">►► Модуль 5 · Занятие 14</p>
+        <h1>Pull Request и Code Review</h1>
+        <p>Как изменения попадают в основную версию — и почему не сразу</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L14_trainer_pr.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--primary" href="../L13/L13_presentation.html">►► Занятие 13</a>
+          <a class="tm-btn tm-btn--primary" href="../L15/L15_presentation.html">►► Занятие 15</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Ветка main — это такая тетрадь. Поэтому в неё не пишут напрямую. Пишут в черновик, а потом просят перенести.» -->
+        <p class="tm-eyebrow">►► Знакомая ситуация</p>
+        <h2>Общая тетрадь без черновика</h2>
+        <p>Все пишут одновременно, сразу ручкой. Ошибся — не исправить. Написал поверх чужого — чужое пропало</p>
+      </section>
+
+      <section class="slide">
+        <!-- «На занятии 15 сайт публикуется из main. Что лежит в main — то и увидят по ссылке. Поэтому туда не должно попадать непроверенное.» -->
+        <p class="tm-eyebrow">►► Зачем это в проекте</p>
+        <h2>Что даёт процедура</h2>
+        <ul class="tm-list">
+          <li>незаконченное не попадает в основную версию</li>
+          <li>код читает человек до публикации</li>
+          <li>у изменения появляется документ: зачем оно</li>
+          <li>третий элемент критерия «Культура работы с Git»</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Кнопка — одна секунда из семи шагов. Забывают обычно третий: PR создаётся из ветки, которая есть на сервере.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Pull Request — заявка, а не кнопка</h2>
+        <p>Семь шагов: ветка → коммиты → отправка на сервер → описание → ревью → доработка → принятие</p>
+        <pre class="tm-code"><span class="hl">git push -u origin feature/sort-price</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Третий блок снимает половину замечаний. Если вы сами сказали, чего здесь нет, — про это не напишут.» -->
+        <p class="tm-eyebrow">►► Что пишут в PR</p>
+        <h2>Описание из трёх блоков</h2>
+        <ul class="tm-list">
+          <li><strong>Что сделано</strong> — по пункту на файл</li>
+          <li><strong>Как проверить</strong> — пронумерованные шаги</li>
+          <li><strong>Что осталось</strong> — честно, чего здесь нет</li>
+        </ul>
+        <pre class="tm-code">Заголовок: Сортировка меню по цене
+
+## Что сделано
+- в script.js добавлена функция sortByPrice
+- в index.html добавлена кнопка «Сначала дешёвые»
+
+<span class="hl">## Как проверить
+1. открыть index.html
+2. нажать «Сначала дешёвые»
+3. 45 ₽ первой, 90 ₽ последней
+4. проверить на 320 px</span>
+
+## Что осталось
+- обратная сортировка — отдельной задачей</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Технически PR создан. Практически он провисит до конца занятия, и контрольная точка не закроется.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2><code>Update script.js</code> + пустое описание</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Ревьюер не знает: что изменилось · как проверить · законченная ли работа. Пойдёт читать диф с нуля и напишет «выглядит нормально»</p>
+          <pre class="tm-code">Заголовок: Update script.js
+Описание: (пусто)</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Без списка ревью — это "мне нравится". Список короткий именно поэтому: длинный никто не выполняет.» -->
+        <p class="tm-eyebrow">►► Понятие 2</p>
+        <h2>Code Review: пять пунктов</h2>
+        <ul class="tm-list">
+          <li>понятны ли имена</li>
+          <li>нет ли мусора и <code>console.log</code></li>
+          <li>работает ли на 320 px</li>
+          <li>обработаны ли пустые данные</li>
+          <li>может ли автор объяснить</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Не вразнобой, а по пунктам подряд. Так находится пять из пяти, вразнобой — три из пяти.» -->
+        <p class="tm-eyebrow">►► Ищем вместе</p>
+        <h2>Найдите здесь три нарушения</h2>
+        <p>Читаем по пунктам: сначала все имена, потом весь мусор, потом нештатные ситуации</p>
+        <pre class="tm-code"><span class="hl">const b = document.querySelector(".sort-btn");</span>
+<span class="hl">// const old = document.querySelector(".button-old");</span>
+b.addEventListener("click", function () {
+  const arr = PIES.sort((x, y) =&gt; x.price - y.price);
+  document.querySelector(".list").innerHTML = "";
+<span class="hl">  console.log("отсортировал");</span>
+});</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Замечание должно быть исполнимым. Прочитал — и сразу знаешь, что делать. Всё остальное — не замечание.» -->
+        <h2>Обсуждаем код, а не <span class="hl">человека</span></h2>
+        <p>«На 320 px кнопка выезжает за край» — работает. «Ты не подумал о телефоне» — не работает</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Сверху — вариант main. Снизу — вариант ветки. Ничего страшного: прочитали, решили, убрали три служебные строки.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>Merge — и конфликт</h2>
+        <p>Конфликт возникает при одном условии: <strong>одну и ту же строку</strong> изменили в двух ветках по-разному. Git не угадывает — он выкладывает оба варианта</p>
+        <pre class="tm-code"><span class="hl">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+  { id: "kalitka", name: "Калитка с картошкой", price: 50, kind: "солёное" },
+=======
+  { id: "kalitka", name: "Калитка с картошкой", price: 55, kind: "солёное" },
+<span class="hl">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/price-update</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Это худшая ошибка сегодняшнего дня: она молчит. Правило: из конфликта остаётся хотя бы один вариант, а не ноль.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>Удалить весь спорный кусок</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Служебные строки исчезли, страница открылась, ошибок нет. И калитка пропала из меню совсем — заметят через занятие</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Поднимите руку, кто думает, что конфликт будет. А теперь — кто думает, что нет. Проверим на практике.» -->
+        <p class="tm-eyebrow">►► Вопрос</p>
+        <h2>Вы правите строку 10, напарник — строку 80. Конфликт?</h2>
+        <p>Один файл. Разные строки. Что скажет Git?</p>
+        <p class="muted">Обсуждаем вслух, ответ не показываем сразу</p>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Первый раз на курсе. Норма: не меньше трёх замечаний в чужом PR. "Всё супер" — это не ревью.» -->
+        <h2>Сегодня ваш код читает <span class="hl">одноклассник</span></h2>
+        <p>Не педагог. Одноклассник. И вы читаете его код</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Задачи у всех разные — так интереснее читать чужое. Берите с карточки.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 45 минут</h2>
+        <ul class="tm-list">
+          <li>ветка со своей задачей из списка</li>
+          <li>PR с описанием в три блока</li>
+          <li>три замечания в PR напарника</li>
+          <li>закрыть замечания к своему</li>
+          <li>разобрать конфликт</li>
+          <li>принять PR</li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L14_trainer_pr.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Пятый пункт — именно "слит", а не "закрыт". Закрытый без слияния PR контрольную точку не закрывает.» -->
+        <p class="tm-eyebrow">►► Сделано, если</p>
+        <h2>Шесть пунктов приёмки</h2>
+        <ul class="tm-list">
+          <li>PR создан, описание в три блока</li>
+          <li>в «Как проверить» есть 320 px</li>
+          <li>три замечания в чужом PR, привязаны к строкам</li>
+          <li>все замечания к своему закрыты</li>
+          <li>PR слит, ветка удалена</li>
+          <li>в файле ноль строк с <code>&lt;&lt;&lt;</code> и <code>===</code></li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Порядок такой: сначала прогнали через модель, потом отдали человеку. Тогда человек смотрит на смысл, а не на опечатки.» -->
+        <p class="tm-eyebrow">►► ИИ в работе</p>
+        <h2>Модель — первый ревьюер, человек — второй</h2>
+        <p>Модель ловит механическое: имена, <code>console.log</code>, необработанный пустой массив. Пункты 3 и 5 остаются человеку: она не открывала страницу и не спросит вас про строку</p>
+        <pre class="tm-code">Контекст: я школьник, делаю учебный сайт школьного буфета на чистых
+HTML, CSS и JavaScript, без фреймворков и без сборщиков. Код ниже —
+изменения, которые я собираюсь отправить в Pull Request.
+
+Задача: проведи Code Review этого фрагмента по чек-листу из пяти пунктов:
+1) понятны ли имена переменных и функций;
+2) нет ли закомментированного кода, отладочных console.log и alert;
+3) есть ли риски на узком экране (ширина 320 px) — по коду, без запуска;
+4) обработаны ли нештатные ситуации: пустой массив, пустой ввод,
+   отсутствие элемента на странице;
+5) есть ли места, которые трудно объяснить словами.
+
+Код:
+&lt;&lt;&lt; сюда вставить свой фрагмент &gt;&gt;&gt;
+
+Ограничения:
+- не переписывай код целиком, только укажи на места;
+- каждое замечание — по формуле: строка или фрагмент + что не так +
+  почему это плохо;
+- не предлагай подключать библиотеки, фреймворки и сборщики;
+- не хвали код, хвалить не нужно;
+- если по какому-то пункту замечаний нет — так и напиши.
+
+Формат ответа: список замечаний, сгруппированный по пяти пунктам
+чек-листа. Не больше восьми замечаний всего.
+
+Критерии проверки: каждое замечание я должен уметь исполнить, не задавая
+уточняющих вопросов.</pre>
+        <p><strong>Проверить руками:</strong> замечание указывает на существующее место · нет библиотек и фреймворков · пункт 3 проверен тобой в браузере на 320 px · пункт 5 — объясни вслух · страница после правок работает</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+
+      <section class="slide">
+        <!-- «И правило курса: сдаётся только то, что ты можешь объяснить. На ревью это пятый пункт чек-листа — вас спросят про любую строку.» -->
+        <p class="tm-eyebrow">►► Итог</p>
+        <h2>Контрольная точка закрыта</h2>
+        <p>Принятый Pull Request — это не кнопка. Это ветка, описание, чужие глаза, ваши правки и общее решение</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L14_trainer_pr.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L15/L15_presentation.html">►► Занятие 15</a>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 14</h3>
+      <dl>
+        <dt>Pull Request (PR)</dt>
+        <dd>Заявка на перенос изменений из своей ветки в основную. Состоит из семи шагов: ветка, коммиты, отправка, описание, ревью, доработка, принятие.</dd>
+        <dt>Code Review</dt>
+        <dd>Чтение чужого кода перед принятием по конкретному чек-листу. На курсе чек-лист из пяти пунктов: имена, мусор, узкий экран, нештатные ситуации, объяснимость.</dd>
+        <dt>Merge (слияние)</dt>
+        <dd>Перенос коммитов одной ветки в другую. Техническое действие; Pull Request — процедура вокруг него.</dd>
+        <dt>Коммит слияния</dt>
+        <dd>Коммит, который создаётся при принятии Pull Request. Содержит номер PR, по которому потом находят обсуждение и замечания.</dd>
+        <dt>Конфликт слияния</dt>
+        <dd>Ситуация, когда одну и ту же строку изменили в двух ветках по-разному. Git не выбирает сам: он выкладывает оба варианта в файл и ждёт решения человека.</dd>
+        <dt>Служебные строки конфликта</dt>
+        <dd><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code>, <code>=======</code> и <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; имя-ветки</code>. Отмечают границы двух вариантов. После разрешения конфликта в файле не должно остаться ни одной из них.</dd>
+        <dt>Диф</dt>
+        <dd>Построчное сравнение до и после. Зелёные строки со знаком + добавлены, красные со знаком − удалены. Ревьюер читает диф, а не весь файл.</dd>
+        <dt>Ветка-фича</dt>
+        <dd>Ветка под одну задачу, живущая от начала работы до принятия PR. После слияния удаляется. Именуется feature/имя-задачи или fix/что-чинится, латиницей в нижнем регистре.</dd>
+        <dt>Замечание по существу</dt>
+        <dd>Комментарий к конкретной строке по формуле «место + что не так + почему». Отличается от оценочной реплики тем, что его можно исполнить, не задавая вопросов.</dd>
+        <dt>Первый ревьюер</dt>
+        <dd>Роль ИИ на курсе: модель ищет механические огрехи (имена, отладочные строки, необработанный пустой массив) до того, как код прочитает человек. Проверку на узком экране и объяснимость кода она закрыть не может.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

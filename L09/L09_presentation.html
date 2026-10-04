@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 9. Объекты, массивы, методы</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 9</strong>
+      <span>Объекты, массивы, методы</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «На экране сегодня ничего не изменится. Всё будет в консоли. И это самое важное занятие первой половины модуля» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 4 · ЗАНЯТИЕ 9</p>
+        <h1>Объекты, массивы, методы</h1>
+        <p class="lead">Занятие 9 из 24. Сегодня появляется структура, на которой держится весь ваш будущий проект.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L08/L08_presentation.html">►► Занятие 8</a>
+          <a class="tm-btn tm-btn--primary" href="L09_trainer_data.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L10/L10_presentation.html">►► Занятие 10</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Данные надо описать отдельно от того, как они показываются. Сегодня про это» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Кто-то хочет только сладкое»</h2>
+        <p>Марина Петровна: «Пусть выбирают». Но чтобы отфильтровать сладкое, скрипту надо знать, какой пирог сладкий. Разметка ему этого не говорит</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Отсчёт с нуля кажется странным один день. Потом перестаёте замечать» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Массив: список значений</h2>
+        <ul class="tm-list">
+          <li>Квадратные скобки, значения через запятую</li>
+          <li>Индекс <strong>с нуля</strong>: первый — нулевой</li>
+          <li><code>length</code> — длина; последний — <code>length - 1</code></li>
+          <li>Количество нигде не зашито</li>
+        </ul>
+        <pre class="tm-code">const prices = [45, 50, 90, 70, 85, 60];
+<span class="hl">prices[0];      // 45</span>
+prices.length;  // 6</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Одна вещь — один объект. Название и цена связаны по-настоящему, а не по похожим именам переменных» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Объект: одна вещь целиком</h2>
+        <ul class="tm-list">
+          <li>Фигурные скобки, пары «имя: значение»</li>
+          <li>Через точку — когда имя известно</li>
+          <li>Через скобки — когда имя в переменной</li>
+        </ul>
+        <pre class="tm-code">const rybnik = {
+<span class="hl">  name: "Рыбник",</span>
+  price: 90,
+  kind: "солёное"
+};
+rybnik.price;  // 90</pre>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>Вот на этой структуре будет держаться <span class="hl">ваш Dashboard</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Привычки, задачи, фильмы, матчи — все шесть тем вашего проекта устроены ровно так» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Массив объектов</h2>
+        <ul class="tm-list">
+          <li>Список однотипных анкет</li>
+          <li>Сначала индекс, потом свойство</li>
+          <li><strong>Набор свойств одинаков у всех</strong></li>
+        </ul>
+        <pre class="tm-code">const PIES = [
+<span class="hl">  { id: "rybnik", name: "Рыбник", price: 90, kind: "солёное" },</span>
+  { id: "brusnika", name: "Брусничный пирог", price: 70, kind: "сладкое" }
+];
+PIES[0].name;   // "Рыбник"</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Одна вещь — один объект. Если у сущности больше одной характеристики, это объект» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Параллельные массивы</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Связь держится только на совпадении индексов. Отсортировали один — и цена рыбника досталась калитке. Найти такую ошибку почти невозможно</p>
+          <pre class="tm-code">const names  = ["Калитка", "Рыбник"];
+const prices = [45, 90];
+const kinds  = ["солёное", "солёное"];</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «filter не фильтрует существующий массив. Он создаёт новый» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>filter</code>: отобрать нужное</h2>
+        <ul class="tm-list">
+          <li>Возвращает <strong>новый</strong> массив</li>
+          <li>Исходный не меняется</li>
+          <li>Ничего не подошло — пустой массив <code>[]</code>, не <code>undefined</code></li>
+          <li><strong>Результат обязательно присваиваем</strong></li>
+        </ul>
+        <pre class="tm-code"><span class="hl">const sweet = PIES.filter((pie) =&gt; pie.kind === "сладкое");</span>
+sweet.length;   // 3
+PIES.length;    // по-прежнему 6</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Взять — отобрать — преобразовать — склеить. Так пишут в настоящем коде» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2><code>map</code> и <code>join</code>: преобразовать и склеить</h2>
+        <ul class="tm-list">
+          <li><code>map</code> — длина результата <strong>та же</strong></li>
+          <li><code>join(", ")</code> — склеить в строку</li>
+          <li>Методы ставятся цепочкой, читается сверху вниз</li>
+        </ul>
+        <pre class="tm-code">PIES
+  .filter((pie) =&gt; pie.kind === "сладкое")
+<span class="hl">  .map((pie) =&gt; pie.name)</span>
+  .join(", ");</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Десять секунд. Отличие в двух вещах сразу» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Чем <code>filter</code> отличается от <code>find</code>?</h2>
+        <p>Обсуждаем вслух. Подсказка: дело в том, что возвращается</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Знакомая ошибка: Cannot read properties of undefined. На занятии 8 было null, смысл тот же» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2><code>find</code>: один элемент</h2>
+        <ul class="tm-list">
+          <li>Возвращает <strong>первый подходящий</strong>, не массив</li>
+          <li>Не нашёл — <code>undefined</code></li>
+          <li>Обращение к свойству у <code>undefined</code> роняет программу</li>
+          <li><strong>Результат проверяем</strong></li>
+        </ul>
+        <pre class="tm-code">const pie = PIES.find((p) =&gt; p.id === "rybnik");
+<span class="hl">if (pie === undefined) {
+  console.log("Такого пирога нет");
+}</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Сейчас покажу вживую. Готовьтесь удивиться» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>sort()</code> без функции сравнения</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <p>Сто меньше сорока пяти? Он сравнил как строки: «100» начинается с единицы</p>
+          <pre class="tm-code">[45, 100, 90, 8].sort();
+// [100, 45, 8, 90]</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сортируешь — сначала копируй. Иначе испортишь данные и узнаешь об этом далеко отсюда» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Две ловушки <code>sort</code></h2>
+        <ul class="tm-list">
+          <li>Для чисел — функция сравнения <code>(a, b) =&gt; a - b</code></li>
+          <li><code>sort</code> <strong>меняет исходный массив</strong>, в отличие от <code>filter</code> и <code>map</code></li>
+          <li>Поэтому сначала копия: <code>[...pies]</code></li>
+        </ul>
+        <pre class="tm-code"><span class="hl">const copy = [...pies];</span>
+<span class="hl">copy.sort((a, b) =&gt; a.price - b.price);</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Карточки на страницу будем рисовать на следующем занятии. Сегодня — данные» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Описываешь массив <code>PIES</code> из шести объектов</li>
+          <li>Четыре функции: отбор, сортировка, поиск, сборка строки</li>
+          <li>Всё проверяешь в консоли</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> <code>getByKind</code> даёт 3/3/6, после <code>sortByPrice</code> исходный массив цел, <code>getById</code> не падает на несуществующем, счётчик с прошлого занятия работает</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--ghost" href="../L08/L08_presentation.html">►► Занятие 8</a>
+          <a class="tm-btn tm-btn--primary" href="L09_trainer_data.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L10/L10_presentation.html">►► Занятие 10</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Прежде чем писать, спросите себя: что должно получиться на выходе? Ответ подскажет метод» -->
+        <p class="tm-eyebrow">►► ЗАЧЕМ</p>
+        <h2>Четыре метода — четыре вопроса</h2>
+        <ul class="tm-list">
+          <li>Нужен <strong>список подходящих</strong> → <code>filter</code></li>
+          <li>Нужен <strong>список преобразованных</strong> → <code>map</code></li>
+          <li>Нужен <strong>один элемент</strong> → <code>find</code></li>
+          <li>Нужен <strong>порядок</strong> → <code>sort</code> (с копией и сравнением)</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольная проверка: попросите отсортировать [45, 100, 90, 8] и не подсказывайте про функцию сравнения. Посмотрим, ошибётся ли она так же, как ошибаются люди» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: объясни разницу методов на жизненном примере</h2>
+        <pre class="tm-code">Ты объясняешь концепции программирования подростку 14 лет на жизненных примерах.
+Контекст: ученик второй недели изучения JavaScript. Знает переменные, типы, функции, условие. Сегодня разбирает массивы объектов и методы `filter`, `map`, `find`, `sort`.
+Задача: объясни разницу между `filter`, `map` и `find` на одном сквозном жизненном примере — не на коде и не на массивах.
+Ограничения: пример должен быть один и тот же для всех трёх методов; не используй слова «массив», «элемент», «функция» внутри самого примера; не пиши код; не бери примеры про сортировщик почты и про конвейер — они уже разобраны на занятии; не длиннее трёх предложений на метод.
+Формат ответа: сначала описание ситуации в двух предложениях, потом три абзаца — по одному на метод. В каждом абзаце отдельной строкой: что получится на выходе и сколько штук.
+Критерии проверки: пример один на все три метода; из объяснения ясно, что `filter` может вернуть меньше, `map` — столько же, `find` — одну штуку или ничего.</pre>
+        <p><strong>Проверить руками:</strong> пример один на три метода · верно про количество на выходе · сказано про «ничего» у <code>find</code> · нет слов «массив» и «элемент» внутри примера · понял бы одноклассник · кода нет</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 9</h3>
+      <dl>
+        <dt>Массив</dt>
+        <dd>Упорядоченный список значений в квадратных скобках.</dd>
+        <dt>Индекс</dt>
+        <dd>Номер элемента в массиве. Отсчёт с нуля; последний элемент имеет индекс <code>length - 1</code>.</dd>
+        <dt>length</dt>
+        <dd>Количество элементов в массиве.</dd>
+        <dt>Объект</dt>
+        <dd>Набор пар «имя — значение» в фигурных скобках. Описывает одну вещь.</dd>
+        <dt>Свойство (ключ)</dt>
+        <dd>Одна пара внутри объекта.</dd>
+        <dt>Запись через точку</dt>
+        <dd>Обращение к свойству по известному имени: <code>pie.price</code>.</dd>
+        <dt>Запись через квадратные скобки</dt>
+        <dd>Обращение по имени, лежащему в переменной: <code>pie[field]</code>.</dd>
+        <dt>Массив объектов</dt>
+        <dd>Список однотипных записей. Главная структура данных курса.</dd>
+        <dt>forEach</dt>
+        <dd>Пройти по каждому элементу и что-то сделать. Результат не возвращает.</dd>
+        <dt>filter</dt>
+        <dd>Построить новый массив из подходящих элементов. Исходный не меняет. Ничего не подошло — пустой массив.</dd>
+        <dt>map</dt>
+        <dd>Построить новый массив, преобразовав каждый элемент. Длина результата равна исходной.</dd>
+        <dt>find</dt>
+        <dd>Вернуть первый подходящий элемент. Не нашёл — <code>undefined</code>.</dd>
+        <dt>join</dt>
+        <dd>Склеить массив в строку через указанный разделитель.</dd>
+        <dt>sort</dt>
+        <dd>Упорядочить массив. <strong>Меняет исходный массив</strong>, поэтому перед ним делают копию.</dd>
+        <dt>Функция сравнения</dt>
+        <dd>То, что передают в <code>sort</code> для чисел: <code>(a, b) =&gt; a - b</code>. Возвращает число, а не логическое значение.</dd>
+        <dt>Копия массива [...arr]</dt>
+        <dd>Новый массив с теми же элементами. Делается перед сортировкой, чтобы не испортить исходный.</dd>
+        <dt>Безымянная функция</dt>
+        <dd>Функция без имени, переданная прямо в метод: <code>pies.filter((pie) =&gt; pie.kind === "сладкое")</code>.</dd>
+        <dt>Цепочка методов</dt>
+        <dd>Запись, где результат одного метода идёт на вход следующему: <code>.filter().map().join()</code>.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

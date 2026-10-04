@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 24 · Тренажёр: карточка речи и банк вопросов</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    .brief .tm-eyebrow { margin: 0 0 8px; }
+    .hide { display: none !important; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .course-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    h2 { font-size: 1.15rem; margin: 0 0 10px; }
+    h3 { font-size: 1.05rem; margin: 0 0 8px; }
+    .pane__help { margin: 0 0 12px; color: var(--tm-muted); font-size: .95em; }
+    .speech-block { margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--tm-border); }
+    .speech-block:last-of-type { border-bottom: 0; margin-bottom: 0; }
+    .speech-meta { margin: 0 0 6px; color: var(--tm-muted); font-size: .95em; }
+    .prompt-q { margin: 0 0 10px; font-weight: 600; }
+    .field { display: block; margin: 10px 0 0; font-weight: 700; }
+    textarea, input[type="number"], input[type="text"] {
+      display: block;
+      width: 100%;
+      margin: 6px 0 0;
+      padding: 10px 12px;
+      font: inherit;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    input[type="number"] { max-width: 7rem; }
+    .field-msg { color: var(--tm-fail); font-size: .9em; font-weight: 400; margin: 6px 0 0; }
+    .field-msg:empty { display: none; }
+    .timebox {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: var(--tm-radius-sm);
+      border: 2px solid var(--tm-border);
+      background: var(--tm-bg-alt);
+      font-weight: 700;
+    }
+    .timebox.is-ok { border-color: var(--tm-ok); color: var(--tm-ok); }
+    .timebox.is-warn { border-color: var(--tm-warn); color: var(--tm-warn); }
+    .timebox.is-fail { border-color: var(--tm-fail); color: var(--tm-fail); }
+    .timebox .note { display: block; margin-top: 4px; font-weight: 400; color: var(--tm-muted); font-size: .95em; }
+    .q-stage { min-height: 120px; padding: 16px; border-radius: var(--tm-radius-sm); background: var(--tm-green-soft); margin: 0 0 12px; }
+    .q-stage__group { margin: 0 0 6px; font-size: .85em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--tm-green-dark); }
+    .q-stage__text { margin: 0; font-size: 1.15rem; font-weight: 700; }
+    .q-stage.is-empty { background: var(--tm-bg-alt); }
+    .q-stage.is-empty .q-stage__text { font-weight: 400; color: var(--tm-muted); }
+    .timer { font-size: 2rem; font-weight: 700; letter-spacing: -.03em; margin: 0 0 12px; }
+    .timer.is-end { color: var(--tm-fail); }
+    .q-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .self-table { width: 100%; border-collapse: collapse; }
+    .self-table th, .self-table td { text-align: left; padding: 10px 6px; border-bottom: 1px solid var(--tm-border); vertical-align: top; }
+    .self-table textarea { min-height: 72px; }
+    .self-sum { margin: 12px 0 0; font-weight: 700; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-code-bg); color: var(--tm-code-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 15px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .minute-item { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--tm-border); cursor: pointer; }
+    .minute-item:last-child { border-bottom: 0; }
+    .minute-item input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--tm-green); }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 24 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Карточка речи и банк вопросов</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 12</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<nav class="course-links" aria-label="Соседние материалы">
+  <a class="tm-btn tm-btn--ghost" href="L24_presentation.html">Презентация</a>
+  <a class="tm-btn tm-btn--ghost" href="../L23/L23_trainer_qa.html">Тренажёр 23</a>
+  <a class="tm-btn tm-btn--ghost" href="../projects/index.html">Витрина тем</a>
+</nav>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Три части. Первая — карточка речи: заполни пять блоков своими словами, тренажёр проверит структуру и посчитает время. Вторая — банк вопросов: тяни случайные вопросы и отвечай вслух на время. Третья — лист самооценки на 30 баллов с обоснованием. Порог: карточка принята валидатором, десять вопросов вытянуто и отмечено как отвеченные, лист заполнен целиком.</p>
+  <p class="pane__help" style="margin:10px 0 0">Речь пишет только ученик. Тренажёр не генерирует выступление и не показывает готового текста.</p>
+</section>
+
+<div class="tabs" role="tablist" aria-label="Части тренажёра">
+  <button class="tm-btn tm-btn--primary" id="tabSpeech" role="tab" aria-selected="true" type="button">Карточка речи</button>
+  <button class="tm-btn tm-btn--ghost" id="tabQuestions" role="tab" aria-selected="false" type="button">Банк вопросов</button>
+  <button class="tm-btn tm-btn--ghost" id="tabSelf" role="tab" aria-selected="false" type="button">Самооценка</button>
+</div>
+
+<section class="tm-card" id="paneSpeech" role="tabpanel" aria-labelledby="tabSpeech">
+  <p class="tm-eyebrow">►► КАРТОЧКА РЕЧИ</p>
+  <p class="pane__help">Пять блоков своими словами. Под каждым — вопрос, а не готовая фраза: её скопирует вся группа. Ничего никуда не отправляется.</p>
+  <div id="speechBox"></div>
+  <div class="timebox" id="timeBox" aria-live="polite">
+    примерно 0 секунд — проверь секундомером вслух
+    <span class="note">Оценка приблизительная: тренажёр считает по количеству символов и не знает твоего темпа.</span>
+  </div>
+</section>
+
+<section class="tm-card hide" id="paneQuestions" role="tabpanel" aria-labelledby="tabQuestions" hidden>
+  <p class="tm-eyebrow">►► БАНК ВОПРОСОВ</p>
+  <p class="pane__help">Тяни вопрос, отвечай вслух, пока идёт 30 секунд. «Ответил» убирает вопрос из банка. «Не смог» возвращает его — он выпадет снова. Вопросы не повторяются, пока банк не кончится.</p>
+  <p class="status-line" id="qCount">Вытянуто 0, ответил 0</p>
+  <div class="q-stage is-empty" id="qStage">
+    <p class="q-stage__group" id="qGroup"></p>
+    <p class="q-stage__text" id="qText">Нажми «Вытянуть вопрос» и отвечай вслух.</p>
+  </div>
+  <p class="timer" id="qTimer">30</p>
+  <div class="q-actions">
+    <button class="tm-btn tm-btn--primary" id="drawBtn" type="button">Вытянуть вопрос</button>
+    <button class="tm-btn tm-btn--ghost" id="okBtn" type="button" disabled>Ответил</button>
+    <button class="tm-btn tm-btn--ghost" id="failBtn" type="button" disabled>Не смог</button>
+  </div>
+</section>
+
+<section class="tm-card hide" id="paneSelf" role="tabpanel" aria-labelledby="tabSelf" hidden>
+  <p class="tm-eyebrow">►► САМООЦЕНКА</p>
+  <p class="pane__help">Ценность в обосновании, а не в числе. «Хорошо сделал» — не обоснование. Сумму впиши сам и сверь со сложением строк.</p>
+  <div id="selfBox"></div>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать карточку</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Чек-лист последней минуты</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► ЧЕК-ЛИСТ ПОСЛЕДНЕЙ МИНУТЫ</p>
+  <p class="pane__help">Это не эталон речи. Готового текста выступления здесь нет. Отметь перед выходом.</p>
+  <div id="minuteList"></div>
+</section>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Структура защиты</dt><dd>Пять частей по 30–40 секунд: проблема, демонстрация, фрагмент кода, роль ИИ, что доработал бы. Порядок не меняется.</dd>
+    <dt>Демонстрация</dt><dd>Показ работы продукта действиями по публичной ссылке. Если фразу можно произнести, не трогая мышь, это не демонстрация.</dd>
+    <dt>Три уровня объяснения кода</dt><dd>Что делает в целом, как делает, что на границе. Третий уровень отличает понимание от заучивания.</dd>
+    <dt>Самооценка</dt><dd>Выставление себе баллов по пяти критериям с обоснованием по каждому. Ценность в обосновании, а не в числе.</dd>
+    <dt>«Не проверял»</dt><dd>Нормальный честный ответ, если этого не проверял. Выдуманный ответ вскрывается следующим вопросом.</dd>
+  </dl>
+</section>
+
+<details class="teacher">
+  <summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> пятичастная речь своими словами, ответ вслух за 30 секунд, самооценка с обоснованием.</li>
+    <li><strong>Норматив:</strong> 15–20 мин. «Проверить» смотрит все три вкладки; переключение их не сбрасывает.</li>
+    <li><strong>Типичные ошибки:</strong> приветствие в первом блоке; техника вместо задачи; демо описанием; имена методов в «что делает»; «к сожалению»; «Не смог» без повторной попытки.</li>
+    <li><strong>Зачёт:</strong> тесты 1–5 все; тест 6 обязателен; тесты 8 и 9 обязательны; тест 11 обязателен. После порога или трёх подсказок открывается только чек-лист последней минуты.</li>
+    <li><strong>Эталона речи нет.</strong> Не добавлять готовый текст выступления ни в разбор, ни в подсказки.</li>
+    <li><strong>Усложнение:</strong> ответить на все пять вопросов про ИИ; произнести карточку секундомеру.</li>
+    <li><strong>Упрощение:</strong> сначала блоки 1 и 2; банк — только группа «про продукт» вместе с педагогом.</li>
+    <li><strong>ИИ:</strong> можно попросить яснее одну свою фразу. Нельзя: «напиши речь на три минуты».</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  "use strict";
+
+  const DRAFT_KEY = "wdc-l24-defense-v1";
+  /* ~15 знаков/с ≈ 400–450 слов на три минуты. Оценка, не секундомер. */
+  const CHARS_PER_SEC = 15;
+  const DEMO_VERBS = ["добавляю", "нажимаю", "отмечаю", "переключаю", "ввожу", "открываю", "отправляю"];
+  const TECH = [/\bhtml\b/i, /\bcss\b/i, /\bjavascript\b/i, /\blocalstorage\b/i, /\bapi\b/i, /\bgrid\b/i, /\bflexbox\b/i, /фреймворк/i];
+  const METHODS = [/\bfilter\b/i, /\bmap\b/i, /\bforeach\b/i, /\bqueryselector\b/i, /\baddeventlistener\b/i, /\bpush\b/i];
+  const GREET = [/^здравствуйте/i, /^меня зовут/i, /^я представляю/i];
+
+  const CRITERIA = [
+    { name: "Соответствие ТЗ", max: 10 },
+    { name: "Адаптивность и качество UI/UX", max: 5 },
+    { name: "Культура работы с Git", max: 5 },
+    { name: "Осознанное применение ИИ", max: 5 },
+    { name: "Защита и презентация", max: 5 }
+  ];
+
+  const QUESTIONS = [
+    { n: 1, group: "Про продукт", text: "Что было самым трудным в проекте?" },
+    { n: 2, group: "Про продукт", text: "Покажите фрагмент кода и объясните, что он делает." },
+    { n: 3, group: "Про продукт", text: "Что произойдёт, если сервис данных недоступен?" },
+    { n: 4, group: "Про продукт", text: "Где хранятся данные и что будет, если открыть панель на другом устройстве?" },
+    { n: 5, group: "Про продукт", text: "Почему вы выбрали такую структуру данных?" },
+    { n: 6, group: "Про продукт", text: "Что случится, если отправить форму с пустым полем?" },
+    { n: 7, group: "Про продукт", text: "Как ваша панель ведёт себя на телефоне?" },
+    { n: 8, group: "Про продукт", text: "Что увидит человек, открывший панель впервые?" },
+    { n: 9, group: "Про ИИ", text: "Что именно вы делали с помощью ИИ?" },
+    { n: 10, group: "Про ИИ", text: "Как вы проверяли то, что дала модель?" },
+    { n: 11, group: "Про ИИ", text: "Была ли ситуация, когда модель ошиблась? Что вы сделали?" },
+    { n: 12, group: "Про ИИ", text: "Какую функцию вы рефакторили и как убедились, что поведение не изменилось?" },
+    { n: 13, group: "Про ИИ", text: "Что бы вы не стали поручать модели и почему?" },
+    { n: 14, group: "Про процесс и рефлексию", text: "Как вы планировали работу на четыре занятия?" },
+    { n: 15, group: "Про процесс и рефлексию", text: "Что не вошло в проект и почему?" },
+    { n: 16, group: "Про процесс и рефлексию", text: "Что бы вы доработали, будь у вас ещё четыре занятия?" },
+    { n: 17, group: "Про процесс и рефлексию", text: "Если бы начинали заново, что сделали бы иначе?" },
+    { n: 18, group: "Про процесс и рефлексию", text: "Что вам дало взаимное тестирование?" },
+    { n: 19, group: "Про процесс и рефлексию", text: "Что вы поняли про работу с ИИ за курс?" },
+    { n: 20, group: "Про процесс и рефлексию", text: "Чему из курса вы будете пользоваться дальше?" }
+  ];
+
+  const MINUTE = [
+    "вкладка с публичной ссылкой открыта, страница загружена",
+    "в панели уже есть две-три записи",
+    "посторонние вкладки закрыты, окно развёрнуто",
+    "карточка речи в руке (но читать с неё не буду)",
+    "знаю, какой фрагмент кода покажу",
+    "знаю, что скажу, если сеть упадёт",
+    "помню: три минуты, пять частей, демонстрация — действиями"
+  ];
+
+  const HINTS = [
+    "Про каждый блок спроси: что нового узнает комиссия из этих слов? Если ничего — блок можно вычеркнуть, и три минуты станут свободнее.",
+    "Три минуты — это примерно 400–450 слов обычной речи. Посчитай слова в своих пяти блоках: если больше 500, что-то придётся сократить, и сокращать надо не демонстрацию. Первая часть почти всегда длиннее, чем нужно: её можно уложить в три предложения.",
+    "1. ПРОБЛЕМА (0:00–0:30) — про человека, без технических слов\n   .....................................................................\n\n2. ДЕМО (0:30–1:30) — 4–5 действий, по одной короткой фразе на каждое\n   1. ..................................................................\n   2. ..................................................................\n   3. ..................................................................\n   4. ..................................................................\n   5. ..................................................................\n\n3. ФРАГМЕНТ КОДА (1:30–2:10) — какой и как объясню\n   что делает в целом: ..................................................\n   как делает: ..........................................................\n   что на границе: ......................................................\n\n4. РОЛЬ ИИ (2:10–2:40) — что просил / что проверил / что переписал\n   .....................................................................\n\n5. ЧТО ДОРАБОТАЛ БЫ (2:40–3:00) — из «известных ограничений»\n   .....................................................................\n\nОбъяснение фрагмента кода — три уровня:\n  1. что делает в целом  — одним предложением, своими словами\n  2. как делает          — по шагам, без имён методов\n  3. что на границе      — пусто / всё / крайний случай\n\nОтвет на вопрос:\n  короткий ответ → пауза → подробности, если спросят\n  не знаешь → «не проверял»\n  замечание → согласие + что бы сделал"
+  ];
+
+  const MSG = {
+    pShort: "Слишком коротко для тридцати секунд",
+    pLong: "Не влезет в тридцать секунд — сократи",
+    pTech: "Здесь про человека и его задачу, без технических слов. Технологии прозвучат позже",
+    pHello: "Имя комиссия уже знает. Тридцать секунд стоят дорого — начинай с задачи",
+    dCount: "Нужно не меньше четырёх действий. Демонстрация — это то, что ты нажимаешь, а не то, что описываешь",
+    dReload: "Добавь перезагрузку страницы: она отличает работающий продукт от макета",
+    dVerb: "Пиши действиями: добавляю, нажимаю, переключаю. \"Здесь у меня форма\" — это описание, а не демонстрация",
+    cFill: "Заполни все три уровня. Третий — про границы — и отличает понимание от заучивания",
+    cMethod: "Объясняй смысл, а не синтаксис: не \"применяет filter\", а \"оставляет только те, у которых…\"",
+    aShort: "Слишком коротко",
+    aLong: "Не влезет в тридцать секунд",
+    aCheck: "Скажи не только что просил, но и что проверил руками. За это и даются баллы",
+    nShort: "Слишком коротко",
+    nLong: "Двадцать секунд — это примерно две фразы",
+    nSorry: "Без извинений. Ограничение, названное прямо, показывает, что ты знаешь свой продукт",
+    sScore: "Проставь балл по каждому критерию",
+    sWhy: "Напиши, почему именно столько. \"Хорошо сделал\" — не обоснование",
+    sSum: "Проверь сумму: она не сходится"
+  };
+
+  function emptySpeech() {
+    return { problem: "", demo: "", code: { what: "", how: "", edge: "" }, ai: "", next: "" };
+  }
+  function emptySelf() {
+    return CRITERIA.map(function () { return { score: "", why: "" }; });
+  }
+
+  const scoreEl = document.getElementById("score");
+  const bar = document.getElementById("bar");
+  const testsEl = document.getElementById("tests");
+  const hintsEl = document.getElementById("hints");
+  const honesty = document.getElementById("honesty");
+  const etalonBtn = document.getElementById("etalonBtn");
+  const etalonBox = document.getElementById("etalonBox");
+  const paneSpeech = document.getElementById("paneSpeech");
+  const paneQuestions = document.getElementById("paneQuestions");
+  const paneSelf = document.getElementById("paneSelf");
+  const tabSpeech = document.getElementById("tabSpeech");
+  const tabQuestions = document.getElementById("tabQuestions");
+  const tabSelf = document.getElementById("tabSelf");
+  const timeBox = document.getElementById("timeBox");
+  const qStage = document.getElementById("qStage");
+  const qGroup = document.getElementById("qGroup");
+  const qText = document.getElementById("qText");
+  const qTimer = document.getElementById("qTimer");
+  const qCount = document.getElementById("qCount");
+  const drawBtn = document.getElementById("drawBtn");
+  const okBtn = document.getElementById("okBtn");
+  const failBtn = document.getElementById("failBtn");
+
+  let speech = emptySpeech();
+  let drawn = [];
+  let answered = [];
+  let selfCheck = emptySelf();
+  let selfTotal = "";
+  let tab = "speech";
+  let hintsOpened = 0;
+  let current = null;
+  let secondsLeft = 30;
+  let tick = 0;
+  let saveTimer = 0;
+  let checklistBuilt = false;
+
+  function numberedSteps(text) {
+    return String(text || "").split(/\n/).filter(function (line) {
+      return /^\s*\d+[\.\)]\s+\S/.test(line);
+    });
+  }
+
+  function firstWord(step) {
+    return step.replace(/^\s*\d+[\.\)]\s+/, "").trim().split(/\s+/)[0]
+      .toLowerCase().replace(/[«»"“”,.:;!?()]/g, "");
+  }
+
+  function startsWithVerb(word) {
+    if (DEMO_VERBS.indexOf(word) !== -1) return true;
+    /* «перезагружаю» / «обновляю» — то же действие, которое требует правило 5 */
+    return /^(перезагруж|обновля)/.test(word);
+  }
+
+  function speechChars() {
+    return [
+      speech.problem, speech.demo,
+      speech.code.what, speech.code.how, speech.code.edge,
+      speech.ai, speech.next
+    ].join("").length;
+  }
+
+  function estimateSec() {
+    return Math.round(speechChars() / CHARS_PER_SEC);
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function validateSpeech() {
+    const out = { problem: [], demo: [], code: [], ai: [], next: [] };
+    const p = String(speech.problem || "");
+    const pt = p.trim();
+    if (pt.length < 120) out.problem.push(MSG.pShort);
+    else if (pt.length > 450) out.problem.push(MSG.pLong);
+    if (TECH.some(function (re) { return re.test(p); })) out.problem.push(MSG.pTech);
+    if (GREET.some(function (re) { return re.test(pt); })) out.problem.push(MSG.pHello);
+
+    const d = String(speech.demo || "");
+    const steps = numberedSteps(d);
+    if (steps.length < 4) out.demo.push(MSG.dCount);
+    if (!/перезагру|обновля/i.test(d)) out.demo.push(MSG.dReload);
+    if (steps.length && !steps.every(function (s) { return startsWithVerb(firstWord(s)); })) {
+      out.demo.push(MSG.dVerb);
+    }
+
+    const what = String(speech.code.what || "").trim();
+    const how = String(speech.code.how || "").trim();
+    const edge = String(speech.code.edge || "").trim();
+    if (!what || !how || !edge) out.code.push(MSG.cFill);
+    if (METHODS.some(function (re) { return re.test(speech.code.what || ""); })) out.code.push(MSG.cMethod);
+
+    const a = String(speech.ai || "").trim();
+    if (a.length < 100) out.ai.push(MSG.aShort);
+    else if (a.length > 400) out.ai.push(MSG.aLong);
+    if (!/провер|прогнал|сверил|убедился/i.test(speech.ai || "")) out.ai.push(MSG.aCheck);
+
+    const n = String(speech.next || "").trim();
+    if (n.length < 80) out.next.push(MSG.nShort);
+    else if (n.length > 300) out.next.push(MSG.nLong);
+    if (/к сожалению|простите|не судите|не успел, но/i.test(speech.next || "")) out.next.push(MSG.nSorry);
+
+    return {
+      problem: out.problem.length === 0,
+      demo: out.demo.length === 0,
+      code: out.code.length === 0,
+      ai: out.ai.length === 0,
+      next: out.next.length === 0,
+      msgs: out,
+      steps: steps.length,
+      reload: /перезагру|обновля/i.test(d)
+    };
+  }
+
+  function parseScore(raw) {
+    if (raw === "" || raw === null || raw === undefined) return null;
+    const n = Number(raw);
+    if (!isFinite(n) || String(raw).trim() === "") return null;
+    return n;
+  }
+
+  function repeatsName(why, name) {
+    const w = String(why || "").trim().toLowerCase();
+    const nm = name.toLowerCase();
+    if (!w) return false;
+    if (w === nm) return true;
+    const stripped = w.split(nm).join(" ").replace(/\s+/g, " ").trim();
+    return stripped.length < 15;
+  }
+
+  function validateSelf() {
+    const miss = [];
+    const whyFail = [];
+    const general = [];
+    let sum = 0;
+    let scoresOk = true;
+    CRITERIA.forEach(function (c, i) {
+      const row = selfCheck[i] || { score: "", why: "" };
+      const n = parseScore(row.score);
+      if (n === null || n < 0 || n > c.max || n !== Math.floor(n)) {
+        scoresOk = false;
+        miss.push("балл «" + c.name + "»");
+      } else {
+        sum += n;
+      }
+      const why = String(row.why || "").trim();
+      if (why.length <= 30) {
+        miss.push("обоснование «" + c.name + "»");
+        whyFail.push(i + 1);
+      } else if (repeatsName(why, c.name)) {
+        miss.push("обоснование «" + c.name + "»");
+        whyFail.push(i + 1);
+      }
+    });
+    const entered = parseScore(selfTotal);
+    const sumOk = entered !== null && entered === sum;
+    if (!sumOk) {
+      miss.push("сумма");
+      general.push(MSG.sSum);
+    }
+    return {
+      scoresOk: scoresOk,
+      whyOk: whyFail.length === 0,
+      sumOk: sumOk,
+      sum: sum,
+      miss: miss,
+      whyFail: whyFail,
+      scoreMsg: scoresOk ? "" : MSG.sScore,
+      whyMsg: whyFail.length ? MSG.sWhy : ""
+    };
+  }
+
+  function isAi(n) { return n >= 9 && n <= 13; }
+
+  function pool() {
+    return QUESTIONS.map(function (q) { return q.n; }).filter(function (n) {
+      return answered.indexOf(n) === -1 && n !== current;
+    });
+  }
+
+  function pickFrom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  /* После 7-го вытянутого принудительно тянем группу 9–13, пока не отвечено два. */
+  function pickNext() {
+    const avail = pool();
+    if (!avail.length) return null;
+    const aiAvail = avail.filter(isAi);
+    const aiAns = answered.filter(isAi).length;
+    if (drawn.length >= 7 && aiAns < 2 && aiAvail.length) return pickFrom(aiAvail);
+    return pickFrom(avail);
+  }
+
+  function qByN(n) {
+    return QUESTIONS.filter(function (q) { return q.n === n; })[0];
+  }
+
+  function stopTick() {
+    if (tick) { clearInterval(tick); tick = 0; }
+  }
+
+  function startTick() {
+    stopTick();
+    secondsLeft = 30;
+    qTimer.textContent = "30";
+    qTimer.classList.remove("is-end");
+    tick = setInterval(function () {
+      secondsLeft -= 1;
+      if (secondsLeft <= 0) {
+        secondsLeft = 0;
+        qTimer.textContent = "0";
+        qTimer.classList.add("is-end");
+        stopTick();
+        return;
+      }
+      qTimer.textContent = String(secondsLeft);
+    }, 1000);
+  }
+
+  function renderQuestion() {
+    qCount.textContent = "Вытянуто " + drawn.length + ", ответил " + answered.length;
+    if (current == null) {
+      qStage.classList.add("is-empty");
+      qGroup.textContent = "";
+      qText.textContent = pool().length
+        ? "Нажми «Вытянуть вопрос» и отвечай вслух."
+        : "Банк пуст: все вопросы отмечены как отвеченные.";
+      drawBtn.disabled = pool().length === 0;
+      okBtn.disabled = true;
+      failBtn.disabled = true;
+      qTimer.textContent = "30";
+      qTimer.classList.remove("is-end");
+      return;
+    }
+    const q = qByN(current);
+    qStage.classList.remove("is-empty");
+    qGroup.textContent = q.group;
+    qText.textContent = q.text;
+    drawBtn.disabled = true;
+    okBtn.disabled = false;
+    failBtn.disabled = false;
+  }
+
+  function drawQuestion() {
+    if (current != null) return;
+    const n = pickNext();
+    if (n == null) { renderQuestion(); return; }
+    current = n;
+    if (drawn.indexOf(n) === -1) drawn.push(n);
+    startTick();
+    scheduleSave();
+    renderQuestion();
+  }
+
+  function markAnswered() {
+    if (current == null) return;
+    if (answered.indexOf(current) === -1) answered.push(current);
+    current = null;
+    stopTick();
+    scheduleSave();
+    renderQuestion();
+  }
+
+  function markFailed() {
+    if (current == null) return;
+    current = null;
+    stopTick();
+    scheduleSave();
+    renderQuestion();
+  }
+
+  function paintTime() {
+    const sec = estimateSec();
+    timeBox.className = "timebox";
+    if (sec >= 150 && sec <= 195) timeBox.classList.add("is-ok");
+    else if (sec > 195 && sec <= 225) timeBox.classList.add("is-warn");
+    else timeBox.classList.add("is-fail");
+    timeBox.innerHTML = "примерно " + sec + " секунд — проверь секундомером вслух" +
+      '<span class="note">Оценка приблизительная: тренажёр считает по количеству символов и не знает твоего темпа. Сумма по часам: ' + formatTime(sec) + ". Зелёный — 2:30–3:15.</span>";
+  }
+
+  function paintSpeechMsgs() {
+    const v = validateSpeech();
+    ["problem", "demo", "code", "ai", "next"].forEach(function (key) {
+      const el = document.querySelector('[data-msg="' + key + '"]');
+      if (el) el.textContent = v.msgs[key].join(" ");
+    });
+  }
+
+  function paintSelfMsgs() {
+    const v = validateSelf();
+    const scoreMsg = document.getElementById("selfScoreMsg");
+    const whyMsg = document.getElementById("selfWhyMsg");
+    const sumMsg = document.getElementById("selfSumMsg");
+    if (scoreMsg) scoreMsg.textContent = v.scoreMsg;
+    if (whyMsg) whyMsg.textContent = v.whyMsg;
+    if (sumMsg) sumMsg.textContent = v.sumOk ? "" : MSG.sSum;
+    const live = document.getElementById("selfLiveSum");
+    if (live) live.textContent = "Сложено по строкам: " + v.sum;
+  }
+
+  function TESTS() {
+    const v = validateSpeech();
+    const s = validateSelf();
+    const sec = estimateSec();
+    const aiAns = answered.filter(isAi).length;
+    return [
+      {
+        name: "Блок «Проблема» принят",
+        okText: "Задача пользователя названа без техники",
+        hint: "Не принят. Проверь: это про человека, укладывается в 30 секунд, не начинается с приветствия",
+        run: function () { return v.problem; }
+      },
+      {
+        name: "Блок «Демонстрация» принят",
+        okText: "План демонстрации готов: " + v.steps + " действий",
+        hint: "Не принят. Нужно не меньше четырёх действий, каждое — глаголом, и обязательно перезагрузка",
+        run: function () { return v.demo; }
+      },
+      {
+        name: "Блок «Фрагмент кода» принят",
+        okText: "Фрагмент разобран на трёх уровнях",
+        hint: "Не принят. Третий уровень — что будет на границах: пусто, всё, разрыв. Он и отличает понимание от заучивания",
+        run: function () { return v.code; }
+      },
+      {
+        name: "Блок «Роль ИИ» принят",
+        okText: "Названо и что просил, и что проверил",
+        hint: "Не принят. Не хватает проверки: что именно ты сделал руками после ответа модели?",
+        run: function () { return v.ai; }
+      },
+      {
+        name: "Блок «Что доработал бы» принят",
+        okText: "Два конкретных направления, без извинений",
+        hint: "Не принят. Убери «к сожалению» и назови конкретные места из известных ограничений",
+        run: function () { return v.next; }
+      },
+      {
+        name: "Суммарное время в пределах 2:30–3:15",
+        okText: "Речь укладывается: примерно " + sec + " секунд",
+        hint: "Оценка времени " + sec + " секунд. Три минуты — это примерно 400–450 слов. Сократи блок, который длиннее своего хронометража",
+        run: function () { return sec >= 150 && sec <= 195; }
+      },
+      {
+        name: "Демонстрация содержит перезагрузку",
+        okText: "Перезагрузка в демонстрации есть",
+        hint: "Без перезагрузки комиссия не увидит, что данные сохраняются. Это то, что отличает продукт от макета",
+        run: function () { return v.reload; }
+      },
+      {
+        name: "Вытянуто не меньше десяти вопросов",
+        okText: "Вытянуто " + drawn.length + " вопросов",
+        hint: "Вытянуто " + drawn.length + " из 10. Тяни ещё: вопросы про ИИ и про рефлексию задают почти всегда",
+        run: function () { return drawn.length >= 10; }
+      },
+      {
+        name: "Отмечено «Ответил» не меньше восьми",
+        okText: "Отвечено на " + answered.length + " вопросов",
+        hint: "Отвечено на " + answered.length + ". Те, что отмечены «Не смог», выпадут снова — потренируйся на них",
+        run: function () { return answered.length >= 8; }
+      },
+      {
+        name: "Отвечено хотя бы на два вопроса про ИИ",
+        okText: "Вопросы про ИИ отработаны",
+        hint: "Вопросы 9–13 задают всем: про них прямо написано в критериях оценки. Вытяни и ответь хотя бы на два",
+        run: function () { return aiAns >= 2; }
+      },
+      {
+        name: "Лист самооценки заполнен",
+        okText: "Самооценка: " + s.sum + " из 30",
+        hint: "Не заполнено: " + (s.miss.length ? s.miss.join(", ") : "—") + ". По каждому критерию нужен балл и обоснование",
+        run: function () { return s.scoresOk && s.whyOk && s.sumOk; }
+      },
+      {
+        name: "Обоснования содержательны",
+        okText: "Все обоснования по существу",
+        hint: "Обоснование строки " + (s.whyFail[0] || "—") + " слишком общее. Напиши, что конкретно сделано и чего не хватило до максимума",
+        run: function () { return s.whyOk; }
+      }
+    ];
+  }
+
+  function runOne(t) {
+    let ok = false;
+    try { ok = !!t.run(); } catch (e) { ok = false; }
+    return { name: t.name, hint: t.hint, okText: t.okText, ok: ok };
+  }
+
+  function passedThreshold(list) {
+    return list[0].ok && list[1].ok && list[2].ok && list[3].ok && list[4].ok &&
+      list[5].ok && list[7].ok && list[8].ok && list[10].ok;
+  }
+
+  function saveDraft() {
+    const data = {
+      speech: {
+        problem: speech.problem,
+        demo: speech.demo,
+        code: { what: speech.code.what, how: speech.code.how, edge: speech.code.edge },
+        ai: speech.ai,
+        next: speech.next
+      },
+      drawn: drawn.slice(),
+      answered: answered.slice(),
+      selfCheck: selfCheck.map(function (r) { return { score: r.score, why: r.why }; }),
+      selfTotal: selfTotal,
+      tab: tab,
+      hintsOpened: hintsOpened
+    };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { saveDraft(); }, 280);
+  }
+
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") return;
+    if (data.speech && typeof data.speech === "object") {
+      speech.problem = typeof data.speech.problem === "string" ? data.speech.problem : "";
+      speech.demo = typeof data.speech.demo === "string" ? data.speech.demo : "";
+      speech.ai = typeof data.speech.ai === "string" ? data.speech.ai : "";
+      speech.next = typeof data.speech.next === "string" ? data.speech.next : "";
+      const c = data.speech.code && typeof data.speech.code === "object" ? data.speech.code : {};
+      speech.code = {
+        what: typeof c.what === "string" ? c.what : "",
+        how: typeof c.how === "string" ? c.how : "",
+        edge: typeof c.edge === "string" ? c.edge : ""
+      };
+    }
+    if (Array.isArray(data.drawn)) {
+      drawn = data.drawn.map(Number).filter(function (n) { return n >= 1 && n <= 20; })
+        .filter(function (n, i, a) { return a.indexOf(n) === i; });
+    }
+    if (Array.isArray(data.answered)) {
+      answered = data.answered.map(Number).filter(function (n) { return n >= 1 && n <= 20; })
+        .filter(function (n, i, a) { return a.indexOf(n) === i; });
+    }
+    if (Array.isArray(data.selfCheck) && data.selfCheck.length === 5) {
+      selfCheck = data.selfCheck.map(function (r) {
+        if (!r || typeof r !== "object") return { score: "", why: "" };
+        return {
+          score: r.score === 0 || r.score === "0" || typeof r.score === "number" || typeof r.score === "string" ? r.score : "",
+          why: typeof r.why === "string" ? r.why : ""
+        };
+      });
+    }
+    if (typeof data.selfTotal === "string" || typeof data.selfTotal === "number") selfTotal = String(data.selfTotal);
+    if (data.tab === "speech" || data.tab === "questions" || data.tab === "selfcheck") tab = data.tab;
+    const n = Number(data.hintsOpened);
+    hintsOpened = n >= 0 && n <= 3 ? n : 0;
+  }
+
+  function bindArea(el, apply) {
+    el.addEventListener("input", function () {
+      apply(el.value);
+      paintTime();
+      scheduleSave();
+    });
+  }
+
+  function renderSpeech() {
+    const box = document.getElementById("speechBox");
+    box.innerHTML = "";
+
+    function block(title, time, question, inner) {
+      const wrap = document.createElement("article");
+      wrap.className = "speech-block";
+      const h = document.createElement("h2");
+      h.textContent = title;
+      const meta = document.createElement("p");
+      meta.className = "speech-meta";
+      meta.textContent = "Хронометраж: " + time;
+      const q = document.createElement("p");
+      q.className = "prompt-q";
+      q.textContent = question;
+      wrap.appendChild(h);
+      wrap.appendChild(meta);
+      wrap.appendChild(q);
+      inner(wrap);
+      box.appendChild(wrap);
+    }
+
+    function area(parent, label, value, apply, msgKey, rows) {
+      const lab = document.createElement("label");
+      lab.className = "field";
+      lab.appendChild(document.createTextNode(label));
+      const ta = document.createElement("textarea");
+      ta.rows = rows || 4;
+      ta.value = value;
+      bindArea(ta, apply);
+      const msg = document.createElement("p");
+      msg.className = "field-msg";
+      if (msgKey) msg.setAttribute("data-msg", msgKey);
+      lab.appendChild(ta);
+      lab.appendChild(msg);
+      parent.appendChild(lab);
+    }
+
+    block("1. Проблема", "30 сек", "Чья это задача и что человек делал до твоей панели?", function (wrap) {
+      area(wrap, "Своими словами", speech.problem, function (v) { speech.problem = v; }, "problem", 5);
+    });
+    block("2. Демонстрация", "60 сек", "Какие 4–5 действий покажут, что продукт работает?", function (wrap) {
+      area(wrap, "Пронумерованные действия", speech.demo, function (v) { speech.demo = v; }, "demo", 6);
+    });
+    block("3. Фрагмент кода", "40 сек", "Какой кусок ты объяснишь лучше всего и что он делает на границах?", function (wrap) {
+      area(wrap, "Что делает", speech.code.what, function (v) { speech.code.what = v; }, "", 3);
+      area(wrap, "Как делает", speech.code.how, function (v) { speech.code.how = v; }, "", 3);
+      area(wrap, "Что на границе", speech.code.edge, function (v) { speech.code.edge = v; }, "code", 3);
+    });
+    block("4. Роль ИИ", "30 сек", "Что просил, с какими ограничениями, что проверил руками?", function (wrap) {
+      area(wrap, "Своими словами", speech.ai, function (v) { speech.ai = v; }, "ai", 4);
+    });
+    block("5. Что доработал бы", "20 сек", "Что из «известных ограничений» и сколько времени это заняло бы?", function (wrap) {
+      area(wrap, "Своими словами", speech.next, function (v) { speech.next = v; }, "next", 3);
+    });
+  }
+
+  function renderSelf() {
+    const box = document.getElementById("selfBox");
+    box.innerHTML = "";
+    const table = document.createElement("table");
+    table.className = "self-table";
+    table.innerHTML = "<thead><tr><th>Критерий</th><th>Макс</th><th>Себе</th><th>Почему именно столько</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    CRITERIA.forEach(function (c, i) {
+      const tr = document.createElement("tr");
+      const n1 = document.createElement("td");
+      n1.textContent = c.name;
+      const n2 = document.createElement("td");
+      n2.textContent = String(c.max);
+      const n3 = document.createElement("td");
+      const inp = document.createElement("input");
+      inp.type = "number";
+      inp.min = "0";
+      inp.max = String(c.max);
+      inp.step = "1";
+      inp.value = selfCheck[i].score === "" || selfCheck[i].score === null || selfCheck[i].score === undefined
+        ? "" : String(selfCheck[i].score);
+      inp.addEventListener("input", function () {
+        selfCheck[i].score = inp.value;
+        scheduleSave();
+      });
+      n3.appendChild(inp);
+      const n4 = document.createElement("td");
+      const ta = document.createElement("textarea");
+      ta.value = selfCheck[i].why;
+      ta.addEventListener("input", function () {
+        selfCheck[i].why = ta.value;
+        scheduleSave();
+      });
+      n4.appendChild(ta);
+      tr.appendChild(n1); tr.appendChild(n2); tr.appendChild(n3); tr.appendChild(n4);
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    box.appendChild(table);
+
+    const sumRow = document.createElement("p");
+    sumRow.className = "self-sum";
+    const lab = document.createElement("label");
+    lab.className = "field";
+    lab.appendChild(document.createTextNode("ИТОГО (из 30)"));
+    const total = document.createElement("input");
+    total.type = "number";
+    total.min = "0";
+    total.max = "30";
+    total.step = "1";
+    total.id = "selfTotal";
+    total.value = selfTotal;
+    total.addEventListener("input", function () {
+      selfTotal = total.value;
+      scheduleSave();
+    });
+    lab.appendChild(total);
+    sumRow.appendChild(lab);
+    box.appendChild(sumRow);
+
+    const live = document.createElement("p");
+    live.className = "status-line";
+    live.id = "selfLiveSum";
+    live.textContent = "Сложено по строкам: 0";
+    box.appendChild(live);
+
+    ["selfScoreMsg", "selfWhyMsg", "selfSumMsg"].forEach(function (id) {
+      const p = document.createElement("p");
+      p.className = "field-msg";
+      p.id = id;
+      box.appendChild(p);
+    });
+  }
+
+  function setTab(next) {
+    tab = next === "questions" ? "questions" : next === "selfcheck" ? "selfcheck" : "speech";
+    paneSpeech.classList.toggle("hide", tab !== "speech");
+    paneQuestions.classList.toggle("hide", tab !== "questions");
+    paneSelf.classList.toggle("hide", tab !== "selfcheck");
+    paneSpeech.hidden = tab !== "speech";
+    paneQuestions.hidden = tab !== "questions";
+    paneSelf.hidden = tab !== "selfcheck";
+    [
+      { btn: tabSpeech, id: "speech" },
+      { btn: tabQuestions, id: "questions" },
+      { btn: tabSelf, id: "selfcheck" }
+    ].forEach(function (t) {
+      const on = tab === t.id;
+      t.btn.setAttribute("aria-selected", String(on));
+      t.btn.className = "tm-btn " + (on ? "tm-btn--primary" : "tm-btn--ghost");
+    });
+    scheduleSave();
+  }
+
+  function appendHint(i) {
+    if (i === 2) {
+      const wrap = document.createElement("div");
+      wrap.className = "hint";
+      const p = document.createElement("p");
+      p.textContent = "Подсказка 3. Каркас с пропусками — не готовая речь.";
+      const pre = document.createElement("pre");
+      pre.className = "tm-code";
+      pre.textContent = HINTS[2];
+      wrap.appendChild(p);
+      wrap.appendChild(pre);
+      hintsEl.appendChild(wrap);
+      return;
+    }
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "Подсказка " + (i + 1) + ". " + HINTS[i];
+    hintsEl.appendChild(p);
+  }
+
+  function buildChecklist() {
+    if (checklistBuilt) return;
+    checklistBuilt = true;
+    const box = document.getElementById("minuteList");
+    MINUTE.forEach(function (line) {
+      const lab = document.createElement("label");
+      lab.className = "minute-item";
+      const inp = document.createElement("input");
+      inp.type = "checkbox";
+      const span = document.createElement("span");
+      span.textContent = line;
+      lab.appendChild(inp);
+      lab.appendChild(span);
+      box.appendChild(lab);
+    });
+  }
+
+  function unlockChecklist(reason) {
+    etalonBtn.disabled = false;
+    buildChecklist();
+    if (reason === "подсказки") etalonBox.classList.remove("hide");
+  }
+
+  function replayHints() {
+    hintsEl.innerHTML = "";
+    for (let i = 0; i < hintsOpened; i += 1) appendHint(i);
+    if (hintsOpened >= 3) unlockChecklist("подсказки");
+  }
+
+  function renderResults(list) {
+    const passed = list.filter(function (r) { return r.ok; }).length;
+    testsEl.innerHTML = list.map(function (r) {
+      return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+        '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + '</span>' +
+        "<div><div>" + r.name + "</div>" +
+        (r.ok
+          ? '<div class="tm-test__hint">' + r.okText + "</div>"
+          : '<div class="tm-test__hint">' + r.hint + "</div>") +
+        "</div></div>";
+    }).join("");
+    scoreEl.textContent = passed + " / " + list.length;
+    bar.style.width = Math.round(passed / list.length * 100) + "%";
+    const ok = passedThreshold(list);
+    const hintNote = "Подсказок открыто: " + hintsOpened + ".";
+    if (ok) {
+      honesty.textContent = "Задача сдана. " + hintNote + " Честность важнее очков.";
+      unlockChecklist();
+    } else {
+      honesty.textContent = hintNote + (hintsOpened ? " Честность важнее очков." : "");
+      if (hintsOpened >= 3) unlockChecklist();
+    }
+  }
+
+  function runChecks() {
+    clearTimeout(saveTimer);
+    saveDraft();
+    paintSpeechMsgs();
+    paintSelfMsgs();
+    paintTime();
+    renderResults(TESTS().map(runOne));
+  }
+
+  function cardText() {
+    return [
+      "КАРТОЧКА РЕЧИ",
+      "",
+      "1. ПРОБЛЕМА (30 сек)",
+      speech.problem,
+      "",
+      "2. ДЕМОНСТРАЦИЯ (60 сек)",
+      speech.demo,
+      "",
+      "3. ФРАГМЕНТ КОДА (40 сек)",
+      "Что делает: " + speech.code.what,
+      "Как делает: " + speech.code.how,
+      "Что на границе: " + speech.code.edge,
+      "",
+      "4. РОЛЬ ИИ (30 сек)",
+      speech.ai,
+      "",
+      "5. ЧТО ДОРАБОТАЛ БЫ (20 сек)",
+      speech.next,
+      "",
+      "Самооценка:",
+      CRITERIA.map(function (c, i) {
+        return c.name + " — " + selfCheck[i].score + " / " + c.max + ". " + selfCheck[i].why;
+      }).join("\n"),
+      "ИТОГО: " + selfTotal
+    ].join("\n");
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+  });
+
+  tabSpeech.addEventListener("click", function () { setTab("speech"); });
+  tabQuestions.addEventListener("click", function () { setTab("questions"); });
+  tabSelf.addEventListener("click", function () { setTab("selfcheck"); });
+
+  drawBtn.addEventListener("click", drawQuestion);
+  okBtn.addEventListener("click", markAnswered);
+  failBtn.addEventListener("click", markFailed);
+
+  document.getElementById("checkBtn").addEventListener("click", runChecks);
+
+  document.getElementById("hintBtn").addEventListener("click", function () {
+    if (hintsOpened >= HINTS.length) return;
+    appendHint(hintsOpened);
+    hintsOpened += 1;
+    honesty.textContent = "Подсказок открыто: " + hintsOpened + ". Честность важнее очков.";
+    if (hintsOpened === HINTS.length) unlockChecklist("подсказки");
+    scheduleSave();
+  });
+
+  document.getElementById("dlBtn").addEventListener("click", function () {
+    const blob = new Blob([cardText()], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "l24_kartochka_rechi.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  etalonBtn.addEventListener("click", function () {
+    if (etalonBtn.disabled) return;
+    buildChecklist();
+    etalonBox.classList.toggle("hide");
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Вернуть стартовую заготовку? Тексты карточки будут потеряны.")) return;
+    stopTick();
+    speech = emptySpeech();
+    drawn = [];
+    answered = [];
+    selfCheck = emptySelf();
+    selfTotal = "";
+    tab = "speech";
+    hintsOpened = 0;
+    current = null;
+    secondsLeft = 30;
+    checklistBuilt = false;
+    hintsEl.innerHTML = "";
+    testsEl.innerHTML = "";
+    scoreEl.textContent = "0 / 12";
+    bar.style.width = "0";
+    honesty.textContent = "";
+    etalonBtn.disabled = true;
+    etalonBox.classList.add("hide");
+    document.getElementById("minuteList").innerHTML = "";
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    renderSpeech();
+    renderSelf();
+    renderQuestion();
+    paintTime();
+    setTab("speech");
+  });
+
+  loadDraft();
+  renderSpeech();
+  renderSelf();
+  renderQuestion();
+  paintTime();
+  setTab(tab);
+  replayHints();
+})();
+</script>
+</body>
+</html>

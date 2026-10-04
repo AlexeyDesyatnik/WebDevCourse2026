@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 20 · Чек-лист спринта 1</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-pill.is-done { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    .course-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    h2 { font-size: 1.15rem; margin: 0 0 12px; }
+    .mark { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .2em .7em; margin-left: .4em; vertical-align: middle; }
+    html[data-theme="dark"] .mark { color: var(--tm-green); }
+    .item { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--tm-border); }
+    .item.is-base { border-left: 4px solid var(--tm-green-dark); padding-left: 10px; }
+    .item input { width: 22px; height: 22px; margin-top: 4px; accent-color: var(--tm-green); }
+    .item__title { font-weight: 600; }
+    .item__how { margin: 6px 0 0; color: var(--tm-muted); font-size: .95em; }
+    .item__how strong { color: var(--tm-text); font-weight: 700; }
+    .tm-progress { display: grid; grid-template-columns: repeat(19, 1fr); gap: 4px; margin: 12px 0 0; }
+    .tm-progress__cell { height: 12px; border: 0; border-radius: var(--tm-radius-pill); background: var(--tm-border); padding: 0; cursor: pointer; }
+    .tm-progress__cell.is-on { background: var(--tm-green); }
+    .tm-progress__cell.is-base { box-shadow: inset 0 0 0 2px var(--tm-green-dark); background: var(--tm-border); }
+    .tm-progress__cell.is-base.is-on { background: var(--tm-green-dark); box-shadow: none; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
+    .result { margin: 0; }
+    .result p { margin: 0 0 8px; }
+    .result--ok { color: var(--tm-ok); font-weight: 700; }
+    .result--fail { color: var(--tm-fail); font-weight: 700; }
+    .extra { border-top: 2px dashed var(--tm-border); }
+    .note { color: var(--tm-muted); font-size: .95em; margin: 0 0 12px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 20 · ЧЕК-ЛИСТ</span>
+  <h1 class="topbar__title">Спринт 1: каркас</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 19</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<nav class="course-links" aria-label="Соседние материалы">
+  <a class="tm-btn tm-btn--ghost" href="L20_presentation.html">Презентация</a>
+  <a class="tm-btn tm-btn--ghost" href="../L19/L19_trainer_plan.html">Занятие 19</a>
+  <a class="tm-btn tm-btn--ghost" href="../L21/L21_checklist.html">Занятие 21</a>
+</nav>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► СПРИНТ 1 ИЗ ЧЕТЫРЁХ</p>
+  <p>Отметь то, что уже сделано в <strong>твоём</strong> репозитории. Рядом с каждым пунктом написано, как его проверить. Пункты с пометкой <strong>базовый блок</strong> обязательны: без них спринт не закрыт. Чек-лист сам репозиторий не читает — отметки ставишь ты.</p>
+</section>
+
+<div class="tm-card">
+  <p class="tm-eyebrow">►► ПРОГРЕСС</p>
+  <div class="tm-progress" id="bar" aria-label="Прогресс по пунктам. Тёмно-зелёные деления — базовый блок."></div>
+</div>
+
+<div id="groups"></div>
+
+<section class="tm-card extra">
+  <p class="tm-eyebrow">►► ЕСЛИ ОСТАНЕТСЯ ВРЕМЯ</p>
+  <p class="note">Эти пункты не влияют на закрытие спринта. Отметь, если успел.</p>
+  <div id="extraList"></div>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+</div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+
+<details class="teacher tm-card">
+  <summary>Карточка педагога</summary>
+  <ul class="tm-list">
+    <li><strong>Навык:</strong> самопроверка каркаса по действию, а не «на глаз».</li>
+    <li><strong>Зачёт спринта:</strong> пункты 5, 11, 14, 19 все отмечены и не меньше 12 из 19.</li>
+    <li><strong>Не обсуждается:</strong> публичная ссылка с настоящего телефона. DevTools устройство пунктом 19 не считается.</li>
+    <li><strong>Ловушка:</strong> двенадцать мелочей без четырёх базовых спринт не закрывают.</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  const DRAFT_KEY = "wdc-l20-checklist-v1";
+  const BASE = [5, 11, 14, 19];
+  const TOTAL = 19;
+  const MIN = 12;
+  const GROUPS = [
+    {
+      title: "Группа 1. Репозиторий и Git",
+      items: [
+        { n: 1, base: false, t: "В репозитории есть index.html, style.css, script.js, BOARD.md", how: "Открой страницу репозитория: четыре файла видны в списке" },
+        { n: 2, base: false, t: "Не меньше двух коммитов с осмысленными сообщениями", how: "git log --oneline — две строки и больше, ни одной со словами «работа», «правки», «фикс»" },
+        { n: 3, base: false, t: "Работа велась в ветке, изменения приехали в main через Pull Request", how: "git log --oneline --graph — видна линия ветвления; на странице репозитория есть закрытый PR со статусом «слит»" },
+        { n: 4, base: false, t: "BOARD.md обновлён: закрытые задачи в «Сделано», дата изменена", how: "Открой BOARD.md на странице репозитория: строка «Обновлено» — сегодняшнее занятие" }
+      ]
+    },
+    {
+      title: "Группа 2. Каркас",
+      items: [
+        { n: 5, base: true, t: "На странице один <main>, один <h1>, есть header и footer", how: "DevTools → Elements: найди теги глазами. Ctrl+F по дереву: main — одно совпадение" },
+        { n: 6, base: false, t: "Уровни заголовков не перескакивают: после h2 не идёт h4", how: "DevTools → Elements: пройди по заголовкам сверху вниз" },
+        { n: 7, base: false, t: "У секций есть aria-labelledby, у кнопок без текста — aria-label", how: "DevTools → Elements: проверь атрибуты у каждой section и у кнопки темы" },
+        { n: 8, base: false, t: "Кнопки — это button с type, а не div", how: "DevTools → Elements: найди свои кнопки, посмотри тег" },
+        { n: 9, base: false, t: "Токенов в :root от шести до восьми, имена по роли", how: "Открой style.css: первый блок — :root. Посчитай строки; проверь, нет ли имён вроде --green" },
+        { n: 10, base: false, t: "В правилах цвета заданы через var(...), а не значениями", how: "Поиск по style.css на # — вхождения должны быть только внутри :root. Речь о значениях цвета; селекторы по id в счёт не идут" }
+      ]
+    },
+    {
+      title: "Группа 3. Раскладка, данные, публикация",
+      items: [
+        { n: 11, base: true, t: "На ширине 320 px раскладка в один столбец, ничего не выезжает за край", how: "DevTools → режим устройства → ширина 320. Горизонтальной полосы прокрутки быть не должно" },
+        { n: 12, base: false, t: "Медиазапросы только с min-width", how: "Поиск по style.css на max-width — ноль вхождений" },
+        { n: 13, base: false, t: "На широком экране появляются колонки", how: "Меняй ширину в DevTools: на 640 и/или 1024 раскладка перестраивается" },
+        { n: 14, base: true, t: "Карточки рисуются функцией из массива, а не написаны в разметке", how: "Открой index.html: контейнер списка пустой. Открой script.js: есть функция отрисовки" },
+        { n: 15, base: false, t: "Пустой массив даёт объяснение, а не пустоту", how: "Временно передай в функцию отрисовки пустой массив, обнови страницу: появился текст. Потом верни массив обратно — пустую заглушку не коммить" },
+        { n: 16, base: false, t: "При проходе по Tab фокус виден и идёт сверху вниз", how: "Нажми Tab несколько раз: обводка видна на каждом элементе" },
+        { n: 17, base: false, t: "В консоли нет ошибок", how: "DevTools → Console: пусто" },
+        { n: 18, base: false, t: "В Network нет строк со статусом 404", how: "Открой публичную ссылку, DevTools → Network, обнови страницу" },
+        { n: 19, base: true, t: "Публичная ссылка открывается с телефона и показывает каркас", how: "Открой ссылку на телефоне. Не в DevTools — на настоящем телефоне" }
+      ]
+    }
+  ];
+  const EXTRA = [
+    { n: 1, t: "Второй медиазапрос на 1024 px с перестройкой раскладки страницы." },
+    { n: 2, t: "Проверка разметки через ИИ-промпт на доступность (раздел 8)." },
+    { n: 3, t: "Заготовка кнопки переключения темы — только разметка и стили, без поведения." },
+    { n: 4, t: "Черновик README.md: название, ссылка, стек. Остальное — на занятии 23." }
+  ];
+
+  let checked = [];
+  let extra = [];
+
+  const groupsEl = document.getElementById("groups");
+  const extraEl = document.getElementById("extraList");
+  const testsEl = document.getElementById("tests");
+  const scoreEl = document.getElementById("score");
+  const barEl = document.getElementById("bar");
+
+  function has(arr, n) { return arr.indexOf(n) !== -1; }
+  function toggle(arr, n, on) {
+    const i = arr.indexOf(n);
+    if (on && i === -1) arr.push(n);
+    if (!on && i !== -1) arr.splice(i, 1);
+    arr.sort(function (a, b) { return a - b; });
+  }
+
+  function saveDraft() {
+    const data = { checked: checked.slice(), extra: extra.slice(), updatedAt: "занятие 20" };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") return;
+    if (Array.isArray(data.checked)) checked = data.checked.map(Number).filter(function (n) { return n >= 1 && n <= TOTAL; });
+    if (Array.isArray(data.extra)) extra = data.extra.map(Number).filter(function (n) { return n >= 1 && n <= EXTRA.length; });
+  }
+
+  function renderItem(item) {
+    const row = document.createElement("label");
+    row.className = "item" + (item.base ? " is-base" : "");
+    row.id = "item-" + item.n;
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = has(checked, item.n);
+    input.addEventListener("change", function () {
+      toggle(checked, item.n, input.checked);
+      paintBar();
+      saveDraft();
+    });
+    const body = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "item__title";
+    title.textContent = item.n + ". " + item.t;
+    if (item.base) {
+      const mark = document.createElement("span");
+      mark.className = "mark";
+      mark.textContent = "базовый блок";
+      title.appendChild(document.createTextNode(" "));
+      title.appendChild(mark);
+    }
+    const how = document.createElement("p");
+    how.className = "item__how";
+    const k = document.createElement("strong");
+    k.textContent = "Как проверить. ";
+    how.appendChild(k);
+    how.appendChild(document.createTextNode(item.how));
+    body.appendChild(title);
+    body.appendChild(how);
+    row.appendChild(input);
+    row.appendChild(body);
+    return row;
+  }
+
+  function render() {
+    groupsEl.innerHTML = "";
+    GROUPS.forEach(function (g) {
+      const card = document.createElement("section");
+      card.className = "tm-card";
+      const h = document.createElement("h2");
+      h.textContent = g.title;
+      card.appendChild(h);
+      g.items.forEach(function (item) { card.appendChild(renderItem(item)); });
+      groupsEl.appendChild(card);
+    });
+    extraEl.innerHTML = "";
+    EXTRA.forEach(function (item) {
+      const row = document.createElement("label");
+      row.className = "item";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = has(extra, item.n);
+      input.addEventListener("change", function () {
+        toggle(extra, item.n, input.checked);
+        saveDraft();
+      });
+      const body = document.createElement("div");
+      body.className = "item__title";
+      body.textContent = item.t;
+      row.appendChild(input);
+      row.appendChild(body);
+      extraEl.appendChild(row);
+    });
+    paintBar();
+  }
+
+  function paintBar() {
+    barEl.innerHTML = "";
+    for (let i = 1; i <= TOTAL; i++) {
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "tm-progress__cell";
+      if (BASE.indexOf(i) !== -1) cell.classList.add("is-base");
+      if (has(checked, i)) cell.classList.add("is-on");
+      cell.title = "Пункт " + i;
+      cell.addEventListener("click", function () {
+        const el = document.getElementById("item-" + i);
+        if (el) el.scrollIntoView({ block: "center" });
+      });
+      barEl.appendChild(cell);
+    }
+    scoreEl.textContent = checked.length + " / " + TOTAL;
+  }
+
+  function missingBase() {
+    return BASE.filter(function (n) { return !has(checked, n); });
+  }
+
+  function runChecks() {
+    const n = checked.length;
+    const miss = missingBase();
+    const baseOk = miss.length === 0;
+    const closed = baseOk && n >= MIN;
+    const lines = [];
+    lines.push("Закрыто " + n + " из " + TOTAL);
+    if (baseOk) lines.push("Базовый блок: закрыт");
+    else lines.push("Базовый блок: не закрыт — не хватает: " + miss.join(", "));
+    if (closed) {
+      lines.push("Спринт 1 закрыт");
+    } else {
+      const why = [];
+      if (!baseOk) why.push("пункты базового блока " + miss.join(", "));
+      if (n < MIN) why.push("отметок " + n + " из " + TOTAL + ", нужно не меньше " + MIN);
+      lines.push("Спринт 1 не закрыт: " + why.join("; "));
+    }
+    testsEl.innerHTML = lines.map(function (t, i) {
+      const last = i === lines.length - 1;
+      const cls = last ? (closed ? "result--ok" : "result--fail") : "";
+      return "<p class=\"" + cls + "\">" + t + "</p>";
+    }).join("");
+    scoreEl.classList.toggle("is-done", closed);
+  }
+
+  loadDraft();
+  render();
+  document.getElementById("checkBtn").addEventListener("click", runChecks);
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Сбросить все отметки чек-листа?")) return;
+    checked = [];
+    extra = [];
+    testsEl.innerHTML = "";
+    scoreEl.classList.remove("is-done");
+    render();
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  });
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+})();
+</script>
+</body>
+</html>

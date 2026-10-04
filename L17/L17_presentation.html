@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 17. Прототип с ИИ и аудит кода</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 17</strong>
+      <span>Прототип с ИИ и аудит кода</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 17</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Последнее занятие с буфетом. Со следующего — ваш собственный проект. А сегодня — навык, без которого этот проект не защитить.» -->
+        <p class="tm-eyebrow">►► Модуль 7 · Занятие 17</p>
+        <h1>Прототип с ИИ и аудит кода</h1>
+        <p>Как проверять то, что написала модель</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L17_trainer_audit.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--primary" href="../L16/L16_presentation.html">►► Занятие 16</a>
+          <a class="tm-btn tm-btn--primary" href="../L18/L18_presentation.html">►► Занятие 18</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Минута пошла. Не подсказываю.» -->
+        <p class="tm-eyebrow">►► Найдите ошибку</p>
+        <h2>Код красивый. Код не работает</h2>
+        <p><code>const</code> вместо <code>var</code>, понятные имена, ровные отступы, комментарий по делу. Одна минута — ищите</p>
+        <pre class="tm-code"><span class="hl">const sweet = pies.filterBy("kind", "сладкое");</span>
+<span class="hl">const names = sweet.mapTo(p =&gt; p.name);</span>
+<span class="hl">document.querySelector("#menu").innerText = names.joinWith(", ");</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Три метода из трёх не существуют. Никогда не существовали. Модель не врала специально — она выдала самое правдоподобное.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Галлюцинация</h2>
+        <p>Уверенно выданная неправда. Не выглядит как ошибка: аккуратный код, понятные имена, правильный комментарий. Уверенность тона не связана с правильностью</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Починили одну строку, обрадовались, запустили — та же ошибка про следующую. Три круга вместо одной проверки.» -->
+        <p class="tm-eyebrow">►► Что покажет консоль</p>
+        <h2>Только первую ошибку</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Что покажет консоль</p>
+          <p><code>Uncaught TypeError: pies.filterBy is not a function</code> — и молчание про <code>mapTo</code> и <code>joinWith</code>: до них выполнение не дошло</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Ни один признак не доказывает выдумку. Каждый означает: посмотри внимательнее.» -->
+        <p class="tm-eyebrow">►► Признаки</p>
+        <h2>Когда строку надо проверить</h2>
+        <ul class="tm-list">
+          <li>метод, которого не было на занятиях</li>
+          <li>слишком удобная сигнатура</li>
+          <li>имя из двух склеенных слов</li>
+          <li>обращение к полю ответа, которого ты не видел</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Пустой массив как представитель типа. Точка, имя, без скобок. Работает всегда, даже когда страница сломана.» -->
+        <p class="tm-eyebrow">►► Проверка за три секунды</p>
+        <h2>Спроси у пустого массива</h2>
+        <p>В консоли, без скобок: <code>undefined</code> — такого нет; <code>ƒ filter()</code> — есть</p>
+        <pre class="tm-code">&gt; [].filterBy
+<span class="hl">undefined</span>
+
+&gt; [].filter
+<span class="hl">ƒ filter() { [native code] }</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверка обязана быть внешней. Консоль или справочник — не тот же чат.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>Спрашивать у модели про её же выдумку</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>«А есть ли метод <code>filterBy</code>?» → «Да, конечно» + придуманное описание. Вторая галлюцинация поверх первой</p>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Одинаково работает с кодом от модели, из интернета, из учебника и от соседа. Источник на процедуру не влияет.» -->
+        <h2>Протокол аудита: <span class="hl">пять шагов</span></h2>
+        <p>1 прочитать целиком · 2 отметить непонятное · 3 проверить методы · 4 прогнать границы · 5 пересказать своими словами</p>
+      </section>
+
+      <section class="slide">
+        <!-- «И почти всегда это не вина модели. Вы её об этом не просили.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>Граничные случаи</h2>
+        <ul class="tm-list">
+          <li>пустой массив</li>
+          <li>элемента нет на странице</li>
+          <li>пустой ввод</li>
+          <li>нет сети. Код ломается там, а не на «нормальном» сценарии</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Пустой блок читается как сломанный сайт. Одна строка текста — и человек понимает, что происходит.» -->
+        <p class="tm-eyebrow">►► Пустота — не ответ</p>
+        <h2>Объяснение вместо пустого блока</h2>
+        <p>Проверять надо <strong>результат фильтрации</strong>, а не исходный массив: пирогов шесть, сладких может быть ноль</p>
+        <pre class="tm-code">const sweet = pies.filter(p =&gt; p.kind === "сладкое");
+<span class="hl">if (sweet.length === 0) {
+  menu.textContent = "Сладких пирогов сегодня нет";
+  return;
+}</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Ранний выход. Основная логика внизу пишется без вложенных условий и читается сверху вниз.» -->
+        <p class="tm-eyebrow">►► Вторая граница</p>
+        <h2><code>querySelector</code> возвращает <code>null</code></h2>
+        <p>Элемент ищем один раз, кладём в переменную, проверяем. Иначе <code>Cannot set properties of null</code> останавливает весь скрипт</p>
+        <pre class="tm-code">const menu = document.querySelector("#menu");
+<span class="hl">if (!menu) {
+  console.warn("Блок #menu не найден");
+  return;
+}</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Проверим прямо сейчас. Кто перескажет эту функцию, не назвав ни одного имени метода?» -->
+        <p class="tm-eyebrow">►► Вопрос</p>
+        <h2>Что значит «понял код»?</h2>
+        <p>Прочитал глазами? Смог повторить? Смог объяснить?</p>
+        <p class="muted">Обсуждаем вслух, ответ не показываем сразу</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Если ваш пересказ поймёт сосед, который этот код не видел, — засчитано.» -->
+        <p class="tm-eyebrow">►► Шаг 5</p>
+        <h2>Пересказ без имён методов</h2>
+        <p>Плохо: «применяет <code>filter</code> с колбэком». Хорошо: «оставляет только сладкие и пишет их названия через запятую в блок меню»</p>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «И слова "с пониманием результата" там не для красоты. На защите спросят про любую строку, включая ту, что написала модель.» -->
+        <h2><span class="hl">Рефакторинг</span>: две функции</h2>
+        <p>Переписать понятнее, <strong>не меняя поведения</strong>. Это требование ТЗ итогового проекта, а не пожелание</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Код исправен. Он просто делает другое. Ловится единственным способом — сравнением на одних данных.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>«Отрефакторил» — и скидка поехала</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Стало короче и элегантнее. Заодно исчезло округление и порог сдвинулся с 300 на 250. Ни ошибки, ни предупреждения</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Бланк сдаётся заполненным. Работающая страница без бланка — не аудит.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 45 минут</h2>
+        <ul class="tm-list">
+          <li>бланк аудита, пять шагов</li>
+          <li>найти три выдумки через <code>[].имя</code></li>
+          <li>починить вызовы целиком</li>
+          <li>обработать две границы</li>
+          <li>отрефакторить свою функцию и сравнить на трёх наборах</li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L17_trainer_audit.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сдаётся только то, что ты можешь объяснить. Раньше это было принципом. С сегодняшнего дня — процедурой из пяти шагов.» -->
+        <p class="tm-eyebrow">►► Правило курса</p>
+        <h2>Теперь у него есть процедура</h2>
+        <p>Пять шагов протокола. Шаг 5 и есть проверка правила</p>
+        <pre class="tm-code">[КОНТЕКСТ]
+Я школьник, учебный сайт школьного буфета. Чистые HTML, CSS,
+JavaScript — без фреймворков, сборщиков и библиотек.
+Функция, которую нужно переписать:
+&lt;&lt;&lt; сюда вставить свой код целиком &gt;&gt;&gt;
+
+[ЗАДАЧА]
+Перепиши эту функцию так, чтобы её было легче читать.
+
+[ОГРАНИЧЕНИЯ]
+<span class="hl">- ПОВЕДЕНИЕ НЕ МЕНЯТЬ: на одних и тех же данных обе версии должны
+  давать одинаковый результат, включая граничные случаи;</span>
+- не использовать приёмы, которых нет в списке выше;
+- имена переменных и функций — говорящие, по-английски;
+- числа-константы вынести наверх с говорящими именами;
+- не длиннее исходной функции больше чем на пять строк;
+- const и let, никакого var.
+
+[ФОРМАТ ОТВЕТА]
+Сначала список из 3–5 строк: что именно ты изменишь и почему.
+Потом один блок кода с функцией целиком. Без пояснений после кода.
+
+[КРИТЕРИИ ПРОВЕРКИ]
+1. Прогоняю обе версии на обычном наборе данных — результат совпадает.
+2. Прогоняю на пустом массиве — результат совпадает.
+3. Прогоняю на граничном значении (ровно порог скидки) — совпадает.
+4. Каждое имя в новой версии я могу объяснить, не заглядывая в код.
+5. Ни одного метода, которого нет в списке с занятий.</pre>
+        <p><strong>Проверить руками:</strong> три набора данных, обе версии · каждый метод есть в списке с занятий · ни одной строки без пересказа · константы вынесены и названы · старая версия сохранена</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L17_trainer_audit.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L18/L18_presentation.html">►► Занятие 18</a>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 17</h3>
+      <dl>
+        <dt>Аудит кода</dt>
+        <dd>Проверка чужого кода по фиксированному порядку из пяти шагов, прежде чем взять его в проект. Одинаково применяется к коду от ИИ, из интернета и из учебника.</dd>
+        <dt>Галлюцинация</dt>
+        <dd>Уверенно выданная моделью неправда: несуществующий метод, выдуманный формат ответа API, факт, которого нет. Не выглядит как ошибка: код аккуратный и правдоподобный.</dd>
+        <dt>Несуществующий метод</dt>
+        <dd>Имя, которого нет в языке: filterBy, mapTo, joinWith, setText. Проверяется в консоли строкой вида [].имя — ответ undefined означает, что такого свойства нет.</dd>
+        <dt>TypeError: … is not a function</dt>
+        <dd>Сообщение браузера о том, что указанное имя не является функцией. Называет первого виновника; про следующие ошибки браузер молчит, потому что выполнение прервалось.</dd>
+        <dt>Граничный случай</dt>
+        <dd>Крайняя ситуация, в которой код ломается чаще всего: пустой массив, отсутствующий на странице элемент, пустой ввод, нет сети.</dd>
+        <dt>Ранний выход</dt>
+        <dd>Приём, при котором функция проверяет проблемную ситуацию в начале и завершается через return, не заходя в основную логику. Убирает вложенные условия и делает код читаемым сверху вниз.</dd>
+        <dt>Рефакторинг</dt>
+        <dd>Переписывание кода так, чтобы он стал понятнее, а поведение осталось прежним. Если поведение изменилось, это уже не рефакторинг.</dd>
+        <dt>Проверка совпадения поведения</dt>
+        <dd>Прогон старой и новой версий функции на одних и тех же данных, включая границы. Единственный способ убедиться, что рефакторинг удался.</dd>
+        <dt>Магическое число</dt>
+        <dd>Число, вписанное прямо в условие или формулу без объяснения: if (total &gt; 300). При рефакторинге выносится в именованную константу.</dd>
+        <dt>Пересказ своими словами</dt>
+        <dd>Объяснение назначения функции без единого имени метода из кода. Способ проверить понимание, который нельзя обмануть чтением вслух.</dd>
+        <dt>MDN Web Docs</dt>
+        <dd>Официальный справочник по веб-технологиям. Место, где проверяют не только существование метода, но и то, какие аргументы он принимает.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

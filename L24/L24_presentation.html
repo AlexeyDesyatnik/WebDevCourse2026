@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 24. Публичная защита проектов</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 24</strong>
+      <span>Публичная защита проектов</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 14</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Сегодня вы показываете работающее приложение по публичной ссылке людям, которые видят его впервые.» -->
+        <p class="tm-eyebrow">►► Модуль 9 · Занятие 24</p>
+        <h1>Публичная защита проектов</h1>
+        <p>Сорок восемь часов назад вы не знали, что такое семантическая разметка</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L24_trainer_defense.html">►► К тренажёру защиты</a>
+          <a class="tm-btn tm-btn--primary" href="../L23/L23_presentation.html">►► Занятие 23</a>
+          <a class="tm-btn tm-btn--primary" href="../projects/index.html">►► Витрина проектов</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Двадцать два балла из тридцати уже набраны. Восемь зависят от следующих трёх минут.» -->
+        <p class="tm-eyebrow">►► Регламент</p>
+        <h2>Три минуты и две</h2>
+        <ul class="tm-list">
+          <li><strong>3 минуты</strong> — выступление из пяти частей.</li>
+          <li><strong>2 минуты</strong> — вопросы.</li>
+          <li>Порядок выступлений на доске</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Порядок не меняется. Проблема первой — иначе демонстрация непонятна. Демо до кода — иначе непонятно, что делает код.» -->
+        <p class="tm-eyebrow">►► Структура</p>
+        <h2>Пять частей</h2>
+        <ul class="tm-list">
+          <li><strong>проблема</strong> 30 сек — про человека, без техники</li>
+          <li><strong>демо</strong> 60 сек — 4–5 действий</li>
+          <li><strong>код</strong> 40 сек — фрагмент, который выбрали вы</li>
+          <li><strong>ИИ</strong> 30 сек — что просил / что проверил</li>
+          <li><strong>что доработал бы</strong> 20 сек</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Четверть выступления. И ни одного действия ещё не показано.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>Вступление и список технологий</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>«Здравствуйте, меня зовут… Я использовал HTML, CSS, JavaScript, Grid, Flexbox, localStorage…» — сорок пять секунд, комиссия не узнала о продукте ничего</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Перезагрузка отличает работающий продукт от макета. Показывайте её явно.» -->
+        <p class="tm-eyebrow">►► Главное</p>
+        <h2>Демонстрация — это действия</h2>
+        <p>Если фразу можно произнести, <strong>не трогая мышь</strong>, это не демонстрация. Обязательно: основное действие, ошибка ввода, <strong>перезагрузка</strong></p>
+      </section>
+
+      <section class="slide">
+        <!-- «"Сейчас, подождите, я открою" — тридцать секунд из ста восьмидесяти.» -->
+        <p class="tm-eyebrow">►► Подготовка</p>
+        <h2>Что сделать до выхода</h2>
+        <ul class="tm-list">
+          <li>вкладка открыта, страница загружена</li>
+          <li>две-три записи уже добавлены</li>
+          <li>посторонние вкладки закрыты</li>
+          <li>знаю, что скажу, если упадёт сеть</li>
+        </ul>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Отвечает человек, а не текст. Здесь и видно, писали вы код или собирали.» -->
+        <p class="tm-eyebrow">►► Главный вопрос</p>
+        <h2>Объясните этот <span class="hl">фрагмент</span></h2>
+        <p>Он будет задан каждому. Ради него правило повторялось двадцать четыре занятия</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Третий уровень отличает того, кто писал и проверял, от того, кто вставил.» -->
+        <p class="tm-eyebrow">►► Как отвечать</p>
+        <h2>Три уровня</h2>
+        <ul class="tm-list">
+          <li>1 <strong>что делает</strong> — одним предложением, своими словами</li>
+          <li>2 <strong>как делает</strong> — по шагам, без имён методов</li>
+          <li>3 <strong>что на границе</strong> — пусто / всё / крайний случай</li>
+        </ul>
+        <pre class="tm-code">«Считает, сколько дней подряд отмечено,
+если идти от сегодняшнего назад.
+<span class="hl">Если ничего не отмечено — вернёт ноль.»</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Выдуманный ответ вскрывается следующим вопросом. После этого под сомнением всё сказанное раньше.» -->
+        <p class="tm-eyebrow">►► Вопросы</p>
+        <h2>Три правила ответа</h2>
+        <ul class="tm-list">
+          <li>сначала коротко, потом подробности</li>
+          <li>не знаешь — скажи «не проверял»</li>
+          <li>замечание — согласие и что бы сделал</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Ограничение, названное вами, показывает, что вы знаете свой продукт. То же самое, найденное комиссией, — что не знаете.» -->
+        <p class="tm-eyebrow">►► Рефлексия</p>
+        <h2>Что доработал бы</h2>
+        <p>Одно-два конкретных места из «известных ограничений», <strong>с ценой каждого</strong>: одно занятие / другой проект</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Слушать чужие защиты полезнее, чем в двадцатый раз повторять свою.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Защиты</h2>
+        <p>Порядок на доске. Пока выступают другие — заполняете лист слушателя и готовите один вопрос</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L24_trainer_defense.html">►► К тренажёру защиты</a>
+          <a class="tm-btn tm-btn--ghost" href="../L23/L23_presentation.html">►► Занятие 23</a>
+          <a class="tm-btn tm-btn--ghost" href="../projects/index.html">►► Витрина проектов</a>
+        </div>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Через полгода вас спросят, что вы умеете. "Проходил курс" не значит ничего. "Вот ссылка, откройте" значит всё.» -->
+        <p class="tm-eyebrow">►► После курса</p>
+        <h2>Портфолио — это <span class="hl">ссылки</span></h2>
+        <ul class="tm-list">
+          <li>работающий проект</li>
+          <li>репозиторий с историей</li>
+          <li><code>README</code></li>
+          <li>учебные работы курса</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Самая частая потеря — удалённый через год репозиторий. Восстанавливать будет нечего.» -->
+        <p class="tm-eyebrow">►► Что сохранить сегодня</p>
+        <h2>Четыре ссылки и одна строка</h2>
+        <div class="criterion">
+          <ul class="tm-list">
+            <li>Собрать ссылки в одном месте</li>
+            <li>дописать в <code>README</code> «Учебный проект курса, 2026»</li>
+            <li><strong>не удалять репозиторий</strong></li>
+            <li>проверять раз в несколько месяцев, что ссылка открывается</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Последний пункт — то, ради чего был весь курс. Сдаётся только то, что ты можешь объяснить. Это остаётся с вами дальше.» -->
+        <p class="tm-eyebrow">►► Итог курса</p>
+        <h2>Что у вас теперь есть</h2>
+        <ul class="tm-list">
+          <li>умение собрать адаптивную страницу без фреймворков</li>
+          <li>логика, формы, данные, API с фолбэком</li>
+          <li>Git с ветками и Pull Request</li>
+          <li>публикация и поддержка рабочей версии</li>
+          <li><strong>умение проверить то, что дал ИИ, и объяснить каждую строку</strong></li>
+        </ul>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 24</h3>
+      <dl>
+        <dt>Публичная защита</dt>
+        <dd>Представление готового продукта посторонним людям с ответами на их вопросы. Регламент курса: три минуты выступления и две минуты вопросов.</dd>
+        <dt>Структура защиты</dt>
+        <dd>Пять частей по 30–40 секунд: проблема, демонстрация, фрагмент кода, роль ИИ, что доработал бы. Порядок не меняется.</dd>
+        <dt>Демонстрация</dt>
+        <dd>Показ работы продукта действиями по публичной ссылке, а не описанием словами. Проверка простая: если фразу можно произнести, не трогая мышь, это не демонстрация.</dd>
+        <dt>Главный вопрос защиты</dt>
+        <dd>«Покажите фрагмент кода и объясните, что он делает». Задаётся каждому. Хороший ответ идёт на трёх уровнях: что делает в целом, как делает, что будет на границе.</dd>
+        <dt>Три уровня объяснения кода</dt>
+        <dd>Назначение своими словами, механика по шагам без имён методов, поведение на границах. Третий уровень отличает понимание от заучивания.</dd>
+        <dt>Рефлексия</dt>
+        <dd>Осмысленный разбор собственной работы: что было трудно, что доработал бы и с какой ценой, чему научился. Названа в критериях оценки прямо.</dd>
+        <dt>Лист на 30 баллов</dt>
+        <dd>Пять критериев оценки итогового проекта: соответствие ТЗ (10), адаптивность и UI/UX (5), культура работы с Git (5), осознанное применение ИИ (5), защита и презентация (5). Уровни: 25–30 высокий, 18–24 базовый, 12–17 стартовый.</dd>
+        <dt>Самооценка</dt>
+        <dd>Выставление себе баллов по тем же пяти критериям <strong>с обоснованием</strong> по каждому. Ценность в обосновании, а не в числе.</dd>
+        <dt>Портфолио</dt>
+        <dd>Собрание работ, которое можно открыть и показать: живые ссылки, репозитории с историей, <code>README</code>. Не перечень технологий, а то, что открывается.</dd>
+        <dt>Известные ограничения</dt>
+        <dd>Раздел <code>README</code> и одновременно готовый ответ на вопрос «что бы вы доработали». Ограничение, названное автором, работает на него; найденное комиссией — против.</dd>
+        <dt>«Не проверял»</dt>
+        <dd>Нормальный ответ на вопрос о том, чего ты не проверял. Плохой ответ, но честный. Выдуманный ответ вскрывается следующим вопросом и обесценивает всё сказанное раньше.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

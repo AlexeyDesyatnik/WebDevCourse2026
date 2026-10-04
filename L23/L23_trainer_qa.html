@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 23 · Тренажёр: QA и баг-репорт</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; font-size: 18px; line-height: 1.55; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible, .task-chip:focus-visible, .zone:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li { position: relative; padding-left: 2.1em; margin-bottom: .55em; }
+    .tm-list li::before { content: "►►"; position: absolute; left: 0; top: .05em; color: var(--tm-green); font-size: .78em; letter-spacing: -.08em; }
+    .brief .tm-eyebrow { margin: 0 0 8px; }
+    .hide { display: none !important; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .course-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    h2 { font-size: 1.15rem; margin: 0 0 10px; }
+    h3 { font-size: 1.05rem; margin: 0 0 10px; }
+    .pane__help { margin: 0 0 12px; color: var(--tm-muted); font-size: .95em; }
+    .item { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--tm-border); cursor: pointer; }
+    .item:last-child { border-bottom: 0; }
+    .item input { width: 22px; height: 22px; margin-top: 4px; accent-color: var(--tm-green); }
+    .item__title { font-weight: 600; }
+    .item__how { margin: 6px 0 0; color: var(--tm-muted); font-size: .95em; }
+    .item__how strong { color: var(--tm-text); font-weight: 700; }
+    .check-group { margin-bottom: 8px; }
+    .check-group:last-child { margin-bottom: 0; }
+    .report { margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--tm-border); }
+    .report:last-child { border-bottom: 0; margin-bottom: 0; }
+    .bad-quote {
+      margin: 0 0 8px;
+      padding: 10px 12px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-fail);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      font-weight: 700;
+    }
+    .field { display: block; margin: 12px 0 0; font-weight: 700; }
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 92px;
+      margin: 6px 0 0;
+      padding: 10px 12px;
+      font: inherit;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+    }
+    .field-msg { color: var(--tm-fail); font-size: .9em; font-weight: 400; margin: 6px 0 0; }
+    .field-msg:empty { display: none; }
+    .pool { min-height: 72px; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); margin-bottom: 12px; }
+    .task-chip { appearance: none; border: 2px solid var(--tm-green-dark); background: var(--tm-bg); color: var(--tm-text); border-radius: var(--tm-radius-sm); padding: 10px 12px; font: 600 15px/1.35 var(--tm-font); text-align: left; cursor: grab;
+      box-shadow: var(--tm-shadow); max-width: 100%; }
+    .task-chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .task-chip:active { cursor: grabbing; }
+    .task-chip.is-picked { outline: 3px solid var(--tm-green-dark); outline-offset: 2px; background: var(--tm-green-soft); }
+    .board-wrap { display: grid; gap: 12px; }
+    @media (min-width: 900px) {
+      .board-wrap { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .zone { min-height: 160px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius); padding: 12px; background: var(--tm-bg-alt); }
+    .zone.is-over, .zone.is-target { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .zone .task-chip { width: 100%; margin-bottom: 8px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-bg); color: var(--tm-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 15px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .review-item { margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--tm-border); }
+    .review-item h3 { margin: 0 0 8px; }
+    .review-item pre { margin: 8px 0 0; }
+    .review-table { width: 100%; border-collapse: collapse; font-size: .95em; }
+    .review-table th, .review-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--tm-border); vertical-align: top; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 23 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">QA и баг-репорт</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 12</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<nav class="course-links" aria-label="Соседние материалы">
+  <a class="tm-btn tm-btn--ghost" href="L23_presentation.html">Презентация</a>
+  <a class="tm-btn tm-btn--ghost" href="../L22/L22_checklist.html">Чек-лист 22</a>
+  <a class="tm-btn tm-btn--ghost" href="../L24/L24_trainer_defense.html">Занятие 24</a>
+</nav>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p>Три части. Первая: чек-лист тестирования по своему проекту — пятнадцать пунктов. Вторая: перед тобой пять описаний найденных дефектов, написанных плохо; исправь каждое, дописав недостающие части. Третья: расставь семь дефектов по приоритету. Порог: чек-лист пройден целиком, три отчёта из пяти приняты валидатором, приоритеты — не меньше 6 из 7.</p>
+</section>
+
+<div class="tabs" role="tablist" aria-label="Части тренажёра">
+  <button class="tm-btn tm-btn--primary" id="tabChecklist" role="tab" aria-selected="true" type="button">Чек-лист</button>
+  <button class="tm-btn tm-btn--ghost" id="tabReports" role="tab" aria-selected="false" type="button">Баг-репорты</button>
+  <button class="tm-btn tm-btn--ghost" id="tabPriority" role="tab" aria-selected="false" type="button">Приоритеты</button>
+</div>
+
+<section class="tm-card" id="paneChecklist" role="tabpanel" aria-labelledby="tabChecklist">
+  <p class="tm-eyebrow">►► ЧЕК-ЛИСТ</p>
+  <p class="pane__help">Чек-лист заполняется по своему проекту. Тестирование чужого идёт в паре, на бумаге: тренажёр чужую ссылку не откроет и не проверит. Проходи все пятнадцать пунктов, даже если дефект нашёлся в третьем. Пункты 9, 13 и 15 находят то, о чём авторы не думают вовсе.</p>
+  <div id="checklistBox"></div>
+</section>
+
+<section class="tm-card hide" id="paneReports" role="tabpanel" aria-labelledby="tabReports" hidden>
+  <p class="tm-eyebrow">►► БАГ-РЕПОРТЫ</p>
+  <p class="pane__help">Пять плохих описаний. Под каждым — четыре поля. Часть текста уже извлечена из плохого описания, остальное допиши. Валидатор проверяет форму, а не то, существует ли дефект вживую. Ничего никуда не отправляется: обмен отчётами идёт на бумаге или в чате группы.</p>
+  <div id="reportsBox"></div>
+</section>
+
+<section class="tm-card hide" id="panePriority" role="tabpanel" aria-labelledby="tabPriority" hidden>
+  <p class="tm-eyebrow">►► ПРИОРИТЕТЫ</p>
+  <p class="pane__help">Семь дефектов — в три зоны. Вопрос один: что пользователь не сможет сделать из-за этого? Простота починки на приоритет не влияет: дефекты 1 и 3 чинятся быстро и всё равно блокирующие. Перетащи карточку в зону или кликни по карточке, затем по зоне.</p>
+  <p class="status-line" id="poolLabel">Ещё не разложено</p>
+  <div class="pool" id="taskPool" aria-label="Неразложенные дефекты"></div>
+  <div class="board-wrap">
+    <div class="zone" id="zoneBlock" data-zone="block" tabindex="0">
+      <h3>Блокирующие</h3>
+    </div>
+    <div class="zone" id="zoneMajor" data-zone="major" tabindex="0">
+      <h3>Важные</h3>
+    </div>
+    <div class="zone" id="zoneMinor" data-zone="minor" tabindex="0">
+      <h3>Косметические</h3>
+    </div>
+  </div>
+</section>
+
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать баг-репорт</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Показать разбор</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► РАЗБОР</p>
+  <h2>Эталонные версии пяти отчётов</h2>
+  <div id="reviewReports"></div>
+  <h2>Разбор приоритетов</h2>
+  <div id="reviewZones"></div>
+</section>
+
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Баг-репорт</dt><dd>Описание дефекта из четырёх обязательных частей: что делал, что ожидал, что получилось, где. Пишется так, чтобы автор починил без единого уточняющего вопроса.</dd>
+    <dt>Шаги воспроизведения</dt><dd>Точная последовательность действий, повторив которую, другой человек увидит тот же дефект.</dd>
+    <dt>Приоритет дефекта</dt><dd>Оценка последствий: блокирующий, важный, косметический. Определяется вопросом «что пользователь не сможет сделать из-за этого?», а не сложностью исправления.</dd>
+    <dt>Чек-лист тестирования</dt><dd>Пятнадцать пунктов, одинаковых для всех проектов. Проходится целиком, даже если дефект нашёлся в первых пунктах.</dd>
+  </dl>
+</section>
+
+<details class="teacher">
+  <summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> чек-лист из 15 пунктов по своему проекту; четыре части баг-репорта; приоритет по последствиям, не по трудозатратам.</li>
+    <li><strong>Норматив:</strong> 12–18 мин. Общая «Проверить» смотрит все три вкладки сразу; переключение их не сбрасывает тексты.</li>
+    <li><strong>Типичные ошибки:</strong> копируют ожидание в «что получилось»; «ты не подумал»; «должно работать правильно»; сортируют дефекты по простоте починки; отмечают чек-лист «на глаз», без пунктов 9, 13, 15.</li>
+    <li><strong>Зачёт:</strong> тест 1 обязателен (15/15); тест 7 обязателен (принято ≥ 3 из 5); тест 12 обязателен (приоритеты ≥ 6 из 7). Валидатор синтаксический: умнее правил 1–10 его делать не нужно.</li>
+    <li><strong>Усложнение:</strong> все пять отчётов приняты; сверка своих живых отчётов с той же формой.</li>
+    <li><strong>Упрощение:</strong> сначала только отчёт 1, подсказка 3 открыта; приоритеты — вслух по одному вопросу «что пользователь не сможет сделать».</li>
+    <li><strong>ИИ:</strong> модель проверяет полноту четырёх частей, а не пишет отчёт. Сгенерированный текст без шагов и поля «Где» не засчитывается.</li>
+    <li><strong>Не отправляется:</strong> тренажёр ничего никуда не передаёт. Чужой проект тестируется на бумаге, в паре.</li>
+  </ul>
+</details>
+
+<script>
+(function () {
+  "use strict";
+
+  const DRAFT_KEY = "wdc-l23-qa-v1";
+
+  const GROUPS = [
+    {
+      title: "Группа 1. Первое знакомство",
+      items: [
+        { n: 1, t: "Открыть в приватном окне: страница открылась, список пуст с объяснением, консоль чиста.", how: "Как проверить: открой свой проект в приватном окне. Страница должна открыться, список — быть пустым с объяснением, консоль — без ошибок." },
+        { n: 2, t: "Понятно ли без пояснений, что это за панель и что тут делать.", how: "Как проверить: посмотри глазами, без подсказок автора: понятно ли из заголовка и первого экрана, что это за панель и что тут делать." },
+        { n: 3, t: "Открыть на телефоне: всё читается, кнопки нажимаются пальцем.", how: "Как проверить: открой на настоящем телефоне, не только в режиме устройства. Всё читается, кнопки нажимаются пальцем." }
+      ]
+    },
+    {
+      title: "Группа 2. Форма",
+      items: [
+        { n: 4, t: "Отправить пустую форму: понятное сообщение, ничего не добавилось.", how: "Как проверить: отправь пустую форму. Должно появиться понятное сообщение, запись не добавляется." },
+        { n: 5, t: "Отправить пробелы вместо текста: ведёт себя как пустая.", how: "Как проверить: введи только пробелы и отправь. Поведение как у пустой формы, пустая карточка не появляется." },
+        { n: 6, t: "Нажать Enter в поле вместо кнопки: работает так же, как кнопка.", how: "Как проверить: поставь курсор в поле и нажми Enter. Результат тот же, что у кнопки: страница не перезагружается." }
+      ]
+    },
+    {
+      title: "Группа 3. Данные",
+      items: [
+        { n: 7, t: "Добавить запись и перезагрузить: запись на месте.", how: "Как проверить: добавь запись и перезагрузи страницу. Запись остаётся." },
+        { n: 8, t: "Добавить десять записей: список читается, ничего не разъезжается.", how: "Как проверить: добавь десять записей. Список читается, карточки не разъезжаются." },
+        { n: 9, t: "Ввести очень длинное название (300+ символов): вёрстка не ломается.", how: "Как проверить: вставь в название текст из 300+ символов и добавь. Вёрстка не ломается, горизонтальной прокрутки нет." }
+      ]
+    },
+    {
+      title: "Группа 4. Состояния и сеть",
+      items: [
+        { n: 10, t: "Network → Offline, обновить: данные из фолбэка и честная пометка.", how: "Как проверить: DevTools → Network → Offline, обнови страницу. Видны данные из фолбэка и честная пометка, что сети нет." },
+        { n: 11, t: "Переключить тему и перезагрузить: тема сохранилась, страница не мигает.", how: "Как проверить: переключи тему и перезагрузи. Тема на месте, страница не мигает светлым." },
+        { n: 12, t: "Посмотреть консоль после всех действий: ошибок нет.", how: "Как проверить: после всех действий открой консоль. Ошибок нет." }
+      ]
+    },
+    {
+      title: "Группа 5. Доступность и вёрстка",
+      items: [
+        { n: 13, t: "Пройти страницу клавишей Tab: фокус виден, доходит до всех кнопок и полей.", how: "Как проверить: пройди страницу клавишей Tab. Фокус виден и доходит до всех кнопок и полей." },
+        { n: 14, t: "Ширина 320 px: один столбец, горизонтальной прокрутки нет.", how: "Как проверить: в DevTools поставь ширину 320 px. Один столбец, горизонтальной прокрутки нет. Это не замена пункту 3." },
+        { n: 15, t: "Убрать данные (очистить хранилище) и посмотреть пустое состояние: есть объяснение, а не пустое место.", how: "Как проверить: очисти хранилище и обнови. Есть объяснение пустого состояния, а не пустое место." }
+      ]
+    }
+  ];
+
+  const BAD = [
+    { quote: "Форма не работает", lack: "Не хватает всего: шагов, ожидания, результата, условий. Нужны конкретные шаги, ожидаемое поведение, наблюдаемый результат, устройство и ширина." },
+    { quote: "На телефоне криво", lack: "Не хватает: что именно криво, где, при каком действии. Назови элемент, что с ним происходит, ширину и устройство." },
+    { quote: "Иногда всё пропадает", lack: "Не хватает воспроизводимости: условий и шагов. Напиши условие, при котором повторяется, — или честно пометь «повторно не воспроизвёл» — плюс шаги и что видно в консоли." },
+    { quote: "Ты не подумал про пустой список", lack: "Формулировка про человека вместо продукта; нет шагов и результата. Переформулируй про поведение продукта, добавь шаги и что видит пользователь." },
+    { quote: "Ошибка!!! Всё сломалось!!!", lack: "Нет информации; тон. Напиши, что делал, что получилось дословно, где; спокойная формулировка." }
+  ];
+
+  const STARTER_REPORTS = [
+    { did: "", expected: "", got: "Форма не работает", where: "" },
+    { did: "", expected: "", got: "криво", where: "телефон" },
+    { did: "", expected: "", got: "Иногда всё пропадает", where: "" },
+    { did: "", expected: "", got: "Ты не подумал про пустой список", where: "" },
+    { did: "", expected: "", got: "Ошибка!!! Всё сломалось!!!", where: "" }
+  ];
+
+  const DEFECTS = [
+    { id: "1", zone: "block", text: "На телефоне кнопка «Добавить» уезжает за край, нажать невозможно", why: "С телефона пользоваться нельзя вообще. Простота правки медиазапроса на приоритет не влияет." },
+    { id: "2", zone: "block", text: "В приватном окне страница пустая, в консоли TypeError", why: "Новый пользователь не может начать." },
+    { id: "3", zone: "block", text: "Добавленные записи пропадают после перезагрузки", why: "Продукт не решает задачу, ради которой сделан. Чинится, скорее всего, за минуту — и всё равно блокирующий." },
+    { id: "4", zone: "major", text: "Enter в поле перезагружает страницу, введённое пропадает", why: "Кнопка работает: добавить можно, но частый сценарий сломан." },
+    { id: "5", zone: "major", text: "Сообщение об ошибке «Ошибка» — непонятно, что исправить", why: "Пользоваться можно, но человек не понимает, чего от него хотят." },
+    { id: "6", zone: "minor", text: "Отступ между карточками в тёмной теме на 4 px больше", why: "Не мешает пользоваться, заметно только при сравнении." },
+    { id: "7", zone: "minor", text: "Иконка в шапке визуально не по центру", why: "Внешняя мелочь." }
+  ];
+
+  const MSG = {
+    r1: "Нужно не меньше двух шагов: с чего начал и что сделал дальше. Автор должен повторить это, ничего не додумывая",
+    r2: "Начни с того, что открыл: ссылку, приватное окно, страницу. Без этого непонятны условия",
+    r3: "Опиши действия глаголами: нажал, ввёл, обновил. \"Попробовал форму\" автор не повторит",
+    r4: "Напиши, какое поведение считаешь правильным. Иногда именно здесь выясняется, что это не дефект",
+    r5: "\"Должно работать правильно\" — не ожидание. Опиши конкретно: что должно было появиться, измениться, сохраниться",
+    r6: "Опиши, что произошло на самом деле: что на экране, что пропало, что в консоли",
+    r7: "Здесь описывают фактический результат, а не повтор ожидания",
+    r8: "Пиши про поведение продукта, а не про автора. Правило с занятия 14 действует и здесь",
+    r9: "Укажи, где проверял: телефон или компьютер, какой браузер. Половина дефектов воспроизводится только в определённых условиях",
+    r10: "Добавь условия: ширина экрана, есть ли сеть, пустое ли хранилище. Без этого автор проверит у себя и ничего не найдёт"
+  };
+
+  const HINTS = [
+    "Про каждый отчёт спроси: сможет ли автор повторить это, не задав мне ни одного вопроса? Если хоть один вопрос напрашивается — в отчёте не хватает части.",
+    "Четыре части и ни одной лишней: что делал (пронумерованные шаги, начиная с \"открыл\"), что ожидал (конкретное поведение, а не \"должно работать\"), что получилось (факты: текст ошибки, что видно, что пропало), где (устройство, браузер, ширина, сеть, пустое ли хранилище). Приоритет ставится по одному вопросу: что пользователь не сможет сделать из-за этого?",
+    "Плохо:  Форма не работает.\n\nХорошо: Заголовок: Enter в поле названия перезагружает страницу\n\n  Что делал:\n    1. открыл ссылку в приватном окне\n    2. ввёл «Тест» в поле «Название»\n    3. нажал Enter (не кнопку)\n  Что ожидал: запись добавится, как при нажатии кнопки\n  Что получилось: страница перезагрузилась, поле очистилось,\n    запись не добавилась, в адресе появилось «?title=Тест»\n  Где: Chrome, ноутбук, ширина 1280, сеть есть, хранилище пустое\n  Приоритет: важный"
+  ];
+
+  const ETALON_REPORTS = [
+    {
+      title: "Отчёт 1 · было «Форма не работает»",
+      text: "Что делал:\n1. открыл ссылку в приватном окне\n2. оставил поле «Название» пустым\n3. нажал кнопку «Добавить»\nЧто ожидал: под полем появится сообщение, запись в список не добавится\nЧто получилось: кнопка не реагирует, сообщения нет, список не меняется, в консоли пусто\nГде: Chrome, ноутбук, ширина 1280 px, сеть есть, хранилище пустое"
+    },
+    {
+      title: "Отчёт 2 · было «На телефоне криво»",
+      text: "Что делал:\n1. открыл публичную ссылку на телефоне\n2. нажал кнопку «Добавить»\nЧто ожидал: кнопка нажимается пальцем, форма открывается\nЧто получилось: кнопка «Добавить» уехала за правый край, нажать её нельзя\nГде: телефон, Chrome, ширина 320 px, сеть есть"
+    },
+    {
+      title: "Отчёт 3 · было «Иногда всё пропадает»",
+      text: "Что делал:\n1. открыл ссылку в обычном окне\n2. добавил три записи и обновил страницу\nЧто ожидал: три записи останутся в списке после перезагрузки\nЧто получилось: список пуст, в консоли ошибок нет; повторно воспроизвести не удалось\nГде: Chrome, ноутбук, ширина 1280 px, сеть есть, хранилище было заполнено"
+    },
+    {
+      title: "Отчёт 4 · было «Ты не подумал про пустой список»",
+      text: "Что делал:\n1. открыл ссылку в приватном окне\n2. обновил страницу, ничего не добавляя\nЧто ожидал: вместо пустого места будет объяснение, что список пуст и как добавить первую запись\nЧто получилось: под заголовком пустое место без текста, кнопка «Добавить» не видна без прокрутки\nГде: Chrome, ноутбук, ширина 1280 px, приватное окно, хранилище пустое"
+    },
+    {
+      title: "Отчёт 5 · было «Ошибка!!! Всё сломалось!!!»",
+      text: "Что делал:\n1. открыл ссылку в приватном окне\n2. ввёл «Тест» в поле «Название»\n3. нажал «Добавить»\nЧто ожидал: запись появится в списке, страница останется на месте\nЧто получилось: экран белый, в консоли TypeError: Cannot read properties of null\nГде: Chrome, ноутбук, ширина 1280 px, сеть есть, хранилище пустое"
+    }
+  ];
+
+  const score = document.getElementById("score");
+  const bar = document.getElementById("bar");
+  const testsEl = document.getElementById("tests");
+  const hintsEl = document.getElementById("hints");
+  const honesty = document.getElementById("honesty");
+  const etalonBtn = document.getElementById("etalonBtn");
+  const etalonBox = document.getElementById("etalonBox");
+  const paneChecklist = document.getElementById("paneChecklist");
+  const paneReports = document.getElementById("paneReports");
+  const panePriority = document.getElementById("panePriority");
+  const tabChecklist = document.getElementById("tabChecklist");
+  const tabReports = document.getElementById("tabReports");
+  const tabPriority = document.getElementById("tabPriority");
+
+  let checklist = [];
+  let reports = cloneReports(STARTER_REPORTS);
+  let zones = {};
+  let tab = "checklist";
+  let hintsOpened = 0;
+  let pickedId = null;
+  let saveTimer = 0;
+  let reviewBuilt = false;
+
+  function cloneReports(src) {
+    return src.map(function (r) {
+      return { did: r.did, expected: r.expected, got: r.got, where: r.where };
+    });
+  }
+
+  function numberedSteps(text) {
+    return String(text || "").split(/\n/).filter(function (line) {
+      return /^\s*\d+[\.\)]\s+\S/.test(line);
+    });
+  }
+
+  function hasAuthorTalk(text) {
+    const t = String(text || "");
+    const low = t.toLowerCase();
+    if (low.indexOf("ты не") !== -1) return true;
+    if (low.indexOf("забыл") !== -1) return true;
+    if (low.indexOf("плохо сделал") !== -1) return true;
+    return /(^|[^\u0400-\u04FFa-z0-9])ты([^\u0400-\u04FFa-z0-9]|$)/i.test(t);
+  }
+
+  /* Валидатор нарочно синтаксический: не проверяет, правда ли дефект существует. */
+  function validateReport(r) {
+    const did = String(r.did || "");
+    const expected = String(r.expected || "").trim();
+    const got = String(r.got || "").trim();
+    const where = String(r.where || "");
+    const msgs = { did: [], expected: [], got: [], where: [] };
+    const steps = numberedSteps(did);
+    if (steps.length < 2) msgs.did.push(MSG.r1);
+    const first = steps[0] || "";
+    if (!/откр|ссылк/i.test(first)) msgs.did.push(MSG.r2);
+    if (!/нажал|ввёл|выбрал|обновил|переключил/i.test(did)) msgs.did.push(MSG.r3);
+    if (!expected || expected.length <= 15) msgs.expected.push(MSG.r4);
+    if (/работать правильно|нормально|как надо/i.test(expected)) msgs.expected.push(MSG.r5);
+    if (!got || got.length <= 15) msgs.got.push(MSG.r6);
+    if (expected.length > 0 && got.length > 0 && expected === got) msgs.got.push(MSG.r7);
+    if (hasAuthorTalk(got)) msgs.got.push(MSG.r8);
+    if (!/телефон|ноутбук|chrome|браузер/i.test(where)) msgs.where.push(MSG.r9);
+    if (!/px|320|сет|offline|приватн|пусто/i.test(where)) msgs.where.push(MSG.r10);
+    const ok = msgs.did.length + msgs.expected.length + msgs.got.length + msgs.where.length === 0;
+    return { ok: ok, msgs: msgs };
+  }
+
+  function missingChecks() {
+    const miss = [];
+    for (let n = 1; n <= 15; n += 1) {
+      if (checklist.indexOf(n) === -1) miss.push(n);
+    }
+    return miss;
+  }
+
+  function listJoin(arr) {
+    return arr.join(", ");
+  }
+
+  function zoneStats() {
+    let correct = 0;
+    let blockOk = 0;
+    DEFECTS.forEach(function (d) {
+      if (zones[d.id] === d.zone) correct += 1;
+      if ((d.id === "1" || d.id === "2" || d.id === "3") && zones[d.id] === "block") blockOk += 1;
+    });
+    const cosmeticNotBlock = zones["6"] !== "block" && zones["7"] !== "block";
+    return { correct: correct, blockOk: blockOk, cosmeticNotBlock: cosmeticNotBlock };
+  }
+
+  function paintFieldMessages() {
+    reports.forEach(function (r, i) {
+      const v = validateReport(r);
+      ["did", "expected", "got", "where"].forEach(function (field) {
+        const el = document.querySelector('[data-report="' + i + '"] [data-msg="' + field + '"]');
+        if (el) el.textContent = v.msgs[field].join(" ");
+      });
+    });
+  }
+
+  function TESTS() {
+    const miss = missingChecks();
+    const verdicts = reports.map(validateReport);
+    const accepted = verdicts.filter(function (v) { return v.ok; }).length;
+    const emptyWhere = [];
+    reports.forEach(function (r, i) {
+      if (!String(r.where || "").trim()) emptyWhere.push(i + 1);
+    });
+    const authorHits = [];
+    reports.forEach(function (r, i) {
+      if (hasAuthorTalk(r.got)) authorHits.push(i + 1);
+    });
+    const z = zoneStats();
+    return [
+      {
+        name: "Чек-лист пройден целиком",
+        okText: "Все пятнадцать пунктов пройдены",
+        hint: "Не отмечено: " + (miss.length ? listJoin(miss) : "—") + ". Пункты 9, 13 и 15 пропускают чаще всего — длинный текст, Tab-обход, пустое состояние",
+        run: function () { return miss.length === 0; }
+      },
+      {
+        name: "Отчёт 1 принят валидатором",
+        okText: "Отчёт 1 готов: автор починит без вопросов",
+        hint: "Отчёт 1 не принят. Под каждым полем написано, какое правило нарушено",
+        run: function () { return verdicts[0].ok; }
+      },
+      {
+        name: "Отчёт 2 принят",
+        okText: "Отчёт 2 готов",
+        hint: "«На телефоне криво» — какой элемент, что с ним, на какой ширине?",
+        run: function () { return verdicts[1].ok; }
+      },
+      {
+        name: "Отчёт 3 принят",
+        okText: "Отчёт 3 готов",
+        hint: "«Иногда» — это не условие. Что было в тот раз иначе: сколько записей, какая сеть, какое окно?",
+        run: function () { return verdicts[2].ok; }
+      },
+      {
+        name: "Отчёт 4 принят",
+        okText: "Отчёт 4 готов",
+        hint: "Переформулируй про продукт, а не про автора: не «ты не подумал», а «при пустом списке показывается…»",
+        run: function () { return verdicts[3].ok; }
+      },
+      {
+        name: "Отчёт 5 принят",
+        okText: "Отчёт 5 готов",
+        hint: "Восклицательные знаки не добавляют информации. Что делал, что получилось дословно, где?",
+        run: function () { return verdicts[4].ok; }
+      },
+      {
+        name: "Принято не меньше трёх отчётов",
+        okText: "Принято " + accepted + " из 5 — отчёты можно отправлять автору",
+        hint: "Принято " + accepted + " из 5. Норма — три. Отчёт, который нельзя воспроизвести, автор закроет как невоспроизводимый",
+        run: function () { return accepted >= 3; }
+      },
+      {
+        name: "Во всех отчётах заполнено поле «Где»",
+        okText: "Условия указаны везде",
+        hint: "Без поля «Где» автор проверит на своём широком экране и ничего не найдёт. Не заполнено: " + (emptyWhere.length ? listJoin(emptyWhere) : "—"),
+        run: function () { return emptyWhere.length === 0; }
+      },
+      {
+        name: "Ни в одном отчёте нет обращения к автору",
+        okText: "Все отчёты про продукт, а не про человека",
+        hint: "В отчётах " + (authorHits.length ? listJoin(authorHits) : "—") + " есть обращение к автору. Обсуждается поведение программы — правило с занятия 14",
+        run: function () { return authorHits.length === 0; }
+      },
+      {
+        name: "Три блокирующих дефекта в верной зоне",
+        okText: "Блокирующие определены верно",
+        hint: "Верно " + z.blockOk + " из 3. Вопрос один: что пользователь не сможет сделать из-за этого дефекта?",
+        run: function () { return z.blockOk === 3; }
+      },
+      {
+        name: "Косметические не попали в блокирующие",
+        okText: "Мелочи на своём месте",
+        hint: "В блокирующие попало то, что не мешает пользоваться. Приоритет — по последствиям, а не по тому, что бросается в глаза",
+        run: function () { return z.cosmeticNotBlock; }
+      },
+      {
+        name: "Всего верно не меньше 6 из 7",
+        okText: "Приоритеты расставлены: " + z.correct + " из 7",
+        hint: "Верно " + z.correct + " из 7. Пройди по каждому: пользоваться нельзя вообще → блокирующий; можно, но сценарий сломан → важный; можно и удобно, просто некрасиво → косметический",
+        run: function () { return z.correct >= 6; }
+      }
+    ];
+  }
+
+  function runOne(t) {
+    let ok = false;
+    try { ok = !!t.run(); } catch (e) { ok = false; }
+    return { name: t.name, hint: t.hint, okText: t.okText, ok: ok };
+  }
+
+  function passedThreshold(list) {
+    return list[0].ok && list[6].ok && list[11].ok;
+  }
+
+  function saveDraft() {
+    const data = {
+      checklist: checklist.slice(),
+      reports: cloneReports(reports),
+      zones: zones,
+      tab: tab,
+      hintsOpened: hintsOpened
+    };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveDraft, 280);
+  }
+
+  function loadDraft() {
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) { data = null; }
+    if (!data || typeof data !== "object") return;
+    if (Array.isArray(data.checklist)) {
+      checklist = data.checklist.map(Number).filter(function (n) { return n >= 1 && n <= 15; });
+    }
+    if (Array.isArray(data.reports) && data.reports.length === 5) {
+      reports = data.reports.map(function (r, i) {
+        const s = STARTER_REPORTS[i];
+        if (!r || typeof r !== "object") return { did: s.did, expected: s.expected, got: s.got, where: s.where };
+        return {
+          did: typeof r.did === "string" ? r.did : s.did,
+          expected: typeof r.expected === "string" ? r.expected : s.expected,
+          got: typeof r.got === "string" ? r.got : s.got,
+          where: typeof r.where === "string" ? r.where : s.where
+        };
+      });
+    }
+    if (data.zones && typeof data.zones === "object") zones = data.zones;
+    if (data.tab === "checklist" || data.tab === "reports" || data.tab === "priority") tab = data.tab;
+    const n = Number(data.hintsOpened);
+    hintsOpened = n >= 0 && n <= 3 ? n : 0;
+  }
+
+  function renderChecklist() {
+    const box = document.getElementById("checklistBox");
+    box.innerHTML = "";
+    GROUPS.forEach(function (g) {
+      const wrap = document.createElement("div");
+      wrap.className = "check-group";
+      const h = document.createElement("h2");
+      h.textContent = g.title;
+      wrap.appendChild(h);
+      g.items.forEach(function (item) {
+        const row = document.createElement("label");
+        row.className = "item";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = checklist.indexOf(item.n) !== -1;
+        input.addEventListener("change", function () {
+          const i = checklist.indexOf(item.n);
+          if (input.checked && i === -1) checklist.push(item.n);
+          if (!input.checked && i !== -1) checklist.splice(i, 1);
+          scheduleSave();
+        });
+        const body = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "item__title";
+        title.textContent = item.n + ". " + item.t;
+        const how = document.createElement("p");
+        how.className = "item__how";
+        const strong = document.createElement("strong");
+        strong.textContent = "Как проверить: ";
+        how.appendChild(strong);
+        how.appendChild(document.createTextNode(item.how.replace(/^Как проверить:\s*/, "")));
+        body.appendChild(title);
+        body.appendChild(how);
+        row.appendChild(input);
+        row.appendChild(body);
+        wrap.appendChild(row);
+      });
+      box.appendChild(wrap);
+    });
+  }
+
+  function renderReports() {
+    const box = document.getElementById("reportsBox");
+    box.innerHTML = "";
+    const fields = [
+      { key: "did", label: "Что делал" },
+      { key: "expected", label: "Что ожидал" },
+      { key: "got", label: "Что получилось" },
+      { key: "where", label: "Где" }
+    ];
+    reports.forEach(function (r, i) {
+      const art = document.createElement("article");
+      art.className = "report";
+      art.setAttribute("data-report", String(i));
+      const q = document.createElement("p");
+      q.className = "bad-quote";
+      q.textContent = "Плохое описание: «" + BAD[i].quote + "»";
+      const lack = document.createElement("p");
+      lack.className = "pane__help";
+      lack.textContent = BAD[i].lack;
+      art.appendChild(q);
+      art.appendChild(lack);
+      fields.forEach(function (f) {
+        const lab = document.createElement("label");
+        lab.className = "field";
+        lab.appendChild(document.createTextNode(f.label));
+        const ta = document.createElement("textarea");
+        ta.setAttribute("data-field", f.key);
+        ta.value = r[f.key];
+        ta.addEventListener("input", function () {
+          reports[i][f.key] = ta.value;
+          scheduleSave();
+        });
+        const msg = document.createElement("p");
+        msg.className = "field-msg";
+        msg.setAttribute("data-msg", f.key);
+        lab.appendChild(ta);
+        lab.appendChild(msg);
+        art.appendChild(lab);
+      });
+      box.appendChild(art);
+    });
+  }
+
+  function makeChip(d) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "task-chip" + (pickedId === d.id ? " is-picked" : "");
+    btn.draggable = true;
+    btn.dataset.id = d.id;
+    btn.textContent = d.id + ". " + d.text;
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      pickedId = pickedId === d.id ? null : d.id;
+      renderBoard();
+    });
+    btn.addEventListener("dragstart", function (e) {
+      pickedId = d.id;
+      try { e.dataTransfer.setData("text/plain", d.id); } catch (err) {}
+      e.dataTransfer.effectAllowed = "move";
+    });
+    return btn;
+  }
+
+  function placeDefect(id, zone) {
+    if (!id || (zone !== "block" && zone !== "major" && zone !== "minor")) return;
+    zones[id] = zone;
+    pickedId = null;
+    scheduleSave();
+    renderBoard();
+  }
+
+  function renderBoard() {
+    const pool = document.getElementById("taskPool");
+    const block = document.getElementById("zoneBlock");
+    const major = document.getElementById("zoneMajor");
+    const minor = document.getElementById("zoneMinor");
+    pool.innerHTML = "";
+    block.innerHTML = "<h3>Блокирующие</h3>";
+    major.innerHTML = "<h3>Важные</h3>";
+    minor.innerHTML = "<h3>Косметические</h3>";
+    let leftover = 0;
+    DEFECTS.forEach(function (d) {
+      const chip = makeChip(d);
+      if (zones[d.id] === "block") block.appendChild(chip);
+      else if (zones[d.id] === "major") major.appendChild(chip);
+      else if (zones[d.id] === "minor") minor.appendChild(chip);
+      else {
+        pool.appendChild(chip);
+        leftover += 1;
+      }
+    });
+    document.getElementById("poolLabel").textContent = leftover
+      ? "Ещё не разложено: " + leftover
+      : "Все семь дефектов разложены";
+    [block, major, minor].forEach(function (el) {
+      el.classList.toggle("is-target", !!pickedId);
+    });
+  }
+
+  function bindZone(el, zone) {
+    el.addEventListener("click", function () {
+      if (pickedId) placeDefect(pickedId, zone);
+    });
+    el.addEventListener("keydown", function (e) {
+      if ((e.key === "Enter" || e.key === " ") && pickedId) {
+        e.preventDefault();
+        placeDefect(pickedId, zone);
+      }
+    });
+    el.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      el.classList.add("is-over");
+    });
+    el.addEventListener("dragleave", function () { el.classList.remove("is-over"); });
+    el.addEventListener("drop", function (e) {
+      e.preventDefault();
+      el.classList.remove("is-over");
+      let id = pickedId;
+      try { id = e.dataTransfer.getData("text/plain") || pickedId; } catch (err) {}
+      placeDefect(id, zone);
+    });
+  }
+
+  function setTab(next) {
+    tab = next === "reports" ? "reports" : next === "priority" ? "priority" : "checklist";
+    paneChecklist.classList.toggle("hide", tab !== "checklist");
+    paneReports.classList.toggle("hide", tab !== "reports");
+    panePriority.classList.toggle("hide", tab !== "priority");
+    paneChecklist.hidden = tab !== "checklist";
+    paneReports.hidden = tab !== "reports";
+    panePriority.hidden = tab !== "priority";
+    const tabs = [
+      { btn: tabChecklist, id: "checklist" },
+      { btn: tabReports, id: "reports" },
+      { btn: tabPriority, id: "priority" }
+    ];
+    tabs.forEach(function (t) {
+      const on = tab === t.id;
+      t.btn.setAttribute("aria-selected", String(on));
+      t.btn.className = "tm-btn " + (on ? "tm-btn--primary" : "tm-btn--ghost");
+    });
+    scheduleSave();
+  }
+
+  function replayHints() {
+    hintsEl.innerHTML = "";
+    for (let i = 0; i < hintsOpened; i += 1) appendHint(i);
+    if (hintsOpened >= 3) unlockReview("подсказки");
+  }
+
+  function appendHint(i) {
+    if (i === 2) {
+      const wrap = document.createElement("div");
+      wrap.className = "hint";
+      const p = document.createElement("p");
+      p.textContent = "Подсказка 3.";
+      const pre = document.createElement("pre");
+      pre.className = "tm-code";
+      pre.textContent = HINTS[2];
+      wrap.appendChild(p);
+      wrap.appendChild(pre);
+      hintsEl.appendChild(wrap);
+      return;
+    }
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "Подсказка " + (i + 1) + ". " + HINTS[i];
+    hintsEl.appendChild(p);
+  }
+
+  function buildReview() {
+    if (reviewBuilt) return;
+    reviewBuilt = true;
+    const box = document.getElementById("reviewReports");
+    ETALON_REPORTS.forEach(function (item) {
+      const art = document.createElement("article");
+      art.className = "review-item";
+      const h = document.createElement("h3");
+      h.textContent = item.title;
+      const pre = document.createElement("pre");
+      pre.className = "tm-code";
+      pre.textContent = item.text;
+      art.appendChild(h);
+      art.appendChild(pre);
+      box.appendChild(art);
+    });
+    const table = document.createElement("table");
+    table.className = "review-table";
+    table.innerHTML = "<thead><tr><th>Дефект</th><th>Зона</th><th>Почему</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    const zoneName = { block: "блокирующий", major: "важный", minor: "косметический" };
+    DEFECTS.forEach(function (d) {
+      const tr = document.createElement("tr");
+      const a = document.createElement("td");
+      a.textContent = d.id + ". " + d.text;
+      const b = document.createElement("td");
+      b.textContent = zoneName[d.zone];
+      const c = document.createElement("td");
+      c.textContent = d.why;
+      tr.appendChild(a); tr.appendChild(b); tr.appendChild(c);
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    document.getElementById("reviewZones").appendChild(table);
+  }
+
+  function unlockReview(reason) {
+    etalonBtn.disabled = false;
+    buildReview();
+    if (reason === "подсказки") etalonBox.classList.remove("hide");
+  }
+
+  function renderResults(list) {
+    const passed = list.filter(function (r) { return r.ok; }).length;
+    testsEl.innerHTML = list.map(function (r) {
+      return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+        '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + '</span>' +
+        "<div><div>" + r.name + "</div>" +
+        (r.ok
+          ? '<div class="tm-test__hint">' + r.okText + "</div>"
+          : '<div class="tm-test__hint">' + r.hint + "</div>") +
+        "</div></div>";
+    }).join("");
+    score.textContent = passed + " / " + list.length;
+    bar.style.width = Math.round(passed / list.length * 100) + "%";
+    const ok = passedThreshold(list);
+    const hintNote = "Подсказок открыто: " + hintsOpened + ".";
+    if (ok) {
+      honesty.textContent = "Задача сдана. " + hintNote + " Честность важнее очков.";
+      unlockReview();
+    } else {
+      honesty.textContent = hintNote + (hintsOpened ? " Честность важнее очков." : "");
+      if (hintsOpened >= 3) unlockReview();
+    }
+  }
+
+  function runChecks() {
+    clearTimeout(saveTimer);
+    saveDraft();
+    paintFieldMessages();
+    renderResults(TESTS().map(runOne));
+  }
+
+  function reportsAsText() {
+    return reports.map(function (r, i) {
+      return "БАГ-РЕПОРТ " + (i + 1) + "\n" +
+        "Плохое описание: " + BAD[i].quote + "\n\n" +
+        "Что делал:\n" + r.did + "\n\n" +
+        "Что ожидал:\n" + r.expected + "\n\n" +
+        "Что получилось:\n" + r.got + "\n\n" +
+        "Где:\n" + r.where;
+    }).join("\n\n----------\n\n");
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+  });
+
+  tabChecklist.addEventListener("click", function () { setTab("checklist"); });
+  tabReports.addEventListener("click", function () { setTab("reports"); });
+  tabPriority.addEventListener("click", function () { setTab("priority"); });
+
+  bindZone(document.getElementById("zoneBlock"), "block");
+  bindZone(document.getElementById("zoneMajor"), "major");
+  bindZone(document.getElementById("zoneMinor"), "minor");
+  document.getElementById("taskPool").addEventListener("click", function () {
+    if (pickedId && zones[pickedId]) {
+      delete zones[pickedId];
+      pickedId = null;
+      scheduleSave();
+      renderBoard();
+    }
+  });
+
+  document.getElementById("checkBtn").addEventListener("click", runChecks);
+
+  document.getElementById("hintBtn").addEventListener("click", function () {
+    if (hintsOpened >= HINTS.length) return;
+    appendHint(hintsOpened);
+    hintsOpened += 1;
+    honesty.textContent = "Подсказок открыто: " + hintsOpened + ". Честность важнее очков.";
+    if (hintsOpened === HINTS.length) unlockReview("подсказки");
+    scheduleSave();
+  });
+
+  document.getElementById("dlBtn").addEventListener("click", function () {
+    const blob = new Blob([reportsAsText()], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "l23_bag_report.txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  etalonBtn.addEventListener("click", function () {
+    if (etalonBtn.disabled) return;
+    buildReview();
+    etalonBox.classList.toggle("hide");
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Вернуть стартовую заготовку? Тексты отчётов будут потеряны.")) return;
+    checklist = [];
+    reports = cloneReports(STARTER_REPORTS);
+    zones = {};
+    tab = "checklist";
+    hintsOpened = 0;
+    pickedId = null;
+    reviewBuilt = false;
+    hintsEl.innerHTML = "";
+    testsEl.innerHTML = "";
+    score.textContent = "0 / 12";
+    bar.style.width = "0";
+    honesty.textContent = "";
+    etalonBtn.disabled = true;
+    etalonBox.classList.add("hide");
+    document.getElementById("reviewReports").innerHTML = "";
+    document.getElementById("reviewZones").innerHTML = "";
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    renderChecklist();
+    renderReports();
+    renderBoard();
+    setTab("checklist");
+  });
+
+  loadDraft();
+  renderChecklist();
+  renderReports();
+  renderBoard();
+  setTab(tab);
+  replayHints();
+})();
+</script>
+</body>
+</html>

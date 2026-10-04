@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 10. DOM и события</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 10</strong>
+      <span>DOM и события</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 17</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide active">
+        <!-- «До сегодня JavaScript считал в консоли. После сегодня он управляет страницей» -->
+        <p class="tm-eyebrow">►► МОДУЛЬ 4 · ЗАНЯТИЕ 10</p>
+        <h1>DOM и события</h1>
+        <p class="lead">Занятие 10 из 24. Переломное: страница начинает рисоваться из данных и отвечать на действия.</p>
+        <p>
+          <span class="tm-pill">теория</span>
+          <span class="tm-pill">практика</span>
+          <span class="tm-pill">ИИ</span>
+          <span class="tm-pill">commit</span>
+        </p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L10_trainer_dom.html">►► К тренажёру</a>
+          <a class="tm-btn tm-btn--ghost" href="../L09/L09_presentation.html">►► Занятие 9</a>
+          <a class="tm-btn tm-btn--ghost" href="../L11/L11_presentation.html">►► Занятие 11</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Сегодня соединяем данные и страницу» -->
+        <p class="tm-eyebrow">►► ЗАКАЗ</p>
+        <h2>«Чтобы можно было нажать и почитать, что внутри»</h2>
+        <p>Марина Петровна: «А то спрашивают у прилавка, и очередь стоит». У вас есть массив из шести пирогов и шесть карточек, написанных руками. Они друг о друге не знают</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Запишите эту строчку. Она вам понадобится и на занятии 11, и в проекте» -->
+        <p class="tm-eyebrow">►► СХЕМА ЗАНЯТИЯ</p>
+        <h2>Найти → назначить обработчик → изменить</h2>
+        <ul class="tm-list">
+          <li>Эта схема не меняется до конца курса</li>
+          <li>Все задачи модуля разбираются по ней</li>
+          <li>Другой модели не будет</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Файл — это текст. DOM — живая структура в памяти. Помните незакрытый ul с занятия 2?» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>DOM: дерево, а не текст</h2>
+        <ul class="tm-list">
+          <li>Браузер разбирает разметку и строит дерево объектов</li>
+          <li>Каждый тег — узел, у узлов есть родители и дети</li>
+          <li>Дерево можно менять из JavaScript</li>
+          <li>Изменения живут до перезагрузки</li>
+        </ul>
+        <pre class="tm-code">document.querySelector("#menu")</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Не нашлось — вернётся null. Ошибка появится строкой ниже, при обращении к свойству» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Найти элемент</h2>
+        <ul class="tm-list">
+          <li><code>querySelector</code> — первый подходящий или <code>null</code></li>
+          <li><code>querySelectorAll</code> — все</li>
+          <li>Селекторы те же, что в CSS</li>
+          <li>Ищи один раз, наверху, и сохраняй в переменную</li>
+        </ul>
+        <pre class="tm-code"><span class="hl">const menu = document.querySelector("#menu");</span>
+const cards = document.querySelectorAll(".card");</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Разница не в удобстве. Сейчас объясню, в чём» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>Изменить содержимое</h2>
+        <ul class="tm-list">
+          <li><code>textContent</code> — текст, разметка не разбирается</li>
+          <li><code>innerHTML</code> — разметка, браузер создаёт узлы</li>
+          <li><code>classList</code> — переключение классов</li>
+        </ul>
+        <pre class="tm-code">box.textContent = "&lt;b&gt;Хит&lt;/b&gt;";  // видно скобки
+box.innerHTML   = "&lt;b&gt;Хит&lt;/b&gt;";  // жирный текст</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «На настоящих сайтах так воруют данные. Правило простое и без исключений» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2>Пользовательский текст в <code>innerHTML</code></h2>
+        <p><code>innerHTML</code> разбирает строку как разметку. Если туда попадёт то, что ввёл человек, браузер выполнит вставленное</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <pre class="tm-code">out.innerHTML = "Привет, " + name;</pre>
+        </div>
+        <pre class="tm-code">out.textContent = "Привет, " + name;</pre>
+        <p><strong>Правило: свои данные — <code>innerHTML</code>, пользовательские — <code>textContent</code></strong></p>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- (пауза 3 секунды) -->
+        <h2>Сейчас страница нарисуется <span class="hl">сама</span></h2>
+      </section>
+
+      <section class="slide">
+        <!-- «Четыре строки. Добавил седьмой пирог в массив — карточка появилась сама» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Рисуем из данных: три шага</h2>
+        <ul class="tm-list">
+          <li><code>map</code> — каждый объект в строку разметки</li>
+          <li><code>join("")</code> — склеить</li>
+          <li><code>innerHTML</code> — положить в контейнер</li>
+          <li>Контейнер в разметке <strong>пустой</strong></li>
+        </ul>
+        <pre class="tm-code">menu.innerHTML = pies
+<span class="hl">  .map((pie) =&gt; `&lt;li class="card" data-id="${pie.id}"&gt;${pie.name}&lt;/li&gt;`)</span>
+  .join("");</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Со скобками функция выполнится сразу при загрузке, а кнопка работать не будет» -->
+        <p class="tm-eyebrow">►► ПОНЯТИЕ</p>
+        <h2>События и обработчики</h2>
+        <ul class="tm-list">
+          <li>Событие — что произошло, обработчик — что делать</li>
+          <li><code>addEventListener(событие, функция)</code></li>
+          <li><strong>Функция передаётся без скобок</strong></li>
+          <li>Обработчиков может быть несколько</li>
+        </ul>
+        <pre class="tm-code">btn.addEventListener("click", myHandler);   // верно
+btn.addEventListener("click", myHandler()); // вызов</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «То же самое, что оформлять страницу тегами. От этого отказались» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>onclick</code> в разметке</h2>
+        <p>Поведение перемешано с разметкой. Обработчик может быть только один. Снять его нельзя</p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <pre class="tm-code">&lt;button onclick="calc()"&gt;Посчитать&lt;/button&gt;</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «В момент запуска скрипта карточек не существует. Десять секунд на подумать» -->
+        <p class="tm-eyebrow">►► ВОПРОС</p>
+        <h2>Карточки создаёт скрипт. Как повесить на них обработчик?</h2>
+        <p>Обсуждаем вслух. Задача выглядит неразрешимой — и в этом смысл вопроса</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Вахтёр на входе вместо охранника у каждой двери. Кабинеты меняются — вахтёр остаётся» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Делегирование</h2>
+        <ul class="tm-list">
+          <li>Событие <strong>всплывает</strong> вверх по дереву</li>
+          <li>Один обработчик на контейнер, который есть всегда</li>
+          <li><code>closest</code> поднимается от места нажатия до карточки</li>
+          <li>Работает после любой перерисовки</li>
+        </ul>
+        <pre class="tm-code">menu.addEventListener("click", (event) =&gt; {
+<span class="hl">  const card = event.target.closest(".card");</span>
+  if (card === null) return;
+  const pie = PIES.find((p) =&gt; p.id === card.dataset.id);
+});</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Работает через раз — и понять почему очень трудно. Выведите event.target в консоль» -->
+        <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+        <h2><code>event.target</code> вместо <code>closest</code></h2>
+        <p>Нажал по краю карточки — сработало. Нажал по названию — нет: <code>event.target</code> это заголовок, а у него нет <code>data-id</code></p>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► ТАК НЕЛЬЗЯ</p>
+          <pre class="tm-code">const card = event.target;
+card.dataset.id;   // undefined</pre>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Escape обязателен. Человек без мыши закрывает окна только так» -->
+        <p class="tm-eyebrow">►► ЖИВОЙ КОД</p>
+        <h2>Модальное окно</h2>
+        <ul class="tm-list">
+          <li>Лежит в разметке всегда, скрыто классом</li>
+          <li>Скрипт переключает класс через <code>classList</code></li>
+          <li>Содержимое — через <code>textContent</code></li>
+          <li>Закрывается кнопкой, затемнением и <strong>Escape</strong></li>
+        </ul>
+        <pre class="tm-code">modal.classList.remove("hidden");
+<span class="hl">document.addEventListener("keydown", (event) =&gt; {</span>
+<span class="hl">  if (event.key === "Escape") closeModal();</span>
+});</pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Главная проверка: нажмите фильтр, а потом карточку. Если перестало — обработчик висит не там» -->
+        <p class="tm-eyebrow">►► ПРАКТИКА</p>
+        <h2>Что делаешь сегодня</h2>
+        <ul class="tm-list">
+          <li>Меню рисуется из массива</li>
+          <li>Три кнопки фильтра переключают список</li>
+          <li>Нажатие на карточку открывает окно с составом</li>
+          <li>Тренажёр: два режима</li>
+        </ul>
+        <p class="criterion"><strong>Сделано, если:</strong> контейнер в разметке пустой, нажатие по заголовку карточки тоже работает, после фильтра карточки продолжают открываться, окно закрывается тремя способами</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L10_trainer_dom.html">►► К тренажёру</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И контрольная проверка: попросите сделать открытие окна по нажатию, ничего не запрещая. Ставлю на onclick в разметке» -->
+        <p class="tm-eyebrow">►► ИИ НА ЗАНЯТИИ</p>
+        <h2>Промпт: объясни мой обработчик построчно</h2>
+        <pre class="tm-code">Ты объясняешь готовый код построчно ученику, который вторую неделю пишет на JavaScript.
+Контекст: страница школьного буфета. Карточки рисуются из массива объектов, обработчик нажатия назначен на контейнер. Ученик знает: переменные, функции, filter, map, find, шаблонные строки, addEventListener. Не знает: классы, модули, асинхронность.
+Задача: объясни мой обработчик нажатия построчно. Отдельно ответь на вопрос: что произойдёт, если убрать строку с closest, и что — если убрать проверку на null.
+Ограничения: не переписывай мой код и не предлагай улучшений; не упоминай библиотеки, классы и асинхронность; каждый термин, которого нет в моём коде, объясняй сразу; пиши по-русски короткими предложениями.
+Формат ответа: таблица из трёх колонок — строка кода, что делает, что сломается без неё. После таблицы — два абзаца ответов на вопросы про closest и про проверку.
+Критерии проверки: разобрана каждая строка; ответы про closest и null конкретные, с описанием того, что увидит пользователь.
+
+Вот мой код:
+[вставь сюда обработчик с делегированием]</pre>
+        <p><strong>Проверить руками:</strong> совпадает с твоим пониманием · верно про <code>closest</code> (проверь экспериментом) · верно про <code>null</code> · код не переписан · нет незнакомых тем · разобрана каждая строка</p>
+        <p><strong>Правило курса:</strong> сдаётся только то, что ты можешь объяснить</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 10</h3>
+      <dl>
+        <dt>DOM</dt>
+        <dd>Дерево объектов, которое браузер строит из разметки. Каждый тег — узел.</dd>
+        <dt>Узел</dt>
+        <dd>Один элемент в дереве DOM. У узлов есть родители, дети и соседи.</dd>
+        <dt>document</dt>
+        <dd>Объект всего документа. Точка входа для любого поиска.</dd>
+        <dt>querySelector</dt>
+        <dd>Найти первый элемент по селектору CSS. Не нашёл — null.</dd>
+        <dt>querySelectorAll</dt>
+        <dd>Найти все подходящие элементы. Возвращает список, похожий на массив.</dd>
+        <dt>textContent</dt>
+        <dd>Текст внутри элемента. Разметку не разбирает. Используется для всего, что пришло от пользователя.</dd>
+        <dt>innerHTML</dt>
+        <dd>Разметка внутри элемента. Строка разбирается как HTML. Используется только для своей разметки.</dd>
+        <dt>classList</dt>
+        <dd>Управление классами элемента: add, remove, toggle, contains.</dd>
+        <dt>dataset</dt>
+        <dd>Доступ к атрибутам data-*. Атрибут data-id читается как dataset.id.</dd>
+        <dt>Отрисовка из данных</dt>
+        <dd>Построение разметки из массива: map → join → innerHTML. Одно присваивание, не в цикле.</dd>
+        <dt>Событие</dt>
+        <dd>То, что произошло на странице: нажатие, ввод, отправка формы, нажатие клавиши.</dd>
+        <dt>Обработчик</dt>
+        <dd>Функция, которая выполняется, когда событие произошло.</dd>
+        <dt>addEventListener</dt>
+        <dd>Назначение обработчика. Функция передаётся без скобок.</dd>
+        <dt>Объект события</dt>
+        <dd>То, что обработчик получает на вход: сведения о произошедшем.</dd>
+        <dt>event.target</dt>
+        <dd>Элемент, по которому реально произошло событие. Может быть вложенным элементом, а не тем, на котором висит обработчик.</dd>
+        <dt>event.key</dt>
+        <dd>Название нажатой клавиши: "Enter", "Escape".</dd>
+        <dt>Всплытие</dt>
+        <dd>Событие происходит на элементе и поднимается вверх по дереву к родителям.</dd>
+        <dt>Делегирование</dt>
+        <dd>Один обработчик на контейнер вместо обработчика на каждом дочернем элементе. Работает с элементами, созданными позже.</dd>
+        <dt>closest</dt>
+        <dd>Подняться вверх от элемента и найти ближайшего подходящего предка.</dd>
+        <dt>Модальное окно</dt>
+        <dd>Блок поверх страницы. Лежит в разметке всегда, скрыт классом; скрипт класс переключает.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

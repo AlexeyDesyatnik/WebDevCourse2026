@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тренажёр · Занятие 3 · Форма и таблица</title>
+  <style>
+    :root {
+      --tm-ink:        #111312;
+      --tm-green:      #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg:         #FFFFFF;
+      --tm-bg-alt:     #F4F6F3;
+      --tm-text:       #111312;
+      --tm-muted:      #6B706B;
+      --tm-border:     #E3E7E1;
+      --tm-radius:     18px;
+      --tm-radius-sm:  10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow:     0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg:    #F4F6F3;
+      --tm-code-text:  #111312;
+      --tm-ok:         #4E9C2E;
+      --tm-fail:       #C24545;
+      --tm-warn:       #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink:        #0F0F0F;
+      --tm-green:      #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg:         #0F0F0F;
+      --tm-bg-alt:     #17191A;
+      --tm-text:       #F2F4F1;
+      --tm-muted:      #9BA29B;
+      --tm-border:     #262A26;
+      --tm-shadow:     0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg:    #0B0C0B;
+      --tm-code-text:  #F2F4F1;
+      --tm-ok:         #8FD35F;
+      --tm-fail:       #E07A7A;
+      --tm-warn:       #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+    header.top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 34px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    header.top p { margin: 0; color: var(--tm-muted); font-size: 15px; }
+    .course-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 22px;
+    }
+    .course-links a, a.pill {
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .course-links a.primary, a.pill.primary, .btn {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .brief, .ref, .status, .tests, .hints, .solution, .gloss, .teacher, .spec {
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    p, li { line-height: 1.45; font-size: 16px; }
+    .lead { color: var(--tm-muted); margin: 0 0 12px; }
+    .spec h3 { font-size: 16px; margin: 16px 0 8px; }
+    .spec h3:first-child { margin-top: 0; }
+    .spec ol { margin: 0; padding-left: 22px; }
+    .spec li { margin-bottom: 10px; }
+    .ref-page {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .ref-page .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+    .ref-page .mid { padding: 16px 14px; }
+    .ref-page h3 { margin: 0 0 8px; font-size: 22px; }
+    .ref-page p { margin: 0 0 10px; color: var(--tm-muted); }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1fr 1fr; }
+    }
+
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks { grid-template-columns: 1fr 1fr; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .blocks-src, .blocks-dst {
+      min-width: 0;
+      background: var(--tm-bg-alt);
+      box-shadow: var(--tm-shadow);
+      border-radius: var(--tm-radius);
+      padding: 16px;
+    }
+    .blocks-src h2, .blocks-dst h2 {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .layout.is-blocks .pool {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .layout.is-blocks .chip { max-width: none; width: 100%; }
+
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      line-height: 1.45;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: 16px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+      caret-color: var(--tm-text);
+    }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 420px;
+      background: var(--tm-bg);
+      border: 0;
+      border-radius: 16px;
+      box-shadow: var(--tm-shadow);
+    }
+    .meter {
+      height: 8px;
+      background: var(--tm-border);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 10px 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button {
+      font: inherit;
+      font-weight: 650;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: var(--tm-radius-pill);
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      cursor: pointer;
+    }
+    button.ghost { background: var(--tm-bg-alt); color: var(--tm-text); }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: var(--tm-bg-alt);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .pill.ok { background: var(--tm-green-soft); color: var(--tm-ok); }
+    .test {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--tm-border);
+      font-size: 15px;
+    }
+    .test .hint { color: var(--tm-fail); display: block; margin-top: 4px; }
+    .hintbox {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--tm-green-soft);
+      border-radius: 12px;
+    }
+    .hintbox.open { display: block; }
+    .hintbox pre {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      margin: 0;
+    }
+    .locked #solBody { display: none; }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    .gloss dt { font-weight: 650; margin-top: 12px; font-size: 15px; }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); font-size: 15px; }
+    .teacher { color: var(--tm-muted); font-size: 14px; box-shadow: none; background: transparent; padding: 8px 0; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); }
+    .hide { display: none !important; }
+    .modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 20px;
+    }
+    .modes button {
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+    }
+    .modes button[aria-pressed="true"] {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 52px;
+      margin-bottom: 14px;
+      padding: 10px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-bg-alt);
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .chip.is-picked {
+      outline: 3px solid var(--tm-green);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .page-frame {
+      overflow: hidden;
+      border-radius: 14px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+    }
+    .page-frame .bar {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      padding: 10px 12px;
+    }
+    .page-frame .mid { padding: 12px; }
+    .slot-lab {
+      display: block;
+      font-size: 12px;
+      font-weight: 650;
+      margin: 0 0 6px;
+      opacity: 0.85;
+    }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--tm-bg-alt);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .slot.is-error { border-color: var(--tm-fail); }
+    #solCode {
+      white-space: pre-wrap;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      padding: 14px;
+      border-radius: 12px;
+      overflow: auto;
+      border-left: 5px solid var(--tm-green);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Форма предзаказа</h1>
+        <p>Занятие 3 · форма, подписи и таблица</p>
+      </div>
+      <div>
+        <p id="scoreline">0 из 10 проверок</p>
+        <button type="button" class="ghost" id="themeBtn">Тема</button>
+      </div>
+    </header>
+    <nav class="course-links" aria-label="Курс">
+      <a href="../index.html">Все занятия</a>
+      <a href="L03_presentation.html">Презентация</a>
+      <a href="../L02/L02_presentation.html">Занятие 2</a>
+      <a href="../L04/L04_presentation.html">Занятие 4</a>
+    </nav>
+
+    <div class="modes" role="tablist" aria-label="Как решать">
+      <button type="button" id="modeCodeBtn" aria-pressed="true">1. Писать код</button>
+      <button type="button" id="modeBlocksBtn" aria-pressed="false">2. Собрать блоками</button>
+    </div>
+
+    <section class="brief spec">
+      <h2>ТЗ</h2>
+      <p>Заказ буфета «Северный пирог». Собери форму предзаказа так, чтобы ей мог пользоваться любой человек — в том числе без мыши.</p>
+      <div id="specCode">
+        <h3>Как сделать кодом</h3>
+        <ol>
+          <li>Три поля: имя, во сколько подойдёшь, сколько штук.</li>
+          <li>У каждого поля — подпись, связанная с полем.</li>
+          <li>Выбор пирога — выпадающий список.</li>
+          <li>Кнопка отправки — настоящая кнопка.</li>
+          <li>Ниже — таблица часов работы с подписью и заголовками столбцов.</li>
+        </ol>
+      </div>
+      <div id="specBlocks" class="hide">
+        <h3>Как сделать блоками</h3>
+        <p>Слева блоки, справа поля формы и таблица. Лишний чип с placeholder или кнопкой на div в слот не ставь.</p>
+      </div>
+    </section>
+
+    <section class="ref">
+      <h2>Эталон-цель</h2>
+      <p class="lead">Подписи кликаются — фокус в поле. Tab доходит до кнопки. Таблица с caption и th.</p>
+      <div class="ref-page">
+        <div class="bar">Северный пирог · запись</div>
+        <div class="mid">
+          <h3>Записаться в буфет</h3>
+          <p>Имя, пирог списком, время, количество 1–5, кнопка «Записаться». Ниже часы работы.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="status" aria-live="polite">
+      <strong>Прогресс:</strong>
+      <span id="score">0 / 0</span>
+      · подсказок открыто: <span id="hintCount">0</span>/3
+      · <span id="badge" class="pill">ещё собираем</span>
+      <div class="meter"><span id="bar"></span></div>
+      <div class="row">
+        <button type="button" id="checkBtn">Проверить</button>
+        <button type="button" class="ghost" id="resetBtn">Сбросить</button>
+        <button type="button" class="ghost" id="saveBtn">Скачать страницу</button>
+      </div>
+      <p id="honesty" class="lead" style="margin:12px 0 0"></p>
+    </section>
+
+    <div class="layout">
+      <div id="paneCode">
+        <h2>Редактор</h2>
+        <textarea id="editor" spellcheck="false" aria-label="Код страницы"></textarea>
+      </div>
+      <div id="paneBlocks" class="blocks-board hide">
+        <div class="blocks-src">
+          <h2>Блоки кода</h2>
+        <p class="lead">Слева блоки, справа поля. Enter ставит чип в свободный слот.</p>
+          <div class="pool" id="blockPool" aria-label="Готовые фрагменты"></div>
+        </div>
+        <div class="blocks-dst">
+          <h2>Поля</h2>
+          <div class="page-frame">
+          <div class="bar">Форма и таблица</div>
+          <div class="mid">
+            <span class="slot-lab">Поле «Имя»</span>
+            <div class="slot" data-accept="name"></div>
+            <span class="slot-lab">Выбор пирога</span>
+            <div class="slot" data-accept="pie"></div>
+            <span class="slot-lab">Поле «Время»</span>
+            <div class="slot" data-accept="time"></div>
+            <span class="slot-lab">Поле «Количество»</span>
+            <div class="slot" data-accept="count"></div>
+            <span class="slot-lab">Кнопка</span>
+            <div class="slot" data-accept="button"></div>
+            <span class="slot-lab">Таблица часов работы</span>
+            <div class="slot" data-accept="table"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div id="panePreview">
+        <h2>Результат</h2>
+        <iframe id="preview" title="Превью страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
+    </div>
+
+    <section class="tests">
+      <h2>Самопроверка</h2>
+      <p class="lead">Проверки смотрят подписи, типы полей и разметку таблицы. Форма ничего не отправляет.</p>
+      <div id="testList"></div>
+    </section>
+
+    <section class="hints">
+      <h2>Подсказки</h2>
+      <p class="lead">Три подсказки. На демо — своими словами.</p>
+      <div class="row">
+        <button type="button" class="ghost" data-hint="0">1 — вопрос</button>
+        <button type="button" class="ghost" data-hint="1">2 — приём</button>
+        <button type="button" class="ghost" data-hint="2">3 — фрагмент</button>
+      </div>
+      <div class="hintbox" id="h0">Пройди свою форму клавишей Tab. Фокус попал на каждое поле и на кнопку? Если что-то пропустилось — там и ошибка. И отдельно: нажми по каждой подписи, курсор должен прыгать в поле.</div>
+      <div class="hintbox" id="h1">У каждого поля пара: <code>&lt;label for="что-то"&gt;</code> и поле с таким же <code>id</code>. Тип поля берётся по смыслу данных: время — <code>time</code>, количество — <code>number</code> с <code>min</code> и <code>max</code>. Кнопка — только <code>&lt;button type="submit"&gt;</code>. В таблице обязательны <code>&lt;caption&gt;</code> и <code>&lt;th scope="col"&gt;</code>.</div>
+      <div class="hintbox" id="h2">
+        <pre>&lt;p&gt;
+  &lt;label for="time"&gt;Ко скольки подойдёшь&lt;/label&gt;
+  &lt;input type="time" id="time" name="time" required&gt;
+&lt;/p&gt;
+&lt;button type="submit"&gt;Записаться&lt;/button&gt;
+
+&lt;table&gt;
+  &lt;caption&gt;Часы работы&lt;/caption&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;&lt;th scope="col"&gt;День&lt;/th&gt;&lt;th scope="col"&gt;Открыт&lt;/th&gt;&lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Понедельник — пятница&lt;/th&gt;&lt;td&gt;8:30 — 15:00&lt;/td&gt;&lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+      </div>
+    </section>
+
+    <section class="solution locked" id="solutionBox">
+      <h2>Эталонное решение</h2>
+      <p id="solGate">Откроется, когда все проверки зелёные или открыты три подсказки.</p>
+      <div id="solBody" hidden>
+        <p><strong>Почему так:</strong> <code>label for</code> и <code>id</code> связывают подпись с полем — это зона нажатия и путь для программы чтения. Тип поля задаёт формат данных. Настоящая кнопка получает Tab. В таблице <code>caption</code> и <code>th</code> называют данные, а день недели — заголовок строки.</p>
+        <pre id="solCode"></pre>
+      </div>
+    </section>
+
+    <section class="gloss" id="glossary">
+      <h2>Глоссарий занятия</h2>
+      <dl>
+        <dt>&lt;form&gt;</dt>
+        <dd>Тег, оборачивающий форму целиком. Поля без него — просто разбросанные поля.</dd>
+        <dt>&lt;label&gt;</dt>
+        <dd>Подпись к полю. Связывается через for и id. Обязательна всегда.</dd>
+        <dt>placeholder</dt>
+        <dd>Серая подсказка внутри пустого поля. Исчезает при вводе. Подписью не является.</dd>
+        <dt>&lt;select&gt;</dt>
+        <dd>Выпадающий список. Человек выбирает из готовых вариантов.</dd>
+        <dt>type="time" / type="number"</dt>
+        <dd>Тип поля по смыслу данных: время суток и количество с границами.</dd>
+        <dt>&lt;button&gt;</dt>
+        <dd>Настоящая кнопка: фокус Tab, нажатие Enter и пробелом. Не div.</dd>
+        <dt>&lt;caption&gt;</dt>
+        <dd>Подпись таблицы. Первая строка внутри table.</dd>
+        <dt>&lt;th&gt;</dt>
+        <dd>Ячейка-заголовок. scope="col" — столбец, scope="row" — строка.</dd>
+      </dl>
+    </section>
+
+    <details class="teacher">
+      <summary>Карточка педагога</summary>
+      <ul>
+        <li><strong>Навык:</strong> label+for, типы input, select, button type=submit, таблица caption/th.</li>
+        <li><strong>Норматив:</strong> 15–25 мин. Код или блоки. Scaffolding — образец.</li>
+        <li><strong>Типичные ошибки:</strong> placeholder вместо label; label без for; пирог текстовым полем; div-кнопка; таблица из одних td; required в тестах не проверяем.</li>
+        <li><strong>Готово, когда:</strong> 10 зелёных и вслух: зачем for совпадает с id.</li>
+        <li><strong>Усложнение:</strong> поле телефона type="tel" с подписью.</li>
+        <li><strong>Поддержка:</strong> режим блоков; сначала имя с label, потом время, потом таблица.</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type="text/plain" id="starter"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Северный пирог — запись</title>
+</head>
+<body>
+
+  <h1>Записаться в буфет</h1>
+
+  <form>
+    <!-- твой код здесь: подписи, поля, список, кнопка -->
+  </form>
+
+  <h2>Часы работы</h2>
+  <!-- твой код здесь: таблица -->
+
+</body>
+</html>
+</script>
+
+  <script type="text/plain" id="etalon"><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Северный пирог — запись</title>
+</head>
+<body>
+
+  <h1>Записаться в буфет</h1>
+
+  <form>
+    <p>
+      <label for="name">Имя</label>
+      <input type="text" id="name" name="name" required>
+    </p>
+    <p>
+      <label for="pie">Какой пирог</label>
+      <select id="pie" name="pie" required>
+        <option value="">— выбери —</option>
+        <option value="kalitka">Калитка с картошкой — 45 ₽</option>
+        <option value="rybnik">Рыбник — 90 ₽</option>
+        <option value="brusnika">Брусничный пирог — 70 ₽</option>
+      </select>
+    </p>
+    <p>
+      <label for="time">Ко скольки подойдёшь</label>
+      <input type="time" id="time" name="time" required>
+    </p>
+    <p>
+      <label for="count">Сколько штук</label>
+      <input type="number" id="count" name="count" min="1" max="5" value="1">
+    </p>
+    <button type="submit">Записаться</button>
+  </form>
+
+  <h2>Часы работы</h2>
+  <table>
+    <caption>Часы работы буфета «Северный пирог»</caption>
+    <thead>
+      <tr>
+        <th scope="col">День</th>
+        <th scope="col">Открыт</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Понедельник — пятница</th>
+        <td>8:30 — 15:00</td>
+      </tr>
+      <tr>
+        <th scope="row">Суббота</th>
+        <td>9:00 — 13:00</td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>
+</script>
+
+  <script>
+    (function () {
+      const KEY = "wdc-l03-form-v1";
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      function fromPlain(id) {
+        return document.getElementById(id).textContent.replace(/^\n/, "").replace(/<\\\/script>/gi, "<" + "/script>");
+      }
+      const starter = fromPlain("starter");
+      const etalon = fromPlain("etalon");
+      const testList = document.getElementById("testList");
+      const scoreEl = document.getElementById("score");
+      const scoreline = document.getElementById("scoreline");
+      const bar = document.getElementById("bar");
+      const badge = document.getElementById("badge");
+      const honesty = document.getElementById("honesty");
+      const hintCountEl = document.getElementById("hintCount");
+      const solBody = document.getElementById("solBody");
+      const solGate = document.getElementById("solGate");
+      const solCode = document.getElementById("solCode");
+      const solutionBox = document.getElementById("solutionBox");
+      solCode.textContent = etalon;
+
+      const openedHints = new Set();
+      let debounceId = 0;
+      let lastPassed = 0;
+      const TOTAL = 10;
+      const MODE_KEY = "wdc-l03-mode-v1";
+      let mode = "code";
+      let picked = null;
+      const BLOCKS = [
+        { id: "f-name", accept: "name", label: "Имя: подпись + поле", show: "<label> + <input type=\"text\">",
+          html: '<p>\n      <label for="name">Имя</label>\n      <input type="text" id="name" name="name" required>\n    </p>' },
+
+        { id: "f-name-bad", accept: "none", label: "Имя: только placeholder", show: "<input placeholder=\"Имя\">",
+          html: '<p>\n      <input type="text" id="name" name="name" placeholder="Имя">\n    </p>' },
+
+        { id: "f-pie", accept: "pie", label: "Пирог: выпадающий список", show: "<label> + <select>",
+          html: '<p>\n      <label for="pie">Какой пирог</label>\n      <select id="pie" name="pie" required>\n        <option value="">— выбери —</option>\n        <option value="kalitka">Калитка с картошкой — 45 ₽</option>\n        <option value="rybnik">Рыбник — 90 ₽</option>\n        <option value="brusnika">Брусничный пирог — 70 ₽</option>\n      </select>\n    </p>' },
+
+        { id: "f-pie-bad", accept: "none", label: "Пирог: текстовое поле", show: "<input type=\"text\">",
+          html: '<p>\n      <label for="pie">Какой пирог</label>\n      <input type="text" id="pie" name="pie">\n    </p>' },
+
+        { id: "f-time", accept: "time", label: "Время: подпись + поле времени", show: "<label> + <input type=\"time\">",
+          html: '<p>\n      <label for="time">Ко скольки подойдёшь</label>\n      <input type="time" id="time" name="time" required>\n    </p>' },
+
+        { id: "f-time-bad", accept: "none", label: "Время: подпись не связана", show: "<label> без for",
+          html: '<p>\n      <label>Ко скольки подойдёшь</label>\n      <input type="time" id="time" name="time">\n    </p>' },
+
+        { id: "f-count", accept: "count", label: "Количество: число с границами", show: "<input type=\"number\" min max>",
+          html: '<p>\n      <label for="count">Сколько штук</label>\n      <input type="number" id="count" name="count" min="1" max="5" value="1">\n    </p>' },
+
+        { id: "f-btn", accept: "button", label: "Кнопка отправки", show: "<button type=\"submit\">",
+          html: '<button type="submit">Записаться</button>' },
+
+        { id: "f-btn-bad", accept: "none", label: "Кнопка на div", show: "<div class=\"btn\">",
+          html: '<div class="btn">Записаться</div>' },
+
+        { id: "t-ok", accept: "table", label: "Таблица с подписью и заголовками", show: "<table> + <caption> + <th>",
+          html: '<table>\n    <caption>Часы работы буфета «Северный пирог»</caption>\n    <thead>\n      <tr>\n        <th scope="col">День</th>\n        <th scope="col">Открыт</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <th scope="row">Понедельник — пятница</th>\n        <td>8:30 — 15:00</td>\n      </tr>\n      <tr>\n        <th scope="row">Суббота</th>\n        <td>9:00 — 13:00</td>\n      </tr>\n    </tbody>\n  </table>' },
+
+        { id: "t-bad", accept: "none", label: "Таблица без заголовков", show: "<table> из одних <td>",
+          html: '<table>\n    <tr><td>День</td><td>Открыт</td></tr>\n    <tr><td>Понедельник — пятница</td><td>8:30 — 15:00</td></tr>\n  </table>' }
+      ];
+
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+
+      function slotHtml(accept) {
+        const chip = document.querySelector('#paneBlocks .slot[data-accept="' + accept + '"] .chip');
+        if (!chip) return "";
+        const item = findBlock(chip.dataset.id);
+        return item ? item.html : "";
+      }
+
+      function htmlFromBlocks() {
+        return "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Северный пирог — запись</title>\n</head>\n<body>\n\n  <h1>Записаться в буфет</h1>\n\n  <form>\n    " +
+          slotHtml("name") + "\n    " +
+          slotHtml("pie") + "\n    " +
+          slotHtml("time") + "\n    " +
+          slotHtml("count") + "\n    " +
+          slotHtml("button") + "\n  </form>\n\n  <h2>Часы работы</h2>\n  " +
+          slotHtml("table") + "\n\n</body>\n</html>";
+      }
+
+      function flashNoSlot() {
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.classList.add("is-error");
+          setTimeout(function () { slot.classList.remove("is-error"); }, 400);
+        });
+      }
+
+      function placeInMatchingSlot(chip) {
+        const item = findBlock(chip.dataset.id);
+        if (!item) return;
+        let target = null;
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          if (target) return;
+          if (slot.dataset.accept === item.accept && !slot.querySelector(".chip")) target = slot;
+        });
+        if (target) placeChip(target, chip);
+        else flashNoSlot();
+      }
+
+      function makeChip(item, uid) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.tabIndex = 0;
+        b.dataset.id = item.id;
+        b.dataset.uid = uid;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (picked === b) {
+            b.classList.remove("is-picked");
+            picked = null;
+            return;
+          }
+          document.querySelectorAll(".chip.is-picked").forEach(function (c) { c.classList.remove("is-picked"); });
+          picked = b;
+          b.classList.add("is-picked");
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          placeInMatchingSlot(b);
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", uid);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        b.addEventListener("dragover", function (e) { e.preventDefault(); });
+        b.addEventListener("drop", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slot = b.closest(".slot");
+          if (picked && slot) {
+            placeChip(slot, picked);
+            return;
+          }
+          if (picked && picked.parentElement !== document.getElementById("blockPool")) {
+            document.getElementById("blockPool").appendChild(picked);
+            picked.classList.remove("is-picked");
+            picked = null;
+            editor.value = htmlFromBlocks();
+            previewDoc();
+          }
+        });
+        return b;
+      }
+
+      function fillBlocks() {
+        const pool = document.getElementById("blockPool");
+        pool.innerHTML = "";
+        document.querySelectorAll("#paneBlocks .slot").forEach(function (slot) {
+          slot.innerHTML = "";
+        });
+        shuffle(BLOCKS).forEach(function (item, i) {
+          pool.appendChild(makeChip(item, "b" + i + item.id));
+        });
+      }
+
+      function placeChip(slot, chip) {
+        const old = slot.querySelector(".chip");
+        if (old) document.getElementById("blockPool").appendChild(old);
+        slot.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        editor.value = htmlFromBlocks();
+        previewDoc();
+      }
+
+      function bindBlocks() {
+        const pool = document.getElementById("blockPool");
+        const pane = document.getElementById("paneBlocks");
+        function returnToPool() {
+          if (!picked || picked.parentElement === pool) return;
+          pool.appendChild(picked);
+          picked.classList.remove("is-picked");
+          picked = null;
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+        pool.addEventListener("click", returnToPool);
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          returnToPool();
+        });
+        pane.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (picked) placeChip(slot, picked);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(slot, picked);
+          });
+        });
+      }
+
+      function setMode(next) {
+        mode = next;
+        const isCode = next === "code";
+        document.getElementById("modeCodeBtn").setAttribute("aria-pressed", String(isCode));
+        document.getElementById("modeBlocksBtn").setAttribute("aria-pressed", String(!isCode));
+        document.getElementById("paneCode").classList.toggle("hide", !isCode);
+        document.getElementById("paneBlocks").classList.toggle("hide", isCode);
+        document.querySelector(".layout").classList.toggle("is-blocks", !isCode);
+        document.getElementById("specCode").classList.toggle("hide", !isCode);
+        document.getElementById("specBlocks").classList.toggle("hide", isCode);
+        try { localStorage.setItem(MODE_KEY, next); } catch (e) {}
+        if (isCode) {
+          const hasChip = !!document.querySelector("#paneBlocks .slot .chip");
+          if (hasChip) {
+            editor.value = htmlFromBlocks();
+          } else {
+            try { editor.value = localStorage.getItem(KEY) || starter; } catch (e) { editor.value = starter; }
+          }
+          previewDoc();
+        } else {
+          editor.value = htmlFromBlocks();
+          previewDoc();
+        }
+      }
+
+      function previewDoc() {
+        const baseHref = new URL("./", window.location.href).href;
+        let html = editor.value;
+        if (/<head>/i.test(html)) {
+          html = html.replace(/<head>/i, '<head><base href="' + baseHref + '">');
+        }
+        preview.srcdoc = html;
+        if (mode === "code") {
+          try { localStorage.setItem(KEY, editor.value); } catch (e) {}
+        }
+      }
+
+      function schedulePreview() {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(previewDoc, 280);
+      }
+
+      editor.addEventListener("input", schedulePreview);
+
+      function allFieldsLabeled(doc) {
+        const fields = doc.querySelectorAll("input, select");
+        if (!fields.length) return false;
+        for (let i = 0; i < fields.length; i += 1) {
+          const id = fields[i].id;
+          if (!id) return false;
+          if (!doc.querySelector('label[for="' + id + '"]')) return false;
+        }
+        return true;
+      }
+
+      function placeholderOk(doc) {
+        const inputs = doc.querySelectorAll("input[placeholder]");
+        for (let i = 0; i < inputs.length; i += 1) {
+          const id = inputs[i].id;
+          if (!id || !doc.querySelector('label[for="' + id + '"]')) return false;
+        }
+        return true;
+      }
+
+      function tbodyFirstCellsTh(doc) {
+        const rows = doc.querySelectorAll("table tbody tr");
+        if (!rows.length) return false;
+        for (let i = 0; i < rows.length; i += 1) {
+          const first = rows[i].cells[0];
+          if (!first || first.tagName !== "TH") return false;
+        }
+        return true;
+      }
+
+      function testsFor(doc) {
+        function check(fn) {
+          try { return !!fn(); } catch (e) { return false; }
+        }
+        const form = doc.querySelector("form");
+        const sel = doc.querySelector("select");
+        const num = doc.querySelector('input[type="number"]');
+        const table = doc.querySelector("table");
+        return [
+          {
+            ok: check(function () { return !!(form && form.querySelector("input")); }),
+            title: "Форма на месте",
+            hint: "Поля должны лежать внутри <form>. Без этого тега это просто разбросанные поля, а не форма"
+          },
+          {
+            ok: check(function () { return !!(form && form.querySelectorAll("input").length >= 3); }),
+            title: "Три поля есть",
+            hint: "Заказчику нужны имя, время и количество. Пока не хватает полей"
+          },
+          {
+            ok: check(function () { return allFieldsLabeled(doc); }),
+            title: "Все поля подписаны",
+            hint: "Есть поле без подписи или подпись не связана с полем. Проверь: у <label> должен быть for, а у поля — такой же id. Быстрая проверка: нажми по подписи — курсор должен прыгнуть в поле"
+          },
+          {
+            ok: check(function () { return placeholderOk(doc); }),
+            title: "Подсказки не заменяют подписи",
+            hint: "placeholder исчезает, как только человек начинает вводить. Название поля должно оставаться видимым — это <label>"
+          },
+          {
+            ok: check(function () { return !!(sel && sel.options.length >= 3); }),
+            title: "Выбор из списка — верно",
+            hint: "Текстовое поле для пирога даст шесть разных написаний одного и того же. Возьми <select> с готовыми вариантами"
+          },
+          {
+            ok: check(function () { return !!doc.querySelector('input[type="time"]'); }),
+            title: "Тип поля времени верный",
+            hint: "С type=\"text\" каждый напишет время по-своему. type=\"time\" покажет удобный выбор и вернёт единый формат"
+          },
+          {
+            ok: check(function () {
+              if (!num) return false;
+              const min = Number(num.getAttribute("min"));
+              const max = num.getAttribute("max");
+              return max !== null && max !== "" && !isNaN(min) && min >= 1;
+            }),
+            title: "Границы количества заданы",
+            hint: "Ноль пирогов заказать нельзя, двадцать — их столько нет. Поставь min=\"1\" и max=\"5\""
+          },
+          {
+            ok: check(function () { return !!(form && form.querySelector("button")); }),
+            title: "Кнопка настоящая",
+            hint: "<div>, похожий на кнопку, не получает фокус клавишей Tab и не нажимается с клавиатуры. Человек без мыши до него не доберётся. Возьми <button type=\"submit\">"
+          },
+          {
+            ok: check(function () {
+              return !!(table && table.querySelector("caption") && table.querySelectorAll("th").length >= 2);
+            }),
+            title: "Таблица подписана и озаглавлена",
+            hint: "Без <caption> непонятно, что за данные. Без <th> программа чтения не сможет объявить, к какому столбцу относится значение"
+          },
+          {
+            ok: check(function () { return tbodyFirstCellsTh(doc); }),
+            title: "Заголовки строк размечены верно",
+            hint: "День недели в первом столбце — это заголовок строки, а не данные. Возьми <th scope=\"row\">"
+          }
+        ];
+      }
+
+      function maybeUnlock(done) {
+        const unlocked = done || openedHints.size >= 3;
+        if (!unlocked) return;
+        solBody.hidden = false;
+        solutionBox.classList.remove("locked");
+        solGate.textContent = done
+          ? "Эталон открыт: все проверки пройдены."
+          : "Эталон открыт: использованы три подсказки.";
+      }
+
+      function renderTests(results) {
+        testList.innerHTML = "";
+        let passed = 0;
+        results.forEach(function (t) {
+          if (t.ok) passed += 1;
+          const div = document.createElement("div");
+          div.className = "test";
+          div.textContent = (t.ok ? "✅ " : "❌ ") + t.title;
+          if (!t.ok) {
+            const hint = document.createElement("span");
+            hint.className = "hint";
+            hint.textContent = t.hint;
+            div.appendChild(hint);
+          }
+          testList.appendChild(div);
+        });
+        lastPassed = passed;
+        const total = results.length;
+        scoreEl.textContent = passed + " / " + total;
+        scoreline.textContent = passed + " из " + total + " проверок";
+        bar.style.width = (passed / total * 100) + "%";
+        const done = passed === total;
+        badge.textContent = done ? "Задача сдана" : "ещё собираем";
+        badge.className = "pill" + (done ? " ok" : "");
+        maybeUnlock(done);
+        return done;
+      }
+
+      function run() {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        clearTimeout(debounceId);
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const doc = preview.contentDocument;
+          if (!doc || !doc.body) {
+            renderTests([{ ok: false, title: "Документ не разобрался", hint: "Проверьте незакрытые теги." }]);
+            return;
+          }
+          renderTests(testsFor(doc));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(finish, 60);
+        });
+        previewDoc();
+        setTimeout(function () { if (!finished) finish(); }, 1500);
+      }
+
+      document.getElementById("checkBtn").addEventListener("click", run);
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!window.confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        if (mode === "blocks") {
+          fillBlocks();
+          editor.value = htmlFromBlocks();
+        } else {
+          editor.value = starter;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+        }
+        previewDoc();
+        testList.innerHTML = "";
+        scoreEl.textContent = "0 / 0";
+        scoreline.textContent = "0 из " + TOTAL + " проверок";
+        bar.style.width = "0";
+        badge.textContent = "ещё собираем";
+        badge.className = "pill";
+      });
+      document.getElementById("saveBtn").addEventListener("click", function () {
+        if (mode === "blocks") editor.value = htmlFromBlocks();
+        const blob = new Blob([editor.value], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "l03-form.html";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const html = document.documentElement;
+        html.setAttribute("data-theme", html.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+      document.querySelectorAll("[data-hint]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const n = btn.getAttribute("data-hint");
+          openedHints.add(n);
+          document.getElementById("h" + n).classList.add("open");
+          hintCountEl.textContent = String(openedHints.size);
+          honesty.textContent = openedHints.size
+            ? "Открыты подсказки: " + Array.from(openedHints).map(function (x) { return Number(x) + 1; }).join(", ") + "."
+            : "";
+          maybeUnlock(lastPassed === TOTAL);
+        });
+      });
+
+      fillBlocks();
+      bindBlocks();
+      document.getElementById("modeCodeBtn").addEventListener("click", function () { setMode("code"); });
+      document.getElementById("modeBlocksBtn").addEventListener("click", function () { setMode("blocks"); });
+      try {
+        editor.value = localStorage.getItem(KEY) || starter;
+      } catch (e) {
+        editor.value = starter;
+      }
+      try {
+        const savedMode = localStorage.getItem(MODE_KEY);
+        if (savedMode === "blocks" || savedMode === "code") mode = savedMode;
+      } catch (e) {}
+      setMode(mode);
+    })();
+  </script>
+</body>
+</html>

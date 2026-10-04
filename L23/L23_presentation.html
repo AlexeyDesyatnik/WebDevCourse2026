@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 23. Тестирование и финальный деплой</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { overflow: hidden; }
+    .deck { height: 100%; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--tm-muted);
+    }
+    .topbar strong { color: var(--tm-text); font-weight: 650; }
+    .topbar a.course {
+      color: var(--tm-green-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    html[data-theme="dark"] .topbar a.course { color: var(--tm-green); }
+    .spacer { flex: 1; }
+    button {
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--tm-radius-pill);
+      border: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      cursor: pointer;
+    }
+    button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    html[data-theme="dark"] button.primary { background: var(--tm-green); color: var(--tm-ink); }
+    button:focus-visible, a.tm-btn:focus-visible, a.course:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .progress { height: 4px; background: var(--tm-border); }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .slides { flex: 1; position: relative; overflow: hidden; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: clamp(32px, 5vw, 84px);
+      overflow: auto;
+    }
+    .slide.active { display: block; animation: tm-in .22s ease; }
+    @keyframes tm-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    h1 {
+      font-size: clamp(34px, 4.4vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    h2 {
+      font-size: clamp(28px, 3.2vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin: 0 0 0.8em;
+      text-wrap: balance;
+    }
+    p, li { font-size: clamp(24px, 2vw, 30px); line-height: 1.45; }
+    p { margin: 0 0 0.7em; }
+    .muted { color: var(--tm-muted); font-size: 18px; line-height: 1.4; }
+    .lead { font-size: clamp(24px, 2vw, 30px); max-width: 36ch; color: var(--tm-muted); }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 .7em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0 0 0.8em; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .6em;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+      margin: 0 8px 8px 0;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: clamp(20px, 1.7vw, 26px);
+      line-height: 1.5;
+      tab-size: 2;
+      margin: 0 0 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .tm-code .hl {
+      display: block;
+      background: var(--tm-green-soft);
+      margin: 0 -1.2em;
+      padding: 0 1.2em;
+    }
+    .tm-bad {
+      border-left: 5px solid var(--tm-fail);
+      background: var(--tm-bg-alt);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      margin: 0 0 16px;
+    }
+    .tm-bad .tm-eyebrow {
+      color: var(--tm-fail);
+      background: transparent;
+      padding: 0;
+      margin-bottom: .5em;
+    }
+    .tm-bad .tm-code {
+      margin: 0;
+      border-left-color: var(--tm-fail);
+    }
+    .criterion {
+      background: var(--tm-bg-alt);
+      border-radius: var(--tm-radius);
+      padding: 1em 1.2em;
+      margin: 0.4em 0 0;
+    }
+    .row-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 8px;
+    }
+    .slide--divider {
+      background: var(--tm-ink);
+      color: var(--tm-bg);
+      display: none;
+      place-content: center;
+      text-align: center;
+    }
+    html[data-theme="dark"] .slide--divider { color: var(--tm-text); }
+    .slide--divider.active { display: grid; }
+    .slide--divider h2 {
+      font-size: clamp(38px, 5vw, 68px);
+      font-weight: 700;
+      max-width: 18ch;
+      line-height: 1.06;
+      margin: 0;
+    }
+    .slide--divider .hl { color: var(--tm-green); }
+    code { font-family: var(--tm-mono); font-size: 0.92em; }
+    footer.nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px 14px;
+    }
+    .hint-keys { font-size: 13px; color: var(--tm-muted); }
+    .gloss-panel {
+      display: none;
+      position: absolute;
+      right: 16px;
+      top: 52px;
+      bottom: 56px;
+      width: min(420px, 92vw);
+      overflow: auto;
+      background: var(--tm-bg);
+      border-left: 1px solid var(--tm-border);
+      box-shadow: var(--tm-shadow-lift);
+      border-radius: var(--tm-radius);
+      padding: 20px 22px;
+      z-index: 5;
+    }
+    html[data-theme="dark"] .gloss-panel { background: var(--tm-bg-alt); }
+    .gloss-panel.open { display: block; }
+    .gloss-panel h3 { margin: 0 0 12px; font-size: 20px; letter-spacing: -0.03em; }
+    .gloss-panel dt { font-weight: 700; margin-top: 14px; font-size: 15px; color: var(--tm-green-dark); }
+    html[data-theme="dark"] .gloss-panel dt { color: var(--tm-green); }
+    .gloss-panel dt:first-of-type { margin-top: 0; }
+    .gloss-panel dd { margin: 4px 0 0; color: var(--tm-text); font-size: 15px; line-height: 1.45; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+    @media print {
+      :root { --tm-bg: #fff; --tm-text: #000; --tm-bg-alt: #f2f2f2; }
+      body { overflow: visible; }
+      .topbar, footer.nav, .progress, .gloss-panel { display: none !important; }
+      .slides { display: block; height: auto; }
+      .slide {
+        display: block !important;
+        position: relative;
+        page-break-after: always;
+        box-shadow: none;
+        min-height: auto;
+        padding: 24px;
+        animation: none;
+      }
+      .slide--divider {
+        background: var(--tm-bg);
+        color: var(--tm-text);
+        border-top: 6px solid var(--tm-green);
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <a class="course" href="../index.html">Все занятия</a>
+      <strong>Занятие 23</strong>
+      <span>Тестирование и финальный деплой</span>
+      <span class="spacer"></span>
+      <span id="counter">1 / 16</span>
+      <button type="button" id="themeBtn">Тёмная тема</button>
+      <button type="button" id="glossBtn" aria-pressed="false">Глоссарий (G)</button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+    <div class="slides">
+
+      <section class="slide slide--divider active">
+        <!-- «Сегодня проект проверяют чужие руки. И сегодня вы впервые произнесёте защиту вслух.» -->
+        <p class="tm-eyebrow">►► Модуль 9 · Занятие 23</p>
+        <h1>Тестирование и финальный деплой</h1>
+        <p>Последнее рабочее занятие. Новых возможностей не добавляем</p>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L23_trainer_qa.html">►► К тренажёру QA</a>
+          <a class="tm-btn tm-btn--primary" href="../L22/L22_presentation.html">►► Занятие 22</a>
+          <a class="tm-btn tm-btn--primary" href="../L24/L24_presentation.html">►► Занятие 24</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Одноклассник за четыре минуты найдёт пять дефектов. Это не про вашу внимательность.» -->
+        <p class="tm-eyebrow">►► Почему так выходит</p>
+        <h2>Автор проверил один сценарий — свой</h2>
+        <ul class="tm-list">
+          <li>Ты знаешь правильный путь</li>
+          <li>у тебя заполненное хранилище и широкий экран</li>
+          <li>ты видишь замысел, а не результат</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «По такому описанию автор чинит без единого уточняющего вопроса. Это и есть критерий качества отчёта.» -->
+        <p class="tm-eyebrow">►► Понятие 1</p>
+        <h2>Баг-репорт: четыре части</h2>
+        <ul class="tm-list">
+          <li><strong>что делал</strong> — шаги</li>
+          <li><strong>что ожидал</strong> — правильное поведение</li>
+          <li><strong>что получилось</strong> — факты</li>
+          <li><strong>где</strong> — устройство, ширина, сеть, хранилище</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Автор откроет, увидит, что работает, и напишет "у меня всё нормально". И будет прав.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>«Форма не работает»</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Что чинить? На каком экране? При каких данных? Три уточняющих сообщения и потерянный день</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Последняя строка — прямая подсказка автору: форма отправилась по умолчанию, значит нет `preventDefault`.» -->
+        <p class="tm-eyebrow">►► Как выглядит хороший</p>
+        <h2>Один дефект, четыре части</h2>
+        <ul class="tm-list">
+          <li>Заголовок одной строкой</li>
+          <li>шаги пронумерованы, первый — «открыл»</li>
+          <li>ожидание конкретное</li>
+          <li>результат дословно</li>
+          <li>условия полностью</li>
+        </ul>
+        <pre class="tm-code">Что получилось: страница перезагрузилась,
+поле очистилось, в адресе появилось
+<span class="hl">«?title=Тестовая+запись»</span></pre>
+      </section>
+
+      <section class="slide">
+        <!-- «Дефект, который нельзя повторить, почти невозможно починить. Пять минут на попытку экономят автору час.» -->
+        <p class="tm-eyebrow">►► Понятие 2</p>
+        <h2>Воспроизводимость</h2>
+        <ul class="tm-list">
+          <li>Заметил странное → <strong>остановись</strong></li>
+          <li>запиши последние действия</li>
+          <li>обнови и повтори</li>
+          <li>воспроизвелось? записывай</li>
+        </ul>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «А не по тому, что чинить проще. Иначе через сорок минут иконка будет по центру, а панель на телефоне не заработает.» -->
+        <p class="tm-eyebrow">►► Понятие 3</p>
+        <h2>Приоритет — по <span class="hl">последствиям</span></h2>
+        <p><strong>что пользователь не сможет сделать из-за этого?</strong> ничего → блокирующий · сможет, но неудобно → важный · сможет и удобно → косметический</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Проходим все пятнадцать, даже если дефект нашёлся в третьем. Пункты 9, 13 и 15 находят то, о чём авторы не думают вовсе.» -->
+        <p class="tm-eyebrow">►► Чек-лист</p>
+        <h2>Пятнадцать пунктов, пять групп</h2>
+        <ul class="tm-list">
+          <li><strong>первое знакомство:</strong> приватное окно, понятность, телефон</li>
+          <li><strong>форма:</strong> пусто, пробелы, Enter</li>
+          <li><strong>данные:</strong> перезагрузка, десять записей, 300 символов</li>
+          <li><strong>состояния:</strong> Offline, тема, консоль</li>
+          <li><strong>доступность:</strong> Tab, 320 px, пустое состояние</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Ни один из них не требует знания кода. Просто пройти по списку.» -->
+        <p class="tm-eyebrow">►► Смотрим</p>
+        <h2>Пять дефектов за четыре минуты</h2>
+        <ul class="tm-list">
+          <li>приватное окно</li>
+          <li>пробелы</li>
+          <li>Enter</li>
+          <li>300 символов</li>
+          <li>Tab</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Названное ограничение перестаёт быть неожиданностью. Комиссия увидит "автор знает свой продукт", а не "автор не заметил".» -->
+        <p class="tm-eyebrow">►► Честность</p>
+        <h2>Известные ограничения</h2>
+        <ul class="tm-list">
+          <li>Что не работает</li>
+          <li>при каких условиях</li>
+          <li>почему не исправлено</li>
+        </ul>
+        <p><strong>Без «к сожалению» и «возможны недочёты»</strong></p>
+      </section>
+
+      <section class="slide">
+        <!-- «Честный список из трёх строк выглядит несравнимо лучше.» -->
+        <p class="tm-eyebrow">►► Так нельзя</p>
+        <h2>«Возможны небольшие недочёты»</h2>
+        <div class="tm-bad">
+          <p class="tm-eyebrow">►► Так нельзя</p>
+          <p>Ноль информации плюс заранее заготовленное оправдание. Когда дефект найдут, эта фраза сработает против автора</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «Шестой блок — сегодняшний. И он же готовый ответ на вопрос "что бы вы доработали", который на защите задают почти всегда.» -->
+        <p class="tm-eyebrow">►► README</p>
+        <h2>Шесть блоков</h2>
+        <ul class="tm-list">
+          <li>1 название</li>
+          <li>2 <strong>ссылка</strong></li>
+          <li>3 стек</li>
+          <li>4 что умеет</li>
+          <li>5 что сделано с ИИ</li>
+          <li>6 <strong>известные ограничения</strong></li>
+        </ul>
+      </section>
+
+      <section class="slide slide--divider">
+        <!-- «Про себя всё гладко. Вслух выясняется, что три минуты превращаются в шесть.» -->
+        <p class="tm-eyebrow">►► Сегодня, а не завтра</p>
+        <h2>Речь произносится <span class="hl">вслух</span></h2>
+        <p>Пять частей по 30–40 секунд. Три минуты. С секундомером, напарнику</p>
+      </section>
+
+      <section class="slide">
+        <!-- «Третью часть выбираете вы. Берите не самый сложный фрагмент, а тот, который объясните лучше всего.» -->
+        <p class="tm-eyebrow">►► Структура защиты</p>
+        <h2>Пять частей</h2>
+        <ul class="tm-list">
+          <li>1 <strong>проблема</strong> — про человека, без техники</li>
+          <li>2 <strong>демо</strong> — показываю, а не рассказываю</li>
+          <li>3 <strong>код</strong> — один фрагмент, который выбрал сам</li>
+          <li>4 <strong>ИИ</strong> — что просил, что проверил</li>
+          <li>5 <strong>что доработал бы</strong> — из ограничений</li>
+        </ul>
+      </section>
+
+      <section class="slide">
+        <!-- «Пары не те же, что на занятии 14. Свежий взгляд ценнее сработанности.» -->
+        <p class="tm-eyebrow">►► Ваша очередь</p>
+        <h2>Что делаем 60 минут</h2>
+        <ul class="tm-list">
+          <li>чек-лист по чужому проекту, 15 пунктов</li>
+          <li>пять баг-репортов</li>
+          <li>обмен, приоритеты, починка</li>
+          <li>README с ограничениями</li>
+          <li>финальный деплой</li>
+          <li>речь вслух</li>
+        </ul>
+        <div class="row-links">
+          <a class="tm-btn tm-btn--primary" href="L23_trainer_qa.html">►► К тренажёру QA</a>
+          <a class="tm-btn tm-btn--ghost" href="../L22/L22_presentation.html">►► Занятие 22</a>
+          <a class="tm-btn tm-btn--ghost" href="../L24/L24_presentation.html">►► Занятие 24</a>
+        </div>
+      </section>
+
+      <section class="slide">
+        <!-- «И правило курса в последний раз перед защитой: сдаётся только то, что ты можешь объяснить. Завтра вас об этом спросят.» -->
+        <p class="tm-eyebrow">►► После сегодняшнего</p>
+        <h2>Код больше не меняется</h2>
+        <p>Правка «на одну строчку» накануне защиты — самый частый способ сломать работающий проект</p>
+      </section>
+    </div>
+
+    <aside class="gloss-panel" id="glossPanel" hidden>
+      <h3>Глоссарий занятия 23</h3>
+      <dl>
+        <dt>Взаимное тестирование</dt>
+        <dd>Проверка проекта тем, кто его не писал, по единому чек-листу. Единственный способ увидеть продукт глазами постороннего: автор знает правильный путь и машинально обходит неудобные места.</dd>
+        <dt>Баг-репорт</dt>
+        <dd>Описание дефекта из четырёх обязательных частей: что делал, что ожидал, что получилось, где. Пишется так, чтобы автор починил без единого уточняющего вопроса.</dd>
+        <dt>Шаги воспроизведения</dt>
+        <dd>Точная последовательность действий, повторив которую, другой человек увидит тот же дефект. Первая часть баг-репорта и главное его свойство.</dd>
+        <dt>Воспроизводимость</dt>
+        <dd>Возможность повторить дефект по описанию. Невоспроизводимый дефект почти невозможно починить, поэтому тестировщик пробует повторить находку до того, как её записать.</dd>
+        <dt>Приоритет дефекта</dt>
+        <dd>Оценка последствий: блокирующий (пользоваться нельзя), важный (можно, но сценарий сломан), косметический (не мешает). Определяется вопросом «что пользователь не сможет сделать из-за этого?», а не сложностью исправления.</dd>
+        <dt>Блокирующий дефект</dt>
+        <dd>Тот, из-за которого пользователь не может сделать то, ради чего пришёл: не отправляется форма, пропадают данные, недоступна кнопка на телефоне. Чинится первым, всегда.</dd>
+        <dt>Чек-лист тестирования</dt>
+        <dd>Пятнадцать пунктов, одинаковых для всех проектов: первое знакомство, форма, данные, состояния и сеть, доступность и вёрстка. Проходится целиком, даже если дефект нашёлся в первых пунктах.</dd>
+        <dt>Известные ограничения</dt>
+        <dd>Раздел <code>README</code>, где честно перечислено, что не работает или работает не полностью: что именно, при каких условиях, почему не исправлено. Без извинений и без «возможны недочёты».</dd>
+        <dt>Финальный деплой</dt>
+        <dd>Последняя публикация перед защитой с проверкой ссылки с телефона и в приватном окне. После него код не меняется.</dd>
+        <dt>Репетиция защиты</dt>
+        <dd>Произнесение речи вслух с секундомером до дня защиты. Про себя выступление всегда укладывается в три минуты; вслух выясняется обратное.</dd>
+        <dt>Структура защиты</dt>
+        <dd>Пять частей по 30–40 секунд: проблема, демонстрация, фрагмент кода, роль ИИ, что доработал бы. Речь пишется самостоятельно: моделью её не генерируют.</dd>
+      </dl>
+    </aside>
+
+    <footer class="nav">
+      <button type="button" id="prev">Назад</button>
+      <button type="button" class="primary" id="next">Вперёд</button>
+      <span class="hint-keys">Стрелки · пробел · Home / End · G — глоссарий · P — печать</span>
+      <span class="spacer"></span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const counter = document.getElementById("counter");
+      const bar = document.getElementById("bar");
+      const glossPanel = document.getElementById("glossPanel");
+      const glossBtn = document.getElementById("glossBtn");
+      const themeBtn = document.getElementById("themeBtn");
+      let i = 0;
+      let glossOn = false;
+
+      function render() {
+        slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+        counter.textContent = (i + 1) + " / " + slides.length;
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+      }
+
+      function go(d) {
+        i = Math.max(0, Math.min(slides.length - 1, i + d));
+        render();
+      }
+
+      function toggleGloss() {
+        glossOn = !glossOn;
+        glossPanel.hidden = !glossOn;
+        glossPanel.classList.toggle("open", glossOn);
+        glossBtn.setAttribute("aria-pressed", String(glossOn));
+      }
+
+      document.getElementById("prev").addEventListener("click", () => go(-1));
+      document.getElementById("next").addEventListener("click", () => go(1));
+      glossBtn.addEventListener("click", toggleGloss);
+      themeBtn.addEventListener("click", () => {
+        const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+        themeBtn.textContent = dark ? "Светлая тема" : "Тёмная тема";
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+        if (e.key === "Escape" && glossOn) {
+          e.preventDefault();
+          toggleGloss();
+          return;
+        }
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          e.preventDefault();
+          go(1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === "Home") { i = 0; render(); }
+        else if (e.key === "End") { i = slides.length - 1; render(); }
+        else if (e.key === "g" || e.key === "G" || e.key === "п" || e.key === "П") toggleGloss();
+        else if (e.key === "p" || e.key === "P") window.print();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

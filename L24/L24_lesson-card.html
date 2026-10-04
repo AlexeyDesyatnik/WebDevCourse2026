@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 24. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L24_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L24_trainer_defense.html">Карточка защиты</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 24 · техкарта</p>
+    <h1>Занятие 24. Публичная защита проектов</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L24</td></tr><tr><td>Тема</td><td>Публичная защита проектов</td></tr><tr><td>Модуль</td><td>Модуль 9. Итоговый проект и защита портфолио</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Финал курса. Проект показывается вживую посторонним людям, оценивается по листу на 30 баллов, а работа за 48 часов превращается в портфолио, которое остаётся после курса</td></tr><tr><td>Артефакт на выходе</td><td><strong>Проведённая публичная защита</strong>: трёхминутное выступление из пяти частей, живая демонстрация по публичной ссылке, ответы на вопросы комиссии. Плюс оформленное портфолио: ссылка на проект, репозиторий, <code>README</code>, короткое описание работы</td></tr><tr><td>Тип практики</td><td>Карточка речи + банк вопросов</td></tr><tr><td>Файл тренажёра</td><td><code>L24_trainer_defense.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l24-defense-v1</code> (пять кусков речи, отметки тренировки по банку вопросов, лист самооценки на 30 баллов). Ключ режима не используется</td></tr><tr><td>Контрольная точка</td><td><strong>Да. Финальная контрольная точка программы: публичная защита по листу на 30 баллов.</strong> Обязателен ответ на вопрос по любому фрагменту кода</td></tr><tr><td>Опора</td><td>L23: речь произнесена вслух не меньше трёх раз, <code>README</code> из шести блоков, финальный деплой сделан, код не менялся</td></tr><tr><td>Важное правило</td><td><strong>Код не меняется.</strong> Сегодня проект показывают, а не дорабатывают</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<p>Занятие устроено иначе остальных: большую часть времени занимают выступления. Расчёт ниже — на группу из 12 человек; при другой численности меняется длительность блока защит.</p>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–3</td><td>Вход и регламент</td><td>Слайды 1–2. Объявляет порядок выступлений, время, состав комиссии</td><td>Слушают, находят себя в списке</td><td>Каждый знает своё место в порядке</td></tr><tr><td>3–8</td><td>Образцовая защита</td><td><strong>Проводит защиту сам, с секундомером</strong>, на демонстрационном проекте</td><td>Смотрят, засекают время</td><td>Группа увидела эталон целиком, а не описание эталона</td></tr><tr><td>8–14</td><td>Разбор структуры</td><td>Слайды 3–6 + демонстрация шаги 3–6. Разбирает свою защиту по частям</td><td>Сверяют со своей карточкой речи</td><td>Каждый понял, где у него какая часть</td></tr><tr><td>14–18</td><td>Главный вопрос и ответы</td><td>Слайды 7–9 + демонстрация шаги 8–9</td><td>Слушают, готовят ответ на главный вопрос</td><td>Прозвучал пример ответа на трёх уровнях</td></tr><tr><td>18–20</td><td>Раздача листов</td><td>Раздаёт листы слушателя и самооценки, объявляет правило: у каждого выступающего — один вопрос от группы</td><td>Заполняют лист самооценки по себе</td><td>Лист самооценки заполнен до выступлений</td></tr><tr><td>20–80</td><td><strong>ЗАЩИТЫ</strong></td><td>Ведёт: следит за временем, задаёт главный вопрос каждому, приглашает вопросы от гостей и группы</td><td>Выступают по порядку (по 5 минут: 3 речь + 2 вопросы); остальные слушают и заполняют лист слушателя</td><td><strong>Контрольная точка программы:</strong> каждый выступил и ответил на вопрос по фрагменту кода</td></tr><tr><td>80–86</td><td>Итоги</td><td>Объявляет результаты по листу на 30 баллов, называет сильные места каждой работы</td><td>Сравнивают со своей самооценкой</td><td>У каждого есть оценка и понимание, из чего она сложилась</td></tr><tr><td>86–92</td><td>Портфолио</td><td>Слайды 12–13. Показывает, как оформить и что сохранить</td><td>Собирают свои ссылки в одном месте, дописывают строку в <code>README</code></td><td><strong>Контроль:</strong> у каждого ссылки сохранены не только в репозитории</td></tr><tr><td>92–100</td><td>Финал курса</td><td>Слайд 14. Итог: что теперь умеют. Благодарит гостей</td><td>Слушают</td><td>Курс завершён</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Пригласить гостей заранее:</strong> других педагогов, родителей, ребят из других групп, при возможности — практикующего разработчика. Публичность результата — половина мотивации всего курса, и «публичная» в названии занятия стоит не случайно.</li><li><strong>Отрепетировать собственную образцовую защиту.</strong> Она проводится вживую, с секундомером, и должна укладываться в три минуты. Педагог показывает эталон, а не описывает его.</li><li><strong>Составить порядок выступлений и объявить его на занятии 23.</strong> Первыми ставить не самых сильных и не самых слабых: первым выступать труднее всего. Хорошо работает вариант «первым — тот, кто сам вызвался».</li><li><strong>Пройти по проектам заранее и отметить фрагменты, которые автор не сможет объяснить.</strong> Это делается на занятии 23, чтобы автор успел разобраться или убрать. На защите такой фрагмент — потерянные баллы, и обнаруживать его там поздно.</li><li><strong>Подготовить листы:</strong> лист слушателя (по числу выступающих на каждого), лист самооценки, лист оценки для комиссии на каждого ученика.</li><li><strong>Проверить технику: проектор, звук, интернет.</strong> И заранее договориться, что делать при падении сети: показывать работу фолбэка. Это не авария, а демонстрация требования.</li><li><strong>Заготовить по одному сильному месту в каждой работе</strong>, чтобы назвать его при объявлении результатов. Каждый должен уйти, услышав, что у него получилось.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Порядок выступлений — на доске или отдельным экраном, весь урок.</li><li>Проектор, подключённый к компьютеру выступающего (или один компьютер, где открывают ссылки по очереди — так быстрее).</li><li>Лист на 30 баллов — во время объявления результатов.</li><li>Слайд со структурой из пяти частей — фоном во время защит: выступающему помогает не сбиться.</li><li><code>L24_trainer_defense.html</code> — для тех, кто выступает последним и хочет ещё раз прогнать вопросы.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<ol><li><strong>Не уложился в три минуты.</strong> Признак: на второй минуте ещё продолжается первая часть. Готовое действие: мягко обозначить время — «полторы минуты, переходите к демонстрации». Прерывать резко нельзя, но и дать говорить шесть минут — значит сорвать регламент для всех остальных. Предупредить о таком сигнале заранее, до начала защит.</li><li><strong>Растерялся, когда что-то пошло не так.</strong> Признак: сеть упала, страница не загрузилась, демонстрация встала. Готовое действие: подсказать одной фразой — «покажите, как панель ведёт себя без сети». Сбой превращается в демонстрацию требования, и выступление продолжается. Проговорить эту возможность всей группе до начала.</li><li><strong>Не может объяснить фрагмент.</strong> Признак: чтение кода вслух вместо объяснения. Готовое действие: не давить, а переформулировать вопрос проще — «что увидит пользователь, если эта функция сработает?» и дальше «а если данных нет?». Часто выясняется, что человек понимает, но не умеет сформулировать; это разные вещи, и вторая исправляется вопросом. Если и так не выходит — зафиксировать и идти дальше: разбор наедине, а не при всех.</li></ol>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>После защиты</h3>
+<p>Курс закончился, и это последнее задание — не на оценку. Оно занимает двадцать минут и сделает разницу между «проходил курс» и «вот мои работы».</p>
+<ol><li><strong>Собери ссылки в одном месте.</strong> Заметка в телефоне, документ, страница репозитория — неважно где, важно, чтобы через полгода не пришлось искать. Четыре ссылки: живая версия итогового проекта, его репозиторий, сайт буфета, его репозиторий.</li><li><strong>Допиши в <code>README</code> одну строку про контекст:</strong> «Учебный проект курса "Веб-разработка", 2026». Это честно и снимает вопросы об уровне работы.</li><li><strong>Отправь ссылку трём людям</strong>, которые её ещё не видели. Не для оценки — просто потому, что теперь есть что отправить.</li><li><strong>Запиши одной строкой, что ты понял про работу с ИИ за этот курс.</strong> Для себя. Через год ты будешь пользоваться этими инструментами всерьёз, и полезно помнить, что узнал, когда впервые проверил их руками и нашёл три несуществующих метода.</li><li><strong>Не удаляй репозиторий.</strong> Самая частая потеря: через год аккаунт заброшен, репозиторий стёрт «за ненадобностью», восстанавливать нечего.</li></ol>
+<p>Раз в несколько месяцев открывай свою ссылку и проверяй, что она работает: платформы иногда отключают публикацию у неактивных аккаунтов.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Приложение 1 к программе (ТЗ итогового проекта)</strong> закрыто полностью на занятиях 20–23. Сегодня оно предъявляется: комиссия открывает публичную ссылку и проверяет выполнение требований по работающему продукту.</p>
+<p><strong>Приложение 2 (критерии оценки)</strong> применяется сегодня целиком:</p>
+<div class="table-wrap"><table><thead><tr><th>Критерий</th><th>Баллы</th><th>Что даёт защита</th></tr></thead><tbody><tr><td>Соответствие ТЗ</td><td>10</td><td>Подтверждается демонстрацией: что показано в работе, то и засчитано</td></tr><tr><td>Адаптивность и качество UI/UX</td><td>5</td><td>Подтверждается показом на узком экране и тёмной темы</td></tr><tr><td>Культура работы с Git</td><td>5</td><td>Проверяется по репозиторию: история, ветки, принятый PR</td></tr><tr><td>Осознанное применение ИИ</td><td>5</td><td><strong>Проверяется ответами:</strong> что просил, что проверил, что переписал</td></tr><tr><td>Защита и презентация</td><td>5</td><td><strong>Ставится сегодня целиком:</strong> структура, ответы, рефлексия</td></tr></tbody></table></div>
+<p><strong>Принцип оценивания, записанный в программе отдельной строкой:</strong></p>
+<blockquote><p>На защите обучающийся обязан объяснить любой фрагмент кода проекта, включая сгенерированный ИИ. Не понимаемый код в зачёт не идёт.</p></blockquote>
+<p>Это то правило, которое звучало на всех двадцати четырёх занятиях. Сегодня оно проверяется напрямую.</p>
+<p><strong>Что остаётся после курса:</strong></p>
+<ul><li>Работающее веб-приложение по публичной ссылке.</li><li>Репозиторий с историей: 10+ осмысленных коммитов, ветки, принятый Pull Request, автодеплой.</li><li><code>README</code> из шести блоков, включая честные «известные ограничения».</li><li>Учебный проект курса — сайт буфета «Северный пирог», тоже опубликованный.</li><li>Умение довести идею до работающего продукта за четыре занятия — и умение проверить то, что дал инструмент.</li></ul>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L24_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L24_trainer_defense.html">Карточка защиты</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

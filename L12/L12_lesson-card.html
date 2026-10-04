@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 12. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L12_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L12_trainer_api.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 12 · техкарта</p>
+    <h1>Занятие 12. Асинхронность и работа с API</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L12</td></tr><tr><td>Тема</td><td>Асинхронность и работа с API. Мини-проект</td></tr><tr><td>Модуль</td><td>Модуль 4. JavaScript: Интерактивность и работа с API (10 ч) — завершающее занятие модуля</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Требование ТЗ «использование <code>fetch</code> для интеграции минимум одного публичного API» закрывается этим занятием. В проекте это погода, курс валют, каталог фильмов или скидки на игры — механика одна</td></tr><tr><td>Артефакт на выходе</td><td><strong>Мини-проект:</strong> страница буфета показывает «меню дня», полученное от сервера. Работают все четыре состояния: загрузка, данные, пусто, ошибка. При сбое — данные из сохранённой копии с честным сообщением</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима). <strong>Реальных сетевых запросов нет:</strong> <code>Promise</code> + константа <code>FALLBACK</code></td></tr><tr><td>Файл тренажёра</td><td><code>L12_trainer_api.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l12-api-v1</code>, <code>wdc-l12-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td><strong>Да. Мини-проект с API</strong> — форма промежуточного контроля модуля 4. Проверяется открытием страницы с данными в интерфейсе, а не в консоли</td></tr><tr><td>Опора</td><td>L10: отрисовка из данных, <code>renderMenu</code>. L09: массив объектов, <code>map</code>, <code>find</code>. L08: функции, <code>return</code>. L01: клиент, сервер, запрос, ответ, код 200 и 404</td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на ежедневное меню. <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+<blockquote><p><strong>Про сеть в тренажёре.</strong> В <code>L12_trainer_api.html</code> <strong>нет реальных запросов</strong>: ни <code>fetch</code> на внешний адрес, ни картинок из сети. Есть <code>Promise</code>, константа <code>FALLBACK</code> с готовым JSON и переключатель «сервер отвечает / отвечает медленно / молчит / вернул ошибку». Школьная сеть закрывается без предупреждения, и тренажёр обязан работать офлайн. Правило зафиксировано в <code>00_TRAINER_ENGINE.md</code>, п. 10.3.</p></blockquote>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход</td><td>Слайды 1–2. Объявляет: сегодня контрольная точка модуля, критерий — данные на странице</td><td>Слушают</td><td>Понятно, что и как проверяется</td></tr><tr><td>4–10</td><td>Теория 5.1</td><td>Слайды 3–5. <strong>Демонстрация шагов 1–2: перепутанный порядок и <code>null</code></strong></td><td>Смотрят, повторяют у себя</td><td><strong>Точка контроля:</strong> каждый воспроизвёл перепутанный порядок вывода</td></tr><tr><td>10–16</td><td>Теория 5.2</td><td>Слайд 6. <code>Promise</code>, два исхода. <strong>Демонстрация шага 3</strong></td><td>Слушают</td><td>Группа называет оба исхода</td></tr><tr><td>16–22</td><td>Теория 5.3</td><td>Слайд 7. <code>async</code>/<code>await</code>. <strong>Демонстрация шагов 4–5</strong></td><td>Повторяют у себя</td><td>У всех работает загрузка в режиме <code>ok</code></td></tr><tr><td>22–24</td><td>Пауза в теории</td><td>Слайд 8, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>24–31</td><td><strong>Теория 5.4</strong></td><td>Слайды 9–10. Проверка ответа, <code>try/catch/finally</code>. <strong>Демонстрация шагов 6, 8, 9</strong></td><td>Смотрят</td><td><strong>Точка контроля:</strong> группа объяснила разницу между «нет сети» и «сервер ответил ошибкой»</td></tr><tr><td>31–33</td><td><strong>Вопрос классу</strong></td><td>Слайд 11. «Сколько состояний у экрана с данными?» Пауза 10 секунд</td><td>Думают, отвечают</td><td>Названо больше двух</td></tr><tr><td>33–35</td><td>Теория 5.5, заход</td><td>Слайды 12–13. Четыре состояния. <strong>Демонстрация шага 7 в медленном режиме</strong></td><td>Смотрят</td><td>—</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–52</td><td>Теория 5.5–5.6</td><td>Слайды 12–15. Состояния подробно, фолбэк, честная пометка. <strong>Демонстрация шага 10</strong></td><td>Слушают, повторяют</td><td>У каждого работает режим <code>fail</code> с фолбэком</td></tr><tr><td>52–56</td><td>Теория 5.7</td><td>Слайд 16. Чек-лист из пяти пунктов</td><td>Записывают чек-лист</td><td>Чек-лист записан у каждого</td></tr><tr><td>56–70</td><td>Практика: тренажёр</td><td>Открывает <code>L12_trainer_api.html</code>. Помогает точечно. <strong>Предупреждает: тесты идут до двадцати секунд</strong></td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 67-й минуте у большинства 10/13 и выше. Кто застрял на тестах 8 или 11 — разобрать на весь класс</td></tr><tr><td>70–88</td><td><strong>Практика: мини-проект</strong></td><td>Обходит ряды. <strong>Проверка одна: переключить режим на «нет сети» и посмотреть на экран</strong></td><td>Собирают загрузку в <code>index.html</code></td><td><strong>Точка контроля — контрольная:</strong> у каждого в режиме «нет сети» видно меню и пометку, что оно из копии</td></tr><tr><td>88–94</td><td>Работа с ИИ</td><td>Слайд 18. Разбирает ответ модели: чего в нём не хватает по чек-листу</td><td>Запускают промпт, сверяют с чек-листом</td><td>Хотя бы двое нашли отсутствующие пункты</td></tr><tr><td>94–100</td><td><strong>Мини-демо и фиксация модуля</strong></td><td>Спрашивает четверых: покажи пять режимов и объясни, что происходит в каждом. Отмечает завершение модуля 4</td><td>Показывают, объясняют, сохраняют</td><td><strong>Контрольная точка зафиксирована</strong> у каждого: страница с данными открыта и показана</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li>Проверить, что у всех сохранился <code>index.html</code> с занятия 11 с работающим меню и валидацией. Кому не хватает — выдать готовый.</li><li><strong>Подготовить функцию <code>getMenuFromServer</code>, массив <code>TODAY_ITEMS</code> и разметку блока состояния отдельным файлом для копирования.</strong> Набирать заглушку вручную нельзя: занятие и так плотное.</li><li><strong>Проверить, что все пять режимов работают</strong> на вашей копии заготовки. Особенно <code>error500</code>: он отличается от <code>fail</code> тонко, и именно на нём строится ключевая часть объяснения.</li><li>Подготовить чек-лист из пяти пунктов на карточку каждому. Он нужен на минуте 52 и дальше на занятии 21.</li><li>Подготовить файл поддержки: три функции состояний написаны, <code>loadMenu</code> с четырьмя пропусками по номерам чек-листа.</li><li>Подготовить задание «плюс» заранее: второй источник данных, время обновления, кнопка «Попробовать снова».</li><li>Пройти тренажёр самому. <strong>Норматив — 18–22 минуты: это самый долгий тренажёр курса</strong>, потому что тесты асинхронные и три из них идут в медленном режиме. Предупредить группу заранее, иначе решат, что завис.</li><li>Отдельно проверить тесты 5, 6 и 11: первые два проверяют состояние <strong>во время</strong> запроса, третий сравнивает сообщения при успехе и при сбое.</li><li>Проверить доступ к ИИ-сервису. При недоступности — сохранить два ответа заранее: один со «счастливым путём» без обработки ошибок, один со смешением сбоя сети и кода ответа.</li><li><strong>Отметить в журнале форму промежуточного контроля.</strong> Мини-проект с API — контрольная точка модуля 4, и её результат фиксируется по каждому ученику.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L12_presentation.html</code> — слайды 1–18.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 4.</li><li>Браузер с открытой консолью и <strong>видимым переключателем режимов</strong>: он используется шесть раз за занятие.</li><li>Тренажёр <code>L12_trainer_api.html</code> — открыть на минуте 56.</li><li>Список группы для фиксации контрольной точки — на минуте 70.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. Забыт <code>await</code>, в консоли <code>Cannot read properties of undefined</code>.</strong><br>Действие педагога: один приём — попросить вывести <code>console.log(response)</code>. Ученик увидит <code>Promise { &lt;pending&gt; }</code> и поймёт сам. Показать этот признак всему классу после первого обращения: он однозначный и запоминается.</p>
+<p><strong>2. Режимы <code>fail</code> и <code>error500</code> путаются: «оба же ошибка».</strong><br>Действие педагога: развести вслух. «Нет сети — ты не дозвонился. Ошибка сервера — дозвонился, и тебе сказали, что закрыто». Первое попадает в <code>catch</code>, второе нет. Это ключевое различие занятия, и одного объяснения обычно мало — стоит повторить на примере.</p>
+<p><strong>3. Тренажёр «завис»: тесты идут долго.</strong><br>Действие педагога: предупредить <strong>до</strong> начала практики. Тесты асинхронные, три режима медленные, полный прогон до двадцати секунд. Без предупреждения половина группы перезапустит проверку в середине и решит, что файл сломан.</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Прогони пять режимов и опиши каждый.</strong> Для каждого запиши две строки: что видно на экране и что при этом произошло технически. Особое внимание — разнице между «нет сети» и «ошибка сервера»: сформулируй её своими словами.</li><li><strong>Сломай свой код тремя способами</strong> и запиши, что получилось: убери <code>await</code>; убери проверку <code>response.ok</code> и включи режим ошибки сервера; убери <code>try/catch</code> и включи режим «нет сети». После каждого — верни как было. Десять минут работы, которые окупятся на занятии 21.</li><li><strong>Выбери API для своего проекта.</strong> Открой витрину <code>projects/index.html</code> и ТЗ своей темы (P01–P06), посмотри, какие источники данных там предложены, и запиши, какой берёшь. Отдельной строкой напиши, что положишь в <code>FALLBACK</code>, если сеть не ответит.</li></ol>
+<p>Третий пункт — подготовка к занятию 19, где будет составляться спринт-план.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «JavaScript: … использование <code>fetch</code> для интеграции минимум одного публичного API (погода, цитаты, фильмы и т. д.)».</p>
+<p>Требование закрыто сегодня механикой целиком. На занятии 21 останется заменить учебную заглушку на настоящий <code>fetch</code> — это одна строка, всё остальное уже написано:</p>
+<pre><code>// сегодня
+const response = await getMenuFromServer(mode);
+
+// на занятии 21
+const response = await fetch(url);</code></pre>
+<p>Дальше — та же проверка <code>response.ok</code>, тот же <code>.json()</code>, те же четыре состояния, тот же фолбэк.</p>
+<p><strong>Про фолбэк отдельно.</strong> В <code>00_STORY_BANK.md</code> для каждой из шести тем указан источник данных и обязательный запасной набор. Правило оттуда повторяется здесь дословно: <strong>фолбэк пишется раньше запроса</strong>, на занятии 21, а не «если останется время». Причина практическая: если сервис окажется недоступен из школьной сети, проект целиком идёт на сохранённых данных, и <strong>на оценку это не влияет</strong> — обработка недоступности засчитывается как выполненное требование.</p>
+<p>И идея для защиты, которая работает лучше удачного запроса: <strong>показать, как приложение ведёт себя без сети.</strong> Найти данные вживую, а потом отключить сеть и показать, что панель продолжает работать с честной пометкой. Это демонстрирует инженерное мышление, а не везение.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Соответствие ТЗ» (10 баллов)</strong> — часть про <code>fetch</code> и работу с внешними данными, прямо. Плюс косвенно <strong>«Защита и презентация» (5 баллов)</strong>: умение объяснить, что происходит при сбое, — сильный ответ на вопрос комиссии.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L12_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L12_trainer_api.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 17 · Тренажёр: аудит кода</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3;
+      --tm-code-text: #111312;
+      --tm-ok: #4E9C2E;
+      --tm-fail: #C24545;
+      --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B;
+      --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F;
+      --tm-fail: #E07A7A;
+      --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    body { padding: 16px 20px 72px; }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 16px;
+      margin-bottom: 18px;
+    }
+    .topbar__title { flex: 1 1 200px; margin: 0; font-size: 1.45rem; line-height: 1.15; }
+    .topbar__right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .tm-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 600;
+      padding: .3em .9em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid var(--tm-green);
+      color: var(--tm-green-dark);
+      background: transparent;
+    }
+    html[data-theme="dark"] .tm-pill {
+      background: var(--tm-green);
+      color: var(--tm-ink);
+      border-color: var(--tm-green);
+    }
+    .tm-btn {
+      font: 600 17px/1 var(--tm-font);
+      padding: .78em 1.5em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-ink); }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: clamp(16px, 2vw, 24px);
+      margin-bottom: 14px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { list-style: none; padding-left: 0; margin: 0; }
+    .tm-list li {
+      position: relative;
+      padding-left: 2.1em;
+      margin-bottom: .55em;
+      line-height: 1.55;
+      font-size: 17px;
+    }
+    .tm-list li::before {
+      content: "►►";
+      position: absolute;
+      left: 0;
+      top: .05em;
+      color: var(--tm-green);
+      font-size: .78em;
+      letter-spacing: -.08em;
+    }
+    .modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .hide { display: none !important; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+    .pane {
+      background: var(--tm-bg-alt);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      padding: 14px;
+      min-width: 0;
+    }
+    .pane__label { margin: 0 0 8px; font-weight: 700; font-size: 15px; }
+    .pane__help { margin: 8px 0 0; color: var(--tm-muted); font-size: 14px; }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      margin: 0;
+      padding: 14px;
+      font-family: var(--tm-mono);
+      font-size: 15px;
+      line-height: 1.5;
+      tab-size: 2;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      resize: vertical;
+    }
+    iframe {
+      width: 100%;
+      min-height: 360px;
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-sm);
+    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .status-line { color: var(--tm-muted); font-size: 15px; margin: 0 0 12px; }
+    .meter {
+      height: 4px;
+      background: var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      overflow: hidden;
+      margin: 0 0 14px;
+    }
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--tm-green);
+      transition: width .22s ease;
+    }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); font-size: 16px; }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .hint { margin: 0 0 10px; line-height: 1.55; font-size: 16px; }
+    .tm-code {
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      border-left: 5px solid var(--tm-green);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+      padding: 1em 1.2em;
+      overflow-x: auto;
+      font-family: var(--tm-mono);
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); }
+    .layout.is-blocks .pool { flex-direction: column; align-items: stretch; }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--tm-green-dark);
+      background: var(--tm-bg);
+      color: var(--tm-text);
+      border-radius: var(--tm-radius-sm);
+      padding: 8px 12px;
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: grab;
+      box-shadow: var(--tm-shadow);
+      max-width: 100%;
+    }
+    .layout.is-blocks .chip { width: 100%; }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .chip b {
+      display: block;
+      font-family: var(--tm-font);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--tm-muted);
+      margin-bottom: 2px;
+    }
+    .chip.is-picked {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 2px;
+      background: var(--tm-green-soft);
+    }
+    .slot-lab { display: block; font-size: 12px; font-weight: 700; margin: 0 0 6px; color: var(--tm-muted); }
+    .slot {
+      min-height: 56px;
+      border: 2px dashed var(--tm-muted);
+      border-radius: var(--tm-radius-sm);
+      padding: 6px;
+      background: var(--tm-bg);
+      margin-bottom: 8px;
+    }
+    .slot:last-child { margin-bottom: 0; }
+    .slot.is-over { border-color: var(--tm-green); background: var(--tm-green-soft); }
+    .slot.is-err { border-color: var(--tm-fail); }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .audit-list { list-style: none; padding: 0; margin: 8px 0 0; }
+    .audit-list li { margin: 0 0 8px; }
+    .audit-list label {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .audit-list code {
+      font-family: var(--tm-mono);
+      font-size: 13px;
+      background: var(--tm-code-bg);
+      color: var(--tm-code-text);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    textarea:focus-visible, button:focus-visible, a:focus-visible, .chip:focus-visible, input:focus-visible {
+      outline: 3px solid var(--tm-green-dark);
+      outline-offset: 3px;
+    }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    .teacher { color: var(--tm-muted); font-size: 15px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    h2 { font-size: 1.15rem; margin: 0 0 8px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+    <span class="tm-eyebrow">►► Занятие 17 · тренажёр</span>
+    <h1 class="topbar__title">Аудит кода «от ИИ»</h1>
+    <div class="topbar__right">
+      <span class="tm-pill" id="score">0 / 12</span>
+      <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+    </div>
+  </header>
+
+  <section class="brief tm-card">
+    <p class="tm-eyebrow">►► Заказ</p>
+    <ul class="tm-list">
+      <li>Тебе прислали код «от ИИ» для меню буфета. Он выглядит аккуратно и не работает.</li>
+      <li>Сначала отметь в панели аудита строки, которые вызывают подозрение.</li>
+      <li>Потом почини код так, чтобы он работал и не падал ни на пустом списке, ни на отсутствующем блоке <code>#menu</code>.</li>
+    </ul>
+  </section>
+
+  <section class="tm-card" id="auditPanel">
+    <p class="tm-eyebrow">►► Аудит</p>
+    <p>Отметь подозрительные строки. Объявление функции и её вызов — не ловушки сами по себе.</p>
+    <ul class="audit-list">
+      <li><label><input type="checkbox" data-audit="1"> <code>function showSweet(pies) {</code></label></li>
+      <li><label><input type="checkbox" data-audit="2"> <code>const sweet = pies.filterBy("kind", "сладкое");</code></label></li>
+      <li><label><input type="checkbox" data-audit="3"> <code>const names = sweet.mapTo(p =&gt; p.name);</code></label></li>
+      <li><label><input type="checkbox" data-audit="4"> <code>document.querySelector("#menu")</code></label></li>
+      <li><label><input type="checkbox" data-audit="5"> <code>.innerText = names.joinWith(", ");</code></label></li>
+      <li><label><input type="checkbox" data-audit="6"> <code>showSweet(PIES);</code></label></li>
+    </ul>
+  </section>
+
+  <div class="modes" role="tablist" aria-label="Режим работы">
+    <button class="tm-btn tm-btn--primary" id="modeCode" role="tab" aria-selected="true" type="button">1. Писать код</button>
+    <button class="tm-btn tm-btn--ghost" id="modeBlocks" role="tab" aria-selected="false" type="button">2. Собрать блоками</button>
+  </div>
+
+  <main class="layout" id="layout">
+    <section class="pane" id="paneCode">
+      <label class="pane__label" for="editor">Твой код</label>
+      <textarea id="editor" spellcheck="false" aria-describedby="editorHelp"></textarea>
+      <p class="pane__help" id="editorHelp">Пиши здесь. Подсветка синтаксиса намеренно выключена: она выдала бы ответ до аудита. Превью обновляется само.</p>
+    </section>
+
+    <section class="blocks-board hide" id="paneBlocks">
+      <div class="pane" id="blockPoolPane">
+        <p class="pane__label">Блоки</p>
+        <p class="pane__help">Кликни или нажми Enter. Семь лишних чипов повторяют типичные ошибки: выдуманный метод, строковые аргументы у filter, innerHTML, alert.</p>
+        <div id="blockPool" class="pool"></div>
+      </div>
+      <div class="pane" id="slotsPane">
+        <p class="pane__label">Тело showSweet</p>
+        <div id="slots" class="slots">
+          <span class="slot-lab">1. Найти блок #menu</span>
+          <div class="slot" data-accept="guard"></div>
+          <span class="slot-lab">2. Отфильтровать сладкие</span>
+          <div class="slot" data-accept="filter"></div>
+          <span class="slot-lab">3. Пустой результат</span>
+          <div class="slot" data-accept="empty"></div>
+          <span class="slot-lab">4. Вывести названия</span>
+          <div class="slot" data-accept="out"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane" id="panePreview">
+      <p class="pane__label">Что видит браузер</p>
+      <iframe id="preview" title="Предпросмотр страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+    </section>
+  </main>
+
+  <p class="status-line" id="statusLine">Подсказок открыто: 0/3 · ещё собираем</p>
+  <div class="meter"><span id="bar"></span></div>
+
+  <div class="toolbar">
+    <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+    <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+    <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+    <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать</button>
+    <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Эталон</button>
+  </div>
+
+  <section class="tests tm-card" id="tests" aria-live="polite"></section>
+  <section class="hints tm-card" id="hints"></section>
+  <section class="etalon hide tm-card" id="etalonBox">
+    <h2>Эталонное решение</h2>
+    <p>Три имени не существуют: это видно по <code>[].filterBy</code> в консоли без запуска страницы. Настоящий <code>filter</code> принимает функцию, а не две строки. Элемент кладём в переменную и проверяем на <code>null</code>. Пустой массив — не молчание, а текст для человека. В вывод идёт <code>textContent</code>.</p>
+    <pre class="tm-code" id="solCode"></pre>
+  </section>
+
+  <section class="gloss tm-card">
+    <h2>Глоссарий занятия</h2>
+    <dl>
+      <dt>Галлюцинация</dt>
+      <dd>Уверенно выданная неправда: метод выглядит правдоподобно, но его нет в языке.</dd>
+      <dt>Протокол аудита</dt>
+      <dd>Сначала отметить подозрительное, потом чинить и проверять границы — не наоборот.</dd>
+      <dt>Граничный случай</dt>
+      <dd>Пустой список и отсутствующий <code>#menu</code>: код ломается чаще всего именно здесь.</dd>
+      <dt>Рефакторинг</dt>
+      <dd>Переписать понятнее, не меняя поведение. Сегодня — после того, как код уже работает.</dd>
+    </dl>
+  </section>
+
+  <details class="teacher tm-card">
+    <summary>Карточка педагога</summary>
+    <ul>
+      <li><strong>Навык:</strong> найти выдуманные методы до запуска, заменить на filter/map/join, обработать null и пустой массив.</li>
+      <li><strong>Норматив:</strong> 25–40 мин. Сначала аудит, потом код или блоки.</li>
+      <li><strong>Типичные ошибки:</strong> чинят по одной ошибке из консоли; <code>filter("kind", "сладкое")</code>; спрашивают у модели, существует ли метод; не проверяют пустой список.</li>
+      <li><strong>Готово, когда:</strong> 12 зелёных, вслух: как проверить имя метода без запуска страницы.</li>
+      <li><strong>Усложнение:</strong> добавить проверку, что <code>pies</code> — массив, иначе выйти.</li>
+      <li><strong>Поддержка:</strong> режим блоков; подсказка 2 — приём с <code>[].filterBy</code> в консоли.</li>
+    </ul>
+  </details>
+
+  <script type="text/plain" id="starter">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Северный пирог — сладкое</title>
+  <style>
+    body { margin: 0; padding: 16px; font-family: system-ui, sans-serif; color: #111312; }
+    h2 { margin: 0 0 12px; }
+    #menu { padding: 12px 16px; border: 1px solid #E3E7E1; border-radius: 18px; min-height: 24px; }
+  </style>
+</head>
+<body>
+  <h2>Сладкое сегодня</h2>
+  <p id="menu"></p>
+
+  <script>
+    const PIES = [
+      { id: "kalitka",  name: "Калитка с картошкой", price: 45, kind: "солёное", left: 12, hit: true  },
+      { id: "shanga",   name: "Шаньга со сметаной",  price: 50, kind: "солёное", left: 8,  hit: false },
+      { id: "rybnik",   name: "Рыбник",              price: 90, kind: "солёное", left: 4,  hit: true  },
+      { id: "brusnika", name: "Пирог с брусникой",   price: 70, kind: "сладкое", left: 6,  hit: false },
+      { id: "moroshka", name: "Пирог с морошкой",    price: 85, kind: "сладкое", left: 3,  hit: true  },
+      { id: "cherniga", name: "Пирог с черникой",    price: 60, kind: "сладкое", left: 9,  hit: false }
+    ];
+
+    // Код «от ИИ»: отфильтровать сладкие пироги и вывести их названия
+    function showSweet(pies) {
+      const sweet = pies.filterBy("kind", "сладкое");
+      const names = sweet.mapTo(p => p.name);
+      document.querySelector("#menu").innerText = names.joinWith(", ");
+    }
+
+    showSweet(PIES);
+  <\/script>
+</body>
+</html>
+  </script>
+
+  <script type="text/plain" id="etalon">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Северный пирог — сладкое</title>
+  <style>
+    body { margin: 0; padding: 16px; font-family: system-ui, sans-serif; color: #111312; }
+    h2 { margin: 0 0 12px; }
+    #menu { padding: 12px 16px; border: 1px solid #E3E7E1; border-radius: 18px; min-height: 24px; }
+  </style>
+</head>
+<body>
+  <h2>Сладкое сегодня</h2>
+  <p id="menu"></p>
+
+  <script>
+    const PIES = [
+      { id: "kalitka",  name: "Калитка с картошкой", price: 45, kind: "солёное", left: 12, hit: true  },
+      { id: "shanga",   name: "Шаньга со сметаной",  price: 50, kind: "солёное", left: 8,  hit: false },
+      { id: "rybnik",   name: "Рыбник",              price: 90, kind: "солёное", left: 4,  hit: true  },
+      { id: "brusnika", name: "Пирог с брусникой",   price: 70, kind: "сладкое", left: 6,  hit: false },
+      { id: "moroshka", name: "Пирог с морошкой",    price: 85, kind: "сладкое", left: 3,  hit: true  },
+      { id: "cherniga", name: "Пирог с черникой",    price: 60, kind: "сладкое", left: 9,  hit: false }
+    ];
+
+    // Проверено по протоколу аудита: три выдуманных метода заменены настоящими,
+    // добавлена обработка пустого результата и отсутствующего элемента
+    function showSweet(pies) {
+      const menu = document.querySelector("#menu");
+      if (!menu) {
+        console.warn("Блок #menu не найден на странице");
+        return;
+      }
+
+      const sweet = pies.filter(p => p.kind === "сладкое");
+
+      if (sweet.length === 0) {
+        menu.textContent = "Сладких пирогов сегодня нет";
+        return;
+      }
+
+      const names = sweet.map(p => p.name);
+      menu.textContent = names.join(", ");
+    }
+
+    showSweet(PIES);
+  <\/script>
+</body>
+</html>
+  </script>
+
+  <script>
+    (function () {
+      const DRAFT_KEY = "wdc-l17-audit-v1";
+      const MODE_KEY = "wdc-l17-mode-v1";
+      const BASE = location.href.replace(/[^/]*$/, "");
+      const NEED_AUDIT = [2, 3, 4, 5];
+      const FALSE_AUDIT = [1, 6];
+
+      function readSlot(id) {
+        const raw = document.getElementById(id).textContent;
+        return raw.replace(/<\\\/script>/g, "<" + "/script>").trim();
+      }
+      const STARTER = readSlot("starter");
+      const ETALON = readSlot("etalon");
+
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      const layout = document.getElementById("layout");
+      const paneCode = document.getElementById("paneCode");
+      const paneBlocks = document.getElementById("paneBlocks");
+      const slotsRoot = document.getElementById("slots");
+      const pool = document.getElementById("blockPool");
+      const testsEl = document.getElementById("tests");
+      const hintsEl = document.getElementById("hints");
+      const scoreEl = document.getElementById("score");
+      const bar = document.getElementById("bar");
+      const statusLine = document.getElementById("statusLine");
+      const etalonBtn = document.getElementById("etalonBtn");
+      const etalonBox = document.getElementById("etalonBox");
+      const solCode = document.getElementById("solCode");
+      const modeCode = document.getElementById("modeCode");
+      const modeBlocks = document.getElementById("modeBlocks");
+      solCode.textContent = ETALON;
+
+      const BLOCKS = [
+        { id: "guard-el", accept: "guard", label: "Найти блок один раз и выйти, если его нет", show: "if (!menu) return", html: "      const menu = document.querySelector(\"#menu\");\n      if (!menu) {\n        console.warn(\"Блок #menu не найден на странице\");\n        return;\n      }" },
+        { id: "guard-none", accept: "guard", label: "Ничего не проверять — блок всегда есть", show: "querySelector без проверки", html: "      const menu = document.querySelector(\"#menu\");" },
+        { id: "filter-ok", accept: "filter", label: "pies.filter(p => p.kind === \"сладкое\")", show: "filter + стрелка", html: "      const sweet = pies.filter(p => p.kind === \"сладкое\");" },
+        { id: "filter-args", accept: "filter", label: "pies.filter(\"kind\", \"сладкое\")", show: "filter со строками", html: "      const sweet = pies.filter(\"kind\", \"сладкое\");" },
+        { id: "filter-by", accept: "filter", label: "pies.filterBy(\"kind\", \"сладкое\")", show: "filterBy", html: "      const sweet = pies.filterBy(\"kind\", \"сладкое\");" },
+        { id: "empty-msg", accept: "empty", label: "Если сладких нет — написать «Сладких пирогов сегодня нет»", show: "length === 0", html: "      if (sweet.length === 0) {\n        menu.textContent = \"Сладких пирогов сегодня нет\";\n        return;\n      }" },
+        { id: "empty-none", accept: "empty", label: "Ничего не делать: пустая строка тоже сойдёт", show: "без проверки длины", html: "      /* пустой список не обрабатываем */" },
+        { id: "empty-alert", accept: "empty", label: "Показать всплывающее окно с сообщением", show: "alert", html: "      if (sweet.length === 0) {\n        alert(\"Сладких пирогов сегодня нет\");\n        return;\n      }" },
+        { id: "out-ok", accept: "out", label: "menu.textContent = sweet.map(p => p.name).join(\", \")", show: "textContent + map + join", html: "      menu.textContent = sweet.map(p => p.name).join(\", \");" },
+        { id: "out-inner", accept: "out", label: "menu.innerHTML = sweet.map(p => p.name).join(\", \")", show: "innerHTML", html: "      menu.innerHTML = sweet.map(p => p.name).join(\", \");" },
+        { id: "out-joinwith", accept: "out", label: "menu.textContent = sweet.map(p => p.name).joinWith(\", \")", show: "joinWith", html: "      menu.textContent = sweet.map(p => p.name).joinWith(\", \");" }
+      ];
+
+      const HINTS = [
+        "Три метода в этом коде не существуют. Как проверить имя, не спрашивая у модели и не запуская страницу? Подсказка: в консоли можно спросить у пустого массива, есть ли у него такое свойство.",
+        "Проверка одной строкой: набери в консоли [].filterBy — без скобок. undefined значит «такого нет». Так же проверь mapTo и joinWith, а потом filter, map, join — увидишь разницу в ответе. Дальше замена: filter принимает функцию p => p.kind === \"сладкое\", map — функцию p => p.name, join — разделитель \", \".",
+        "const menu = document.querySelector(\"#menu\");\nif (!menu) { console.warn(\"Блок #menu не найден\"); return; }\n\nconst sweet = pies.filter(p => p.kind === \"сладкое\");\nif (sweet.length === 0) { menu.textContent = \"Сладких пирогов сегодня нет\"; return; }\n\nmenu.textContent = sweet.map(p => p.name).join(\", \");"
+      ];
+
+      const PAGE_HEAD = [
+        "<!DOCTYPE html>",
+        "<html lang=\"ru\">",
+        "<head>",
+        "  <meta charset=\"utf-8\">",
+        "  <title>Северный пирог — сладкое</title>",
+        "  <style>",
+        "    body { margin: 0; padding: 16px; font-family: system-ui, sans-serif; color: #111312; }",
+        "    h2 { margin: 0 0 12px; }",
+        "    #menu { padding: 12px 16px; border: 1px solid #E3E7E1; border-radius: 18px; min-height: 24px; }",
+        "  </style>",
+        "</head>",
+        "<body>",
+        "  <h2>Сладкое сегодня</h2>",
+        "  <p id=\"menu\"></p>",
+        "  <script>",
+        "    const PIES = [",
+        "      { id: \"kalitka\",  name: \"Калитка с картошкой\", price: 45, kind: \"солёное\", left: 12, hit: true  },",
+        "      { id: \"shanga\",   name: \"Шаньга со сметаной\",  price: 50, kind: \"солёное\", left: 8,  hit: false },",
+        "      { id: \"rybnik\",   name: \"Рыбник\",              price: 90, kind: \"солёное\", left: 4,  hit: true  },",
+        "      { id: \"brusnika\", name: \"Пирог с брусникой\",   price: 70, kind: \"сладкое\", left: 6,  hit: false },",
+        "      { id: \"moroshka\", name: \"Пирог с морошкой\",    price: 85, kind: \"сладкое\", left: 3,  hit: true  },",
+        "      { id: \"cherniga\", name: \"Пирог с черникой\",    price: 60, kind: \"сладкое\", left: 9,  hit: false }",
+        "    ];",
+        "    function showSweet(pies) {"
+      ].join("\n");
+
+      let hintsOpened = 0;
+      let typeTimer = null;
+      let lastPassed = 0;
+      let picked = null;
+
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+      function findBlock(id) {
+        return BLOCKS.filter(function (b) { return b.id === id; })[0];
+      }
+      function slotOf(accept) {
+        return slotsRoot.querySelector('.slot[data-accept="' + accept + '"]');
+      }
+      function part(name) {
+        const slot = slotOf(name);
+        const id = slot && slot.dataset.filled;
+        const b = findBlock(id);
+        return b ? b.html : "";
+      }
+      function htmlFromBlocks() {
+        return PAGE_HEAD + "\n" +
+          part("guard") + "\n" +
+          part("filter") + "\n" +
+          part("empty") + "\n" +
+          part("out") + "\n" +
+          "    }\n    showSweet(PIES);\n  </scr" + "ipt>\n</body>\n</html>";
+      }
+      function currentHtml() {
+        return layout.classList.contains("is-blocks") ? htmlFromBlocks() : editor.value;
+      }
+      function withBase(html) {
+        const tag = '<base href="' + BASE + '">';
+        const hook = "<script>window.__wdcErr=[];window.onerror=function(m){window.__wdcErr.push(String(m));};<\/script>";
+        const inject = tag + hook;
+        if (/<head[^>]*>/i.test(html)) {
+          return html.replace(/<head([^>]*)>/i, "<head$1>" + inject);
+        }
+        if (/<html[^>]*>/i.test(html)) {
+          return html.replace(/<html([^>]*)>/i, "<html$1><head>" + inject + "</head>");
+        }
+        return "<head>" + inject + "</head>" + html;
+      }
+      function previewDoc(html) {
+        preview.srcdoc = withBase(html);
+      }
+      function getAudit() {
+        return [...document.querySelectorAll("[data-audit]:checked")].map(function (el) {
+          return Number(el.getAttribute("data-audit"));
+        });
+      }
+      function setAudit(nums) {
+        document.querySelectorAll("[data-audit]").forEach(function (el) {
+          el.checked = (nums || []).indexOf(Number(el.getAttribute("data-audit"))) !== -1;
+        });
+      }
+      function slotsMap() {
+        return {
+          guard: (slotOf("guard") && slotOf("guard").dataset.filled) || "",
+          filter: (slotOf("filter") && slotOf("filter").dataset.filled) || "",
+          empty: (slotOf("empty") && slotOf("empty").dataset.filled) || "",
+          out: (slotOf("out") && slotOf("out").dataset.filled) || ""
+        };
+      }
+      function saveDraft() {
+        const data = {
+          code: editor.value,
+          slots: slotsMap(),
+          audit: getAudit(),
+          hintsOpened: hintsOpened
+        };
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+      }
+      function schedulePreview() {
+        clearTimeout(typeTimer);
+        typeTimer = setTimeout(function () {
+          previewDoc(currentHtml());
+          saveDraft();
+        }, 280);
+      }
+      function stripComments(src) {
+        return src
+          .replace(/<!--[\s\S]*?-->/g, "")
+          .replace(/\/\*[\s\S]*?\*\//g, "")
+          .replace(/(^|[^:\\])\/\/[^\n]*/g, "$1");
+      }
+      function filterUsesFn(src) {
+        const m = src.match(/\.filter\s*\(\s*/);
+        if (!m) return false;
+        const rest = src.slice(m.index + m[0].length);
+        if (/^["']/.test(rest)) return false;
+        let depth = 1;
+        let i = 0;
+        while (i < rest.length && depth > 0) {
+          if (rest[i] === "(") depth += 1;
+          else if (rest[i] === ")") depth -= 1;
+          i += 1;
+        }
+        return /=>/.test(rest.slice(0, i - 1));
+      }
+
+      function buildTests(src, doc, win) {
+        const audit = getAudit();
+        const found = NEED_AUDIT.filter(function (n) { return audit.indexOf(n) !== -1; }).length;
+        const menu = doc.querySelector("#menu");
+        const menuText = menu ? String(menu.textContent || "") : "";
+        const low = menuText.toLowerCase();
+        const errs = (win && win.__wdcErr) || [];
+
+        let emptyOk = false;
+        if (win && typeof win.showSweet === "function" && menu) {
+          const prev = String(menu.textContent || "");
+          try {
+            win.showSweet([]);
+            const after = String(menu.textContent || "").trim();
+            emptyOk = after.length > 0 && after !== prev.trim();
+          } catch (e) {
+            emptyOk = false;
+          }
+          menu.textContent = prev;
+        }
+
+        return [
+          {
+            name: "Все четыре подозрительные строки найдены",
+            hint: "Найдено " + found + " из 4. Пройди по признакам: незнакомое имя метода, слишком удобная сигнатура, имя из двух склеенных слов, обращение к результату поиска без проверки",
+            ok: found === 4
+          },
+          {
+            name: "Лишних отметок нет",
+            hint: "Отмечены строки, в которых нет ничего подозрительного. Объявление функции и её вызов — обычные конструкции с занятия 8",
+            ok: FALSE_AUDIT.every(function (n) { return audit.indexOf(n) === -1; })
+          },
+          {
+            name: "Выдуманный filterBy убран",
+            hint: "В коде остался filterBy. Проверь в консоли: [].filterBy вернёт undefined — такого метода нет",
+            ok: !/filterBy/.test(src)
+          },
+          {
+            name: "Выдуманный mapTo убран",
+            hint: "В коде остался mapTo. Настоящий метод, делающий то же самое, ты применял на занятии 9",
+            ok: !/mapTo/.test(src)
+          },
+          {
+            name: "Выдуманный joinWith убран",
+            hint: "В коде остался joinWith. Метод, склеивающий массив в строку через разделитель, называется короче",
+            ok: !/joinWith/.test(src)
+          },
+          {
+            name: "filter принимает функцию сравнения",
+            hint: "У filter убрали By, но оставили старые аргументы. Настоящий filter принимает функцию, которая для каждого элемента возвращает true или false",
+            ok: filterUsesFn(src)
+          },
+          {
+            name: "Отсутствие блока обработано",
+            hint: "Если блока #menu нет, querySelector вернёт null, и вся страница остановится на Cannot set properties of null. Положи элемент в переменную и проверь её",
+            ok: /if\s*\(\s*!/.test(src) && /\breturn\b/.test(src)
+          },
+          {
+            name: "Пустой результат обработан текстом",
+            hint: "Когда сладких пирогов нет, пользователь видит пустой блок и решает, что сайт сломался. Проверять надо результат фильтрации, а не исходный массив",
+            ok: /\.length\s*===\s*0/.test(src) || /!\s*\w+\.length/.test(src)
+          },
+          {
+            name: "Текст задаётся через textContent",
+            hint: "innerText существует, но на курсе принят textContent: он не запускает пересчёт раскладки. innerHTML здесь тем более не нужен — мы выводим текст, а не разметку",
+            ok: /textContent/.test(src) && !/innerText/.test(src) && !/innerHTML/.test(src)
+          },
+          {
+            name: "Выводятся все три сладких пирога",
+            hint: "В блоке не то, что ожидалось. Проверь условие фильтрации: сравнение строгое, ===, и значение — ровно \"сладкое\"",
+            ok: low.indexOf("брусник") !== -1 && low.indexOf("морошк") !== -1 && low.indexOf("черник") !== -1
+          },
+          {
+            name: "На пустом списке пользователь видит объяснение",
+            hint: "При пустом списке в блоке пусто. Пустота читается как поломка: напиши текстом, что сладких сегодня нет",
+            ok: emptyOk
+          },
+          {
+            name: "Консоль чистая",
+            hint: errs.length
+              ? "В консоли ошибка: «" + errs[0] + "». Прочитай её целиком — она называет и виновную строку, и суть проблемы"
+              : "В консоли ошибка. Прочитай её целиком — она называет и виновную строку, и суть проблемы",
+            ok: errs.length === 0
+          }
+        ];
+      }
+
+      function unlockEtalon(why) {
+        etalonBtn.disabled = false;
+        etalonBox.classList.remove("hide");
+        statusLine.textContent = why;
+      }
+      function renderResults(list) {
+        const passed = list.filter(function (r) { return r.ok; }).length;
+        lastPassed = passed;
+        testsEl.innerHTML = list.map(function (r) {
+          return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+            '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + "</span>" +
+            "<div><div>" + r.name + "</div>" +
+            (r.ok ? "" : '<div class="tm-test__hint">' + r.hint + "</div>") +
+            "</div></div>";
+        }).join("");
+        scoreEl.textContent = passed + " / " + list.length;
+        bar.style.width = (passed / list.length * 100) + "%";
+        const done = passed === list.length;
+        const honesty = "Подсказок открыто: " + hintsOpened + "/3";
+        statusLine.textContent = done
+          ? "Задача сдана. " + honesty
+          : honesty + " · ещё собираем";
+        if (done) unlockEtalon("Задача сдана. " + honesty);
+      }
+      function runChecks() {
+        const html = currentHtml();
+        let finished = false;
+        function go() {
+          if (finished) return;
+          finished = true;
+          preview.removeEventListener("load", go);
+          const doc = preview.contentDocument;
+          if (!doc || !doc.body) {
+            renderResults([{ name: "Документ не разобрался", hint: "Проверь скобки в script и незакрытые теги.", ok: false }]);
+            return;
+          }
+          const src = stripComments(html);
+          renderResults(buildTests(src, doc, preview.contentWindow));
+        }
+        preview.addEventListener("load", function onLoad() {
+          preview.removeEventListener("load", onLoad);
+          setTimeout(go, 60);
+        });
+        preview.srcdoc = withBase(html);
+        setTimeout(function () { if (!finished) go(); }, 1200);
+      }
+
+      function makeChip(item) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip";
+        b.draggable = true;
+        b.dataset.id = item.id;
+        const lab = document.createElement("b");
+        lab.textContent = item.label;
+        b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (b.parentElement && b.parentElement.classList.contains("slot")) {
+            returnChip(b);
+            return;
+          }
+          placeChip(item.id);
+        });
+        b.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            placeChip(item.id);
+          }
+        });
+        b.addEventListener("dragstart", function (e) {
+          picked = b;
+          b.classList.add("is-picked");
+          e.dataTransfer.setData("text/plain", item.id);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        return b;
+      }
+      function flashSlotError(block) {
+        const slot = slotOf(block.accept);
+        const el = slot || pool;
+        el.classList.add("is-err");
+        setTimeout(function () { el.classList.remove("is-err"); }, 400);
+      }
+      function returnChip(chip) {
+        const slot = chip.closest(".slot");
+        if (slot) delete slot.dataset.filled;
+        pool.appendChild(chip);
+        chip.classList.remove("is-picked");
+        picked = null;
+        previewDoc(currentHtml());
+        saveDraft();
+      }
+      function placeChip(chipId) {
+        const block = findBlock(chipId);
+        if (!block) return;
+        const chip = document.querySelector('.chip[data-id="' + chipId + '"]');
+        if (!chip) return;
+        const slot = [...slotsRoot.querySelectorAll(".slot")]
+          .filter(function (s) { return s.dataset.accept === block.accept && !s.dataset.filled; })[0];
+        if (!slot) { flashSlotError(block); return; }
+        const old = slot.querySelector(".chip");
+        if (old) pool.appendChild(old);
+        slot.appendChild(chip);
+        slot.dataset.filled = chipId;
+        chip.classList.remove("is-picked");
+        picked = null;
+        previewDoc(currentHtml());
+        saveDraft();
+      }
+      function fillBlocks() {
+        pool.innerHTML = "";
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          slot.innerHTML = "";
+          delete slot.dataset.filled;
+        });
+        shuffle(BLOCKS).forEach(function (item) { pool.appendChild(makeChip(item)); });
+      }
+      function restoreSlots(map) {
+        if (!map) return;
+        ["guard", "filter", "empty", "out"].forEach(function (accept) {
+          const id = map[accept];
+          if (id) placeChip(id);
+        });
+      }
+      function bindSlots() {
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          if (picked && picked.closest(".slot")) returnChip(picked);
+        });
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            const inner = slot.querySelector(".chip");
+            if (inner && !picked) returnChip(inner);
+            else if (picked) placeChip(picked.dataset.id);
+          });
+          slot.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            slot.classList.add("is-over");
+          });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault();
+            slot.classList.remove("is-over");
+            if (picked) placeChip(picked.dataset.id);
+          });
+        });
+      }
+      function setMode(mode) {
+        const isBlocks = mode === "blocks";
+        layout.classList.toggle("is-blocks", isBlocks);
+        paneCode.classList.toggle("hide", isBlocks);
+        paneBlocks.classList.toggle("hide", !isBlocks);
+        modeCode.setAttribute("aria-selected", String(!isBlocks));
+        modeBlocks.setAttribute("aria-selected", String(isBlocks));
+        modeCode.className = "tm-btn " + (isBlocks ? "tm-btn--ghost" : "tm-btn--primary");
+        modeBlocks.className = "tm-btn " + (isBlocks ? "tm-btn--primary" : "tm-btn--ghost");
+        try { localStorage.setItem(MODE_KEY, isBlocks ? "blocks" : "editor"); } catch (e) {}
+        previewDoc(currentHtml());
+      }
+      function replayHints() {
+        hintsEl.innerHTML = "";
+        for (let i = 0; i < hintsOpened; i += 1) {
+          const p = document.createElement("p");
+          p.className = "hint";
+          p.textContent = "Подсказка " + (i + 1) + ". " + HINTS[i];
+          hintsEl.appendChild(p);
+        }
+        if (hintsOpened >= HINTS.length) unlockEtalon("Эталон открыт: использованы три подсказки. Подсказок открыто: 3/3");
+      }
+      function loadDraft() {
+        let data = null;
+        try { data = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) {}
+        if (!data || typeof data !== "object") {
+          editor.value = STARTER;
+          return;
+        }
+        editor.value = data.code || STARTER;
+        restoreSlots(data.slots || {});
+        setAudit(data.audit || []);
+        hintsOpened = data.hintsOpened || 0;
+        replayHints();
+      }
+
+      editor.addEventListener("input", schedulePreview);
+      document.querySelectorAll("[data-audit]").forEach(function (el) {
+        el.addEventListener("change", saveDraft);
+      });
+      document.getElementById("checkBtn").addEventListener("click", function () {
+        clearTimeout(typeTimer);
+        runChecks();
+      });
+      document.getElementById("hintBtn").addEventListener("click", function () {
+        if (hintsOpened >= HINTS.length) return;
+        const p = document.createElement("p");
+        p.className = "hint";
+        p.textContent = "Подсказка " + (hintsOpened + 1) + ". " + HINTS[hintsOpened];
+        hintsEl.appendChild(p);
+        hintsOpened += 1;
+        if (hintsOpened === HINTS.length) unlockEtalon("Эталон открыт: использованы три подсказки. Подсказок открыто: 3/3");
+        saveDraft();
+        statusLine.textContent = "Подсказок открыто: " + hintsOpened + "/3";
+      });
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        editor.value = STARTER;
+        fillBlocks();
+        setAudit([]);
+        hintsOpened = 0;
+        hintsEl.innerHTML = "";
+        testsEl.innerHTML = "";
+        scoreEl.textContent = "0 / 12";
+        bar.style.width = "0";
+        etalonBtn.disabled = true;
+        etalonBox.classList.add("hide");
+        statusLine.textContent = "Подсказок открыто: 0/3 · ещё собираем";
+        saveDraft();
+        previewDoc(currentHtml());
+      });
+      document.getElementById("dlBtn").addEventListener("click", function () {
+        const blob = new Blob([currentHtml()], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "l17_moya_rabota.html";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      etalonBtn.addEventListener("click", function () {
+        etalonBox.classList.remove("hide");
+        etalonBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+      modeCode.addEventListener("click", function () { setMode("editor"); });
+      modeBlocks.addEventListener("click", function () { setMode("blocks"); });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const root = document.documentElement;
+        const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+      });
+
+      fillBlocks();
+      bindSlots();
+      loadDraft();
+      let savedMode = "editor";
+      try {
+        const m = localStorage.getItem(MODE_KEY);
+        if (m === "blocks" || m === "editor") savedMode = m;
+      } catch (e) {}
+      setMode(savedMode);
+    })();
+  </script>
+</body>
+</html>

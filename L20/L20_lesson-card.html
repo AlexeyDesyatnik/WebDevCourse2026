@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 20. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L20_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L20_checklist.html">Чек-лист</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 20 · техкарта</p>
+    <h1>Занятие 20. Итоговый проект: старт</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L20</td></tr><tr><td>Тема</td><td>Итоговый проект: старт</td></tr><tr><td>Модуль</td><td>Модуль 9. Итоговый проект и защита портфолио</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Первый спринт из четырёх. Здесь появляется репозиторий проекта, каркас и <strong>живая публичная ссылка</strong>, из которой вырастет всё остальное. Здесь же вслух разбираются ТЗ и лист на 30 баллов — чтобы ученик знал, за что получает баллы, в первый день работы, а не на защите</td></tr><tr><td>Артефакт на выходе</td><td>Каркас Dashboard в репозитории: семантическая разметка, сетка Grid, токены в <code>:root</code>, адаптив от 320 px, карточки рисуются из массива-заглушки. <strong>Публичная ссылка открывается с телефона</strong></td></tr><tr><td>Тип практики</td><td>Чек-лист спринта</td></tr><tr><td>Файл практики</td><td><code>L20_checklist.html</code> — <strong>чек-лист, а не тренажёр</strong>: редактора кода в нём нет</td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l20-checklist-v1</code> (отметки чек-листа). Ключ режима не используется</td></tr><tr><td>Контрольная точка</td><td>Нет. Первая контрольная точка модуля — занятие 22 (MVP)</td></tr><tr><td>Опора</td><td>L19: тема зафиксирована, структура данных записана, спринт-план готов. L02–L07: семантика, Grid, токены, адаптив. L13–L15: репозиторий, ветки, деплой</td></tr><tr><td>Важное правило</td><td><strong>Готовый код панели педагог не выдаёт.</strong> Ни на этом занятии, ни на 21-м, ни на 22-м. Практика этих занятий — чек-лист по собственному репозиторию</td></tr></tbody></table></div>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–2</td><td>Вход и доска</td><td>Слайд 1. <strong>Ритуал двух минут:</strong> все открывают <code>BOARD.md</code> и берут первую задачу спринта 1</td><td>Открывают доску, переносят задачу в «В работе»</td><td>У каждого в «В работе» одна задача</td></tr><tr><td>2–12</td><td>Разбор ТЗ и критериев</td><td>Слайды 2–3 + демонстрация шаги 1–2. <strong>Читает вслух ТЗ и лист на 30 баллов по пунктам</strong></td><td>Слушают, отмечают на своей копии, что закрывается сегодня</td><td><strong>Контроль 1:</strong> каждый может назвать самый дорогой критерий и что за него отвечает</td></tr><tr><td>12–20</td><td>Подтема 5.2 Каркас</td><td>Слайды 4–5 + демонстрация шаги 3–5</td><td>Записывают состав каркаса; смотрят разбор <code>div</code>-разметки</td><td>Группа сама нашла три ошибки в <code>div</code>-примере</td></tr><tr><td>20–26</td><td>Подтемы 5.3–5.4</td><td>Слайды 6–8 + демонстрация шаги 6, 9, 10</td><td>Смотрят отрисовку из массива и обработку пустого случая</td><td>Прозвучал ответ, почему карточки не пишут руками</td></tr><tr><td>26–33</td><td>Подтема 5.5 Mobile First</td><td>Слайд 9 + демонстрация шаги 7–8. <strong>Намеренная ошибка: три колонки без медиазапросов</strong></td><td>Видят, как это выглядит на 320 px</td><td>Группа предложила, что переписать</td></tr><tr><td>33–39</td><td>Подтема 5.6 Доступность</td><td>Слайды 10–11 + демонстрация шаг 11. <strong>Проход по Tab на проекторе</strong></td><td>Отвечают на вопрос слайда 10</td><td>Ответ «Tab» прозвучал от ученика</td></tr><tr><td>39–43</td><td>Пауза</td><td>Раздаёт карточку с шестнадцатью шагами и памятку по критериям</td><td>Отдыхают</td><td>Карточки у всех</td></tr><tr><td>43–60</td><td>Практика, часть 1: каркас</td><td>Слайд 12. <strong>Не выдаёт код.</strong> На вопросы отвечает вопросом: «на каком занятии это было?»</td><td>Пишут каркас, токены, сетку</td><td><strong>Контроль 2 (60-я минута):</strong> у каждого есть <code>header</code>, <code>main</code>, <code>footer</code>, секции с заголовками и сетка</td></tr><tr><td>60–72</td><td>Практика, часть 2: данные и адаптив</td><td>Ходит по группе с DevTools: проверяет 320 px у каждого лично</td><td>Пишут заглушку, отрисовку, обработку пустого; проверяют адаптив</td><td><strong>Контроль 3:</strong> на 320 px ни у кого нет горизонтальной прокрутки</td></tr><tr><td>72–80</td><td>Практика, часть 3: Git и публикация</td><td>Проверяет, что работа велась <strong>в ветке</strong>, а не в <code>main</code></td><td>Коммиты, <code>push</code>, Pull Request, merge, публикация</td><td><strong>Контроль 4:</strong> у каждого закрытый PR со статусом «слит»</td></tr><tr><td>80–88</td><td>Чек-лист и телефон</td><td>Открывает <code>L20_checklist.html</code>. <strong>Лично обходит с проверкой телефона</strong></td><td>Отмечают пункты, открывают свою ссылку на телефоне</td><td><strong>Контроль 5 (базовый блок):</strong> каждый показал каркас на экране своего телефона</td></tr><tr><td>88–95</td><td>Доска и коммит</td><td>Напоминает про ритуал конца занятия</td><td>Переносят закрытые задачи в «Сделано», коммитят <code>BOARD.md</code></td><td><code>BOARD.md</code> обновлён и отправлен у каждого</td></tr><tr><td>95–100</td><td>Итог</td><td>Слайд 16. Домашнее задание. Анонс занятия 21: формы, валидация, API с фолбэком</td><td>Записывают домашку</td><td>Каждый назвал первую задачу спринта 2</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Распечатать ТЗ (Приложение 1) и лист на 30 баллов (Приложение 2)</strong> — по экземпляру на ученика. Читаются вслух и остаются у ученика до защиты.</li><li><strong>Подготовить демонстрационный пример на нейтральной теме</strong>, которой нет среди шести. Это принципиально: код панели по темам P01–P06 не выдаётся, и ученик не должен иметь возможности списать свою.</li><li><strong>Проверить, что у каждого готов план с занятия 19</strong>: тема, структура данных, четыре спринта. У кого нет — первые пятнадцать минут практики уйдут на это, и спринт 1 закроется не полностью. Знать заранее.</li><li><strong>Проверить учётные записи и доступ к платформе публикации</strong> — сегодня у всех первый деплой проекта. Повторяется ситуация занятия 15, и решается она так же: пройти путь накануне самому.</li><li><strong>Заготовить пустые репозитории</strong> или инструкцию по их созданию, чтобы не тратить на это время занятия.</li><li><strong>Раздаточные материалы:</strong> карточка с шестнадцатью шагами порядка работы, памятка по критериям оценки, напоминание о семантике (форма, не содержание).</li><li><strong>Приготовиться не выдавать код.</strong> Заранее решить, как отвечать на «а как сделать сетку»: вопросом «на каком занятии мы это разбирали и что там было в примере?». Это неудобно первые двадцать минут и окупается к занятию 22.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>ТЗ и лист на 30 баллов — первые двенадцать минут занятия, крупно.</li><li>Редактор с демонстрационным примером на нейтральной теме.</li><li>Браузер со страницей и DevTools: Elements, режим устройства (320 px), Console, Network.</li><li>Терминал.</li><li>Страница репозитория с вкладкой Pull Requests.</li><li><code>L20_checklist.html</code> — открыть к 80-й минуте.</li><li>Телефон педагога с открытой демонстрационной ссылкой.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<ol><li><strong>«А как сделать...» — просят готовый код.</strong> Признак: рука поднимается на каждый шаг, вопросы вида «а какой там был Grid». Готовое действие: отвечать вопросом — «на каком занятии это разбиралось? открой его файл». Первые двадцать минут будет тяжело, дальше группа привыкает искать сама. Это и есть навык, который проверяется на защите: объяснить свой код может только тот, кто его написал.</li><li><strong>Начали с оформления.</strong> Признак: к 60-й минуте есть красивая шапка и нет сетки. Готовое действие: не ругать, а показать спринт-план ученика и спросить, какая задача в нём первая. План он писал сам — это работает лучше замечания. Оформление разрешить доводить после закрытия базового блока.</li><li><strong>Публикация не успевает к концу занятия.</strong> Признак: в 85 минут у трёх человек ссылка ещё не открылась. Готовое действие: заранее заложить, что базовый блок проверяется с 80-й минуты, а не с 95-й. Тем, у кого не вышло, помочь лично — занятие нельзя закончить, оставив кого-то без ссылки: это та же ситуация, что на занятии 15, и правило то же.</li></ol>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<p>Интернет нужен для пунктов 1 и 4.</p>
+<ol><li><strong>Открой свою публичную ссылку на трёх разных устройствах</strong> — своём телефоне, чужом телефоне, компьютере. Запиши в тетради, что где выглядит не так: слишком мелкий текст, съехавший блок, полоса прокрутки сбоку. Это первое настоящее тестирование твоего проекта.</li><li><strong>Пройди чек-лист занятия до конца.</strong> То, что не успел отметить на занятии, доделай и отметь. Особое внимание пунктам базового блока.</li><li><strong>Подготовь заготовку первой задачи спринта 2</strong> — не код, а план на бумаге: какие поля будут в форме, какие у них <code>id</code>, какие сообщения об ошибках ты напишешь по-русски. На занятии 21 это сэкономит пятнадцать минут.</li><li><strong>Проверь свой источник данных.</strong> Открой адрес API, который выбрал для своей темы, прямо в браузере и посмотри, что он возвращает. Скопируй пример ответа в отдельный файл <code>fallback-example.json</code> в репозитории — из него на занятии 21 вырастет константа <code>FALLBACK</code>. Если сервис не открывается из школьной или домашней сети — сообщи об этом педагогу до занятия 21, а не на нём.</li><li>Обнови <code>BOARD.md</code>, если что-то доделал, и закоммить.</li></ol>
+<p>Сдаётся: публичная ссылка в чате группы плюс одна строка о том, что нашлось при проверке на трёх устройствах.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ итогового проекта (Приложение 1 к программе):</strong> сегодня закрывается первая часть требований по вёрстке:</p>
+<blockquote><p>«HTML/CSS: адаптивная вёрстка (Mobile First), использование Grid и Flexbox, доступность (aria-атрибуты)»</p></blockquote>
+<p>Тёмная тема из того же пункта — занятие 22, но токены под неё заложены сегодня.</p>
+<p>И полностью закрывается инфраструктурное требование:</p>
+<blockquote><p>«автоматический деплой — проект доступен по публичной ссылке»</p></blockquote>
+<p><strong>Критерии из 30 баллов (Приложение 2):</strong> сегодня начинают набираться три из пяти.</p>
+<ul><li><strong>«Соответствие ТЗ» (10)</strong> — вёрстка, сетка, семантика: примерно треть критерия.</li><li><strong>«Адаптивность и качество UI/UX» (5)</strong> — Mobile First заложен; тёмная тема и микроанимации на занятии 22.</li><li><strong>«Культура работы с Git» (5)</strong> — первые коммиты, ветка, Pull Request. Набирается накопительно до занятия 23.</li></ul>
+<p><strong>Что переносится дальше:</strong></p>
+<ul><li><strong>Занятие 21</strong> — форма с валидацией, добавление записей, запрос к API с фолбэком. Функция отрисовки, написанная сегодня, будет вызываться после каждого изменения данных; переписывать её не придётся.</li><li><strong>Занятие 22</strong> — <code>localStorage</code>, тёмная тема через переопределение сегодняшних токенов, микроанимации. Контрольная точка MVP.</li><li><strong>Занятие 23</strong> — взаимное тестирование. Ссылки, собранные сегодня в чате группы, там и понадобятся.</li><li><strong>Занятие 24</strong> — защита. Лист на 30 баллов, прочитанный сегодня, будет лежать перед комиссией.</li></ul>
+<p><strong>Правило, действующее с сегодняшнего дня до конца курса:</strong> в конце каждого занятия проект открывается по публичной ссылке и не сломан. Незаконченное лежит в отдельной ветке.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L20_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L20_checklist.html">Чек-лист</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>

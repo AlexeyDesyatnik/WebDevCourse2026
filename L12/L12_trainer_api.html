@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 12 · Тренажёр: меню с API</title>
+  <style>
+    :root {
+      --tm-ink: #111312; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4; --tm-bg: #FFFFFF; --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312; --tm-muted: #6B706B; --tm-border: #E3E7E1;
+      --tm-radius: 18px; --tm-radius-sm: 10px; --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tm-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+      --tm-code-bg: #F4F6F3; --tm-code-text: #111312;
+      --tm-ok: #4E9C2E; --tm-fail: #C24545; --tm-warn: #B8860B;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F; --tm-green: #7CC142; --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415; --tm-bg: #0F0F0F; --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1; --tm-muted: #9BA29B; --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+      --tm-code-bg: #0B0C0B; --tm-code-text: #F2F4F1;
+      --tm-ok: #8FD35F; --tm-fail: #E07A7A; --tm-warn: #E0BE5F;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--tm-bg); color: var(--tm-text); font-family: var(--tm-font); }
+    body { padding: 0 16px 48px; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--tm-border); margin-bottom: 16px; }
+    .topbar__title { font-size: 1.45rem; margin: 0; letter-spacing: -0.03em; flex: 1; min-width: 12rem; }
+    .topbar__right { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+    .tm-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--tm-green-dark); background: var(--tm-green-soft); border-radius: var(--tm-radius-pill); padding: .25em .8em; }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    .tm-pill { display: inline-block; font-size: 15px; font-weight: 600; letter-spacing: .02em; padding: .3em .9em; border-radius: var(--tm-radius-pill); border: 2px solid var(--tm-green); color: var(--tm-green-dark); background: transparent; }
+    html[data-theme="dark"] .tm-pill { background: var(--tm-green); color: var(--tm-ink); border-color: var(--tm-green); }
+    .tm-btn { font: 600 17px/1 var(--tm-font); padding: .78em 1.5em; border-radius: var(--tm-radius-pill); border: 2px solid transparent; cursor: pointer; transition: background .16s ease, color .16s ease, transform .16s ease; }
+    .tm-btn--primary { background: var(--tm-green); color: var(--tm-ink); }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: var(--tm-bg); }
+    .tm-btn--ghost { background: transparent; color: var(--tm-text); border-color: var(--tm-border); }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible, a:focus-visible, textarea:focus-visible, .chip:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .tm-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .tm-card { background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius); box-shadow: var(--tm-shadow); padding: clamp(16px, 2vw, 24px); margin-bottom: 12px; }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-list { margin: 0; padding-left: 1.2em; }
+    .tm-list li { margin: .35em 0; line-height: 1.45; }
+    .brief .tm-eyebrow { margin: 0 0 8px; display: inline-block; }
+    .modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    #paneBlocks.blocks-board:not(.hide) { display: contents; }
+    .layout.is-blocks #panePreview { grid-column: 1 / -1; }
+    .hide { display: none !important; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+    .pane { min-width: 0; }
+    .pane__label { margin: 0 0 8px; font-weight: 700; color: var(--tm-green-dark); }
+    .pane__help { margin: 8px 0 0; color: var(--tm-muted); font-size: .93em; }
+    #editor { width: 100%; min-height: 420px; margin: 0; padding: 12px; font-family: var(--tm-mono); font-size: 13px; line-height: 1.45; tab-size: 2; border: 1px solid var(--tm-border); border-radius: var(--tm-radius-sm); background: var(--tm-code-bg); color: var(--tm-code-text); resize: vertical; }
+    iframe { width: 100%; min-height: 420px; background: var(--tm-bg); border: 1px solid var(--tm-border); border-radius: var(--tm-radius-sm); }
+    .pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); background: var(--tm-bg-alt); }
+    .chip { appearance: none; border: 2px solid var(--tm-green-dark); background: var(--tm-bg); color: var(--tm-text); border-radius: var(--tm-radius-sm); padding: 8px 12px; font-family: var(--tm-mono); font-size: 12px; line-height: 1.35; text-align: left; cursor: grab;
+      box-shadow: var(--tm-shadow); max-width: 100%; }
+    .chip:hover { box-shadow: var(--tm-shadow-lift); border-color: var(--tm-green); }
+    .chip:active { cursor: grabbing; }
+    .chip b { display: block; font-family: var(--tm-font); font-size: 11px; color: var(--tm-muted); margin-bottom: 2px; }
+    .slots { display: flex; flex-direction: column; gap: 8px; }
+    .slot { min-height: 64px; border: 2px dashed var(--tm-muted); border-radius: var(--tm-radius-sm); padding: 8px; background: var(--tm-bg-alt); }
+    .slot.is-over { border-color: var(--tm-green); }
+    .slot.is-error { border-color: var(--tm-fail); }
+    .slot__label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--tm-muted); }
+    .slot .chip { width: 100%; white-space: pre-wrap; word-break: break-word; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .tm-test { display: flex; gap: .7em; padding: .55em 0; align-items: flex-start; border-bottom: 1px solid var(--tm-border); }
+    .tm-test__mark { flex: 0 0 1.3em; font-size: 1.1em; }
+    .tm-test--ok .tm-test__mark { color: var(--tm-ok); }
+    .tm-test--fail .tm-test__mark { color: var(--tm-fail); }
+    .tm-test__hint { color: var(--tm-muted); font-size: .93em; margin-top: .2em; }
+    .meter { height: 8px; background: var(--tm-border); border-radius: var(--tm-radius-pill); overflow: hidden; margin: 10px 0 0; }
+    .meter > span { display: block; height: 100%; width: 0; background: var(--tm-green); transition: width .22s ease; }
+    .hint { background: var(--tm-green-soft); border-radius: var(--tm-radius-sm); padding: 12px; margin: 10px 0; }
+    .tm-code { background: var(--tm-bg); color: var(--tm-text); border-left: 5px solid var(--tm-green); border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0; padding: 1em 1.2em; overflow-x: auto; font-family: var(--tm-mono); line-height: 1.5; tab-size: 2; white-space: pre-wrap; font-size: 13px; }
+    .status-line { color: var(--tm-muted); margin: 8px 0; }
+    .teacher { color: var(--tm-muted); font-size: 14px; margin-top: 24px; }
+    .teacher summary { cursor: pointer; color: var(--tm-text); font-weight: 700; }
+    .gloss dt { font-weight: 700; margin-top: 12px; color: var(--tm-green-dark); }
+    .gloss dt:first-of-type { margin-top: 0; }
+    .gloss dd { margin: 4px 0 0; color: var(--tm-muted); }
+    .check-progress { font-weight: 700; color: var(--tm-green-dark); margin: 0 0 8px; }
+    a.tm-btn { text-decoration: none; display: inline-block; }
+    code { font-family: var(--tm-mono); font-size: .92em; }
+
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <a class="tm-btn tm-btn--ghost" href="../index.html">►► Все занятия</a>
+  <span class="tm-eyebrow">►► ЗАНЯТИЕ 12 · ТРЕНАЖЁР</span>
+  <h1 class="topbar__title">Меню дня</h1>
+  <div class="topbar__right">
+    <span class="tm-pill" id="score">0 / 13</span>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тема</button>
+  </div>
+</header>
+
+<section class="brief tm-card">
+  <p class="tm-eyebrow">►► ЗАКАЗ</p>
+  <p><strong>Заказ буфета «Северный пирог».</strong> Меню меняется каждый день — научи страницу получать его от сервера.</p>
+  <ul class="tm-list">
+    <li>Покажи, что идёт загрузка, и заблокируй кнопку</li>
+    <li>Дождись ответа: <code>async</code> и <code>await</code></li>
+    <li>Проверь ответ: код ответа и пустой список — <strong>разные</strong> случаи</li>
+    <li>Выведи данные <strong>на страницу</strong></li>
+    <li>При сбое покажи меню из <code>FALLBACK</code> и честно скажи, что оно из копии</li>
+  </ul>
+  <p>Проверь все пять режимов переключателем. Реальных сетевых запросов нет.</p>
+</section>
+
+<div class="modes" role="tablist" aria-label="Режим работы">
+  <button class="tm-btn tm-btn--primary" id="modeCode" role="tab" aria-selected="true" type="button">1. Писать код</button>
+  <button class="tm-btn tm-btn--ghost" id="modeBlocks" role="tab" aria-selected="false" type="button">2. Собрать блоками</button>
+</div>
+<main class="layout" id="layout">
+  <section class="pane" id="paneCode">
+    <label class="pane__label" for="editor">Твой код</label>
+    <textarea id="editor" spellcheck="false" aria-describedby="editorHelp"></textarea>
+    <p class="pane__help" id="editorHelp">Пиши здесь. Превью обновляется само. Разметку не меняй — дописывай скрипт.</p>
+  </section>
+  <section class="blocks-board hide" id="paneBlocks">
+    <div class="pane" id="blockPoolPane">
+      <p class="pane__label">Блоки</p>
+      <div id="blockPool" class="pool"></div>
+    </div>
+    <div class="pane" id="slotsPane">
+      <p class="pane__label">Страница</p>
+      <div id="slots" class="slots">
+        <div class="slot" data-accept="states"><span class="slot__label">1. Состояния интерфейса</span></div>
+        <div class="slot" data-accept="load"><span class="slot__label">2. Загрузка меню</span></div>
+        <div class="slot" data-accept="start"><span class="slot__label">3. Запуск</span></div>
+</div>
+    </div>
+  </section>
+  <section class="pane" id="panePreview">
+    <p class="pane__label">Что видит браузер</p>
+    <iframe id="preview" title="Предпросмотр страницы" sandbox="allow-scripts allow-same-origin"></iframe>
+  </section>
+</main>
+<div class="toolbar">
+  <button class="tm-btn tm-btn--primary" id="checkBtn" type="button">Проверить</button>
+  <button class="tm-btn tm-btn--ghost" id="hintBtn" type="button">Подсказка</button>
+  <button class="tm-btn tm-btn--ghost" id="resetBtn" type="button">Сбросить</button>
+  <button class="tm-btn tm-btn--ghost" id="dlBtn" type="button">Скачать</button>
+  <button class="tm-btn tm-btn--ghost" id="etalonBtn" type="button" disabled>Эталон</button>
+</div>
+<p class="status-line" id="honesty" aria-live="polite"></p>
+<div class="meter"><span id="bar"></span></div>
+<section class="tests tm-card" id="tests" aria-live="polite"></section>
+<section class="hints" id="hints"></section>
+<section class="etalon hide tm-card" id="etalonBox">
+  <p class="tm-eyebrow">►► ЭТАЛОН</p>
+  <p>Почему так: showLoading и disabled — до запроса. await даёт данные, а не обещание. response.ok отделяет ошибку сервера от сбоя сети. Пустой список — не ошибка. catch рисует FALLBACK и говорит, что это копия. finally возвращает кнопку в любом исходе.</p>
+  <pre class="tm-code" id="solCode"></pre>
+</section>
+<section class="tm-card gloss">
+  <h2>Глоссарий</h2>
+  <dl>
+    <dt>Promise</dt><dd>Обещание, что результат появится позже. Два исхода: получилось или нет.</dd>
+    <dt>async / await</dt><dd>await — «подожди здесь результат». Работает только в функции с async.</dd>
+    <dt>response.ok</dt><dd>true при коде 200–299. Ошибочный код сам в catch не попадает.</dd>
+    <dt>Фолбэк</dt><dd>Запасные данные, когда сервер недоступен. С честной пометкой, что это копия.</dd>
+    <dt>finally</dt><dd>Выполняется и при успехе, и при ошибке. Место разблокировать кнопку.</dd>
+  </dl>
+</section>
+<details class="teacher"><summary>Карточка педагога</summary>
+  <ul>
+    <li><strong>Навык:</strong> <code>async</code>/<code>await</code>, <code>try/catch/finally</code>, четыре состояния, фолбэк с честной пометкой. Контрольная точка модуля 4.</li>
+    <li><strong>Норматив:</strong> 18–22 мин — самый долгий тренажёр курса: тесты асинхронные, три из них в медленном режиме (до ~20 с). Предупреди группу, иначе решат, что завис.</li>
+    <li><strong>Типичные ошибки:</strong> нет <code>await</code>; не проверяют <code>response.ok</code>; нет <code>catch</code>; нет индикатора; фолбэк без пометки.</li>
+    <li><strong>Готово, когда:</strong> 13/13 и в режиме «нет сети» видно меню из копии с пометкой.</li>
+    <li><strong>Усложнение:</strong> второй источник «сколько осталось»; время обновления; кнопка «Попробовать снова».</li>
+    <li><strong>Поддержка:</strong> режим блоков; <code>loadMenu</code> с четырьмя пропусками по чек-листу.</li>
+    <li><strong>ИИ:</strong> промпт «что может пойти не так». Руками: есть сбой сети, код 500, пустой ответ, долгое ожидание; сбой сети и ошибка сервера не смешаны.</li>
+    <li><strong>Не проверять тестами:</strong> <code>role="status"</code> и <code>aria-live</code> — они уже в разметке.</li>
+  </ul>
+</details>
+<script type="text/plain" id="starter">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Меню дня</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }
+    .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+    button, select { font: inherit; padding: 8px 14px; border-radius: 8px;
+                     border: 1px solid #e3e7e1; background: #fff; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    .state { min-height: 2em; margin-bottom: 12px; }
+    .state--warning { color: #b8860b; }
+    .loader { width: 18px; height: 18px; border: 3px solid #e3e7e1;
+              border-top-color: #7cc142; border-radius: 50%; display: inline-block;
+              vertical-align: middle; margin-right: 8px; animation: spin 900ms linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .menu { list-style: none; padding-left: 0; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .menu li { border: 1px solid #e3e7e1; border-radius: 12px; padding: 12px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Меню дня</h2>
+
+  <div class="bar">
+    <button id="reloadBtn" type="button">Обновить меню</button>
+    <select id="modeSelect" aria-label="Режим сервера">
+      <option value="ok">Сервер отвечает</option>
+      <option value="slow">Отвечает медленно</option>
+      <option value="empty">Пустой ответ</option>
+      <option value="error500">Ошибка сервера</option>
+      <option value="fail">Нет сети</option>
+    </select>
+  </div>
+
+  <div class="state" id="state" role="status" aria-live="polite"></div>
+  <ul class="menu" id="menu"></ul>
+
+  <script>
+    const FALLBACK = {
+      date: "сохранённая копия",
+      items: [
+        { id: "kalitka",  name: "Калитка с картошкой", price: 45 },
+        { id: "rybnik",   name: "Рыбник",              price: 90 },
+        { id: "brusnika", name: "Брусничный пирог",    price: 70 }
+      ]
+    };
+
+    const TODAY = [
+      { id: "shanga",   name: "Шаньга со сметаной", price: 50 },
+      { id: "moroshka", name: "Морошковый пирог",   price: 85 },
+      { id: "cherniga", name: "Черничная ватрушка", price: 60 }
+    ];
+
+    // учебная замена fetch — реальной сети нет
+    function getMenuFromServer(mode) {
+      return new Promise((resolve, reject) => {
+        const delay = mode === "slow" ? 2000 : 500;
+        setTimeout(() => {
+          if (mode === "fail") { reject(new Error("сеть недоступна")); return; }
+          if (mode === "error500") { resolve({ ok: false, status: 500, data: null }); return; }
+          if (mode === "empty") { resolve({ ok: true, status: 200, data: { date: "сегодня", items: [] } }); return; }
+          resolve({ ok: true, status: 200, data: { date: "сегодня", items: TODAY } });
+        }, delay);
+      });
+    }
+
+    const stateBox = document.querySelector("#state");
+    const menu = document.querySelector("#menu");
+    const reloadBtn = document.querySelector("#reloadBtn");
+    const modeSelect = document.querySelector("#modeSelect");
+
+    function renderMenu(items) {
+      menu.innerHTML = items
+        .map((pie) => `<li>${pie.name} — ${pie.price} ₽</li>`)
+        .join("");
+    }
+
+    /* твой код здесь: showLoading, showEmpty, showNotice */
+
+
+    /* твой код здесь: async function loadMenu(mode) — пять пунктов чек-листа */
+
+
+    /* твой код здесь: загрузка при открытии и по кнопке */
+  <\/script>
+
+</body>
+</html>
+</script>
+<script type="text/plain" id="etalon">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Меню дня</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; padding: 24px; line-height: 1.5; }
+    .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+    button, select { font: inherit; padding: 8px 14px; border-radius: 8px;
+                     border: 1px solid #e3e7e1; background: #fff; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    .state { min-height: 2em; margin-bottom: 12px; }
+    .state--warning { color: #b8860b; }
+    .loader { width: 18px; height: 18px; border: 3px solid #e3e7e1;
+              border-top-color: #7cc142; border-radius: 50%; display: inline-block;
+              vertical-align: middle; margin-right: 8px; animation: spin 900ms linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .menu { list-style: none; padding-left: 0; display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .menu li { border: 1px solid #e3e7e1; border-radius: 12px; padding: 12px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Меню дня</h2>
+
+  <div class="bar">
+    <button id="reloadBtn" type="button">Обновить меню</button>
+    <select id="modeSelect" aria-label="Режим сервера">
+      <option value="ok">Сервер отвечает</option>
+      <option value="slow">Отвечает медленно</option>
+      <option value="empty">Пустой ответ</option>
+      <option value="error500">Ошибка сервера</option>
+      <option value="fail">Нет сети</option>
+    </select>
+  </div>
+
+  <div class="state" id="state" role="status" aria-live="polite"></div>
+  <ul class="menu" id="menu"></ul>
+
+  <script>
+    const FALLBACK = {
+      date: "сохранённая копия",
+      items: [
+        { id: "kalitka",  name: "Калитка с картошкой", price: 45 },
+        { id: "rybnik",   name: "Рыбник",              price: 90 },
+        { id: "brusnika", name: "Брусничный пирог",    price: 70 }
+      ]
+    };
+
+    const TODAY = [
+      { id: "shanga",   name: "Шаньга со сметаной", price: 50 },
+      { id: "moroshka", name: "Морошковый пирог",   price: 85 },
+      { id: "cherniga", name: "Черничная ватрушка", price: 60 }
+    ];
+
+    // учебная замена fetch — реальной сети нет
+    function getMenuFromServer(mode) {
+      return new Promise((resolve, reject) => {
+        const delay = mode === "slow" ? 2000 : 500;
+        setTimeout(() => {
+          if (mode === "fail") { reject(new Error("сеть недоступна")); return; }
+          if (mode === "error500") { resolve({ ok: false, status: 500, data: null }); return; }
+          if (mode === "empty") { resolve({ ok: true, status: 200, data: { date: "сегодня", items: [] } }); return; }
+          resolve({ ok: true, status: 200, data: { date: "сегодня", items: TODAY } });
+        }, delay);
+      });
+    }
+
+    const stateBox = document.querySelector("#state");
+    const menu = document.querySelector("#menu");
+    const reloadBtn = document.querySelector("#reloadBtn");
+    const modeSelect = document.querySelector("#modeSelect");
+
+    function renderMenu(items) {
+      menu.innerHTML = items
+        .map((pie) => `<li>${pie.name} — ${pie.price} ₽</li>`)
+        .join("");
+    }
+
+    function showLoading() {
+      menu.innerHTML = "";
+      stateBox.innerHTML = `<span class="loader"></span>Загружаем меню дня…`;
+      stateBox.className = "state";
+    }
+
+    function showEmpty() {
+      menu.innerHTML = "";
+      stateBox.textContent = "Сегодня буфет не работает";
+      stateBox.className = "state";
+    }
+
+    function showNotice(text, isWarning) {
+      stateBox.textContent = text;
+      stateBox.className = isWarning ? "state state--warning" : "state";
+    }
+
+    async function loadMenu(mode) {
+      showLoading();
+      reloadBtn.disabled = true;
+
+      try {
+        const response = await getMenuFromServer(mode);
+
+        if (!response.ok) {
+          throw new Error("сервер ответил " + response.status);
+        }
+
+        if (response.data.items.length === 0) {
+          showEmpty();
+          return;
+        }
+
+        renderMenu(response.data.items);
+        showNotice("Меню на " + response.data.date, false);
+
+      } catch (error) {
+        renderMenu(FALLBACK.items);
+        showNotice("Меню из сохранённой копии — " + error.message, true);
+
+      } finally {
+        reloadBtn.disabled = false;
+      }
+    }
+
+    loadMenu(modeSelect.value);
+
+    reloadBtn.addEventListener("click", () => {
+      loadMenu(modeSelect.value);
+    });
+  <\/script>
+
+</body>
+</html>
+</script>
+<script>
+  (function () {
+      
+      const DRAFT_KEY = "wdc-l12-api-v1";
+      const MODE_KEY = "wdc-l12-mode-v1";
+      const DL_NAME = "l12_moya_rabota.html";
+
+      const BLOCKS = [{"id": "states-ok", "accept": "states", "label": "Состояния: загрузка, пусто, сообщение", "show": "showLoading / showEmpty / showNotice", "html": "function showLoading() {\n      menu.innerHTML = \"\";\n      stateBox.innerHTML = `<span class=\"loader\"></span>Загружаем меню дня…`;\n      stateBox.className = \"state\";\n    }\n\n    function showEmpty() {\n      menu.innerHTML = \"\";\n      stateBox.textContent = \"Сегодня буфет не работает\";\n      stateBox.className = \"state\";\n    }\n\n    function showNotice(text, isWarning) {\n      stateBox.textContent = text;\n      stateBox.className = isWarning ? \"state state--warning\" : \"state\";\n    }"}, {"id": "states-bad", "accept": "none", "label": "Состояния: только сообщение", "show": "нет showLoading", "html": "function showNotice(text) {\n      stateBox.textContent = text;\n    }\n\n    function showLoading() {\n    }\n\n    function showEmpty() {\n      stateBox.textContent = \"\";\n    }"}, {"id": "load-ok", "accept": "load", "label": "Загрузка: все пять пунктов", "show": "await + ok + empty + catch + finally", "html": "async function loadMenu(mode) {\n      showLoading();\n      reloadBtn.disabled = true;\n\n      try {\n        const response = await getMenuFromServer(mode);\n\n        if (!response.ok) {\n          throw new Error(\"сервер ответил \" + response.status);\n        }\n\n        if (response.data.items.length === 0) {\n          showEmpty();\n          return;\n        }\n\n        renderMenu(response.data.items);\n        showNotice(\"Меню на \" + response.data.date, false);\n\n      } catch (error) {\n        renderMenu(FALLBACK.items);\n        showNotice(\"Меню из сохранённой копии — \" + error.message, true);\n\n      } finally {\n        reloadBtn.disabled = false;\n      }\n    }"}, {"id": "load-bad1", "accept": "none", "label": "Загрузка: без await", "show": "нет await", "html": "async function loadMenu(mode) {\n      showLoading();\n      const response = getMenuFromServer(mode);\n      renderMenu(response.data.items);\n    }"}, {"id": "load-bad2", "accept": "none", "label": "Загрузка: без проверки ответа", "show": "нет response.ok", "html": "async function loadMenu(mode) {\n      showLoading();\n      reloadBtn.disabled = true;\n\n      try {\n        const response = await getMenuFromServer(mode);\n        renderMenu(response.data.items);\n        showNotice(\"Меню на \" + response.data.date, false);\n      } catch (error) {\n        renderMenu(FALLBACK.items);\n        showNotice(\"Меню из сохранённой копии — \" + error.message, true);\n      } finally {\n        reloadBtn.disabled = false;\n      }\n    }"}, {"id": "load-bad3", "accept": "none", "label": "Загрузка: без try/catch", "show": "нет обработки сбоя", "html": "async function loadMenu(mode) {\n      showLoading();\n      reloadBtn.disabled = true;\n\n      const response = await getMenuFromServer(mode);\n\n      if (!response.ok) {\n        throw new Error(\"сервер ответил \" + response.status);\n      }\n\n      renderMenu(response.data.items);\n      reloadBtn.disabled = false;\n    }"}, {"id": "load-bad4", "accept": "none", "label": "Загрузка: фолбэк без сообщения", "show": "тихая подмена данных", "html": "async function loadMenu(mode) {\n      showLoading();\n      reloadBtn.disabled = true;\n\n      try {\n        const response = await getMenuFromServer(mode);\n        if (!response.ok) {\n          throw new Error(\"сервер ответил \" + response.status);\n        }\n        renderMenu(response.data.items);\n      } catch (error) {\n        renderMenu(FALLBACK.items);\n      } finally {\n        reloadBtn.disabled = false;\n      }\n    }"}, {"id": "start-ok", "accept": "start", "label": "Запуск: при открытии и по кнопке", "show": "loadMenu() + addEventListener", "html": "loadMenu(modeSelect.value);\n\n    reloadBtn.addEventListener(\"click\", () => {\n      loadMenu(modeSelect.value);\n    });"}, {"id": "start-bad", "accept": "none", "label": "Запуск: обработчик с вызовом", "show": "addEventListener(\"click\", loadMenu())", "html": "loadMenu(modeSelect.value);\n\n    reloadBtn.addEventListener(\"click\", loadMenu(modeSelect.value));"}];
+      const HINTS = ["Прогони чек-лист по своей функции: показал загрузку? дождался через await? проверил response.ok? проверил, что список не пустой? вывел на страницу? обработал сбой? Тот пункт, на котором запнулся, и есть недостающий. И отдельный вопрос: что увидит человек в режиме «нет сети»?", "Порядок в функции: showLoading() и disabled = true → try → await getMenuFromServer(mode) → if (!response.ok) throw → if (items.length === 0) { showEmpty(); return; } → renderMenu → catch: renderMenu(FALLBACK.items) плюс пометка → finally: disabled = false. Функция объявляется с async.", "async function loadMenu(mode) {\n  showLoading();\n  reloadBtn.disabled = true;\n\n  try {\n    const response = await getMenuFromServer(mode);\n\n    if (!response.ok) {\n      throw new Error(\"сервер ответил \" + response.status);\n    }\n\n    if (response.data.items.length === 0) {\n      showEmpty();\n      return;\n    }\n\n    renderMenu(response.data.items);\n    showNotice(\"Меню на \" + response.data.date, false);\n\n  } catch (error) {\n    renderMenu(FALLBACK.items);\n    showNotice(\"Меню из сохранённой копии — \" + error.message, true);\n\n  } finally {\n    reloadBtn.disabled = false;\n  }\n}"];
+      
+      const BASE = location.href.replace(/[^/]*$/, "");
+      const editor = document.getElementById("editor");
+      const preview = document.getElementById("preview");
+      const layout = document.getElementById("layout");
+      const paneCode = document.getElementById("paneCode");
+      const paneBlocks = document.getElementById("paneBlocks");
+      const modeCode = document.getElementById("modeCode");
+      const modeBlocks = document.getElementById("modeBlocks");
+      const testsEl = document.getElementById("tests");
+      const hintsEl = document.getElementById("hints");
+      const scoreEl = document.getElementById("score");
+      const bar = document.getElementById("bar");
+      const honesty = document.getElementById("honesty");
+      const etalonBtn = document.getElementById("etalonBtn");
+      const etalonBox = document.getElementById("etalonBox");
+      const pool = document.getElementById("blockPool");
+      const slotsRoot = document.getElementById("slots");
+
+      function readSlot(id) {
+        const raw = document.getElementById(id).textContent;
+        return raw.replace(/<\\\/script>/g, "<" + "/script>").trim();
+      }
+      const STARTER = readSlot("starter");
+      const ETALON = readSlot("etalon");
+      let typeTimer = null;
+      let hintsOpen = 0;
+      let lastPassed = 0;
+
+      function withBase(html) {
+        const tag = '<base href="' + BASE + '">';
+        if (/<head[^>]*>/i.test(html)) return html.replace(/<head([^>]*)>/i, "<head$1>" + tag);
+        if (/<html[^>]*>/i.test(html)) return html.replace(/<html([^>]*)>/i, "<html$1><head>" + tag + "</head>");
+        return "<head>" + tag + "</head>" + html;
+      }
+      function previewDoc(html) { preview.srcdoc = withBase(html); }
+      function currentHtml() {
+        return layout.classList.contains("is-blocks") ? htmlFromBlocks() : editor.value;
+      }
+      function schedulePreview() {
+        clearTimeout(typeTimer);
+        typeTimer = setTimeout(function () { previewDoc(currentHtml()); saveDraft(); }, 280);
+      }
+      editor.addEventListener("input", schedulePreview);
+
+      function saveDraft() {
+        const data = {
+          code: editor.value,
+          slots: [...slotsRoot.querySelectorAll(".slot")].map(function (s) { return s.dataset.filled || ""; }),
+          hintsOpen: hintsOpen
+        };
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+      }
+      function persistMode(mode) {
+        try {
+          if (typeof MODE_PACK === "function") localStorage.setItem(MODE_KEY, JSON.stringify(MODE_PACK(mode)));
+          else localStorage.setItem(MODE_KEY, mode);
+        } catch (e) {}
+      }
+      function loadMode() {
+        try {
+          const raw = localStorage.getItem(MODE_KEY);
+          if (!raw) return "code";
+          if (raw === "code" || raw === "blocks") return raw;
+          const o = JSON.parse(raw);
+          return o && o.mode === "blocks" ? "blocks" : "code";
+        } catch (e) { return "code"; }
+      }
+      function setMode(mode) {
+        const isBlocks = mode === "blocks";
+        layout.classList.toggle("is-blocks", isBlocks);
+        paneCode.classList.toggle("hide", isBlocks);
+        paneBlocks.classList.toggle("hide", !isBlocks);
+        modeCode.setAttribute("aria-selected", String(!isBlocks));
+        modeBlocks.setAttribute("aria-selected", String(isBlocks));
+        modeCode.className = "tm-btn " + (isBlocks ? "tm-btn--ghost" : "tm-btn--primary");
+        modeBlocks.className = "tm-btn " + (isBlocks ? "tm-btn--primary" : "tm-btn--ghost");
+        persistMode(mode);
+        previewDoc(currentHtml());
+        saveDraft();
+      }
+      function findBlock(id) { return BLOCKS.filter(function (b) { return b.id === id; })[0]; }
+      function part(name) {
+        const slot = slotsRoot.querySelector('.slot[data-accept="' + name + '"]');
+        const id = slot && slot.dataset.filled;
+        const b = findBlock(id);
+        return b ? b.html : "";
+      }
+      function makeChip(item) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "chip"; b.draggable = true; b.dataset.id = item.id; b.tabIndex = 0;
+        const lab = document.createElement("b"); lab.textContent = item.label; b.appendChild(lab);
+        b.appendChild(document.createTextNode(item.show));
+        function activate() {
+          if (b.closest(".slot")) {
+            b.closest(".slot").dataset.filled = "";
+            renderBoard(); previewDoc(currentHtml()); saveDraft(); return;
+          }
+          placeChip(item.id);
+        }
+        b.addEventListener("click", function (e) { e.stopPropagation(); activate(); });
+        b.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); activate(); } });
+        b.addEventListener("dragstart", function (e) {
+          e.dataTransfer.setData("text/plain", item.id); e.dataTransfer.effectAllowed = "move";
+        });
+        return b;
+      }
+      function flashSlotError(block) {
+        const nodes = block.accept === "none"
+          ? [...slotsRoot.querySelectorAll(".slot")]
+          : [...slotsRoot.querySelectorAll('.slot[data-accept="' + block.accept + '"]')];
+        nodes.forEach(function (s) { s.classList.add("is-error"); });
+        setTimeout(function () { nodes.forEach(function (s) { s.classList.remove("is-error"); }); }, 400);
+      }
+      function placeChip(chipId) {
+        const block = findBlock(chipId);
+        if (!block) return;
+        const slot = [...slotsRoot.querySelectorAll(".slot")]
+          .find(function (s) { return s.dataset.accept === block.accept && !s.dataset.filled; });
+        if (!slot) { flashSlotError(block); return; }
+        slotsRoot.querySelectorAll(".slot").forEach(function (s) {
+          if (s.dataset.filled === chipId) s.dataset.filled = "";
+        });
+        slot.dataset.filled = chipId;
+        renderBoard(); previewDoc(currentHtml()); saveDraft();
+      }
+      function renderBoard() {
+        const used = {};
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          const label = slot.querySelector(".slot__label");
+          const filled = slot.dataset.filled || "";
+          slot.innerHTML = "";
+          if (label) slot.appendChild(label);
+          if (filled && findBlock(filled)) {
+            used[filled] = true;
+            slot.appendChild(makeChip(findBlock(filled)));
+          }
+        });
+        pool.innerHTML = "";
+        BLOCKS.forEach(function (item) { if (!used[item.id]) pool.appendChild(makeChip(item)); });
+      }
+      function shuffle(list) {
+        const a = list.slice();
+        for (let i = a.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+      function fillBlocks(orderIds) {
+        slotsRoot.querySelectorAll(".slot").forEach(function (s) { s.dataset.filled = ""; });
+        if (orderIds && orderIds.length) {
+          slotsRoot.querySelectorAll(".slot").forEach(function (s, i) { if (orderIds[i]) s.dataset.filled = orderIds[i]; });
+        } else {
+          const sh = shuffle(BLOCKS);
+          BLOCKS.length = 0; sh.forEach(function (x) { BLOCKS.push(x); });
+        }
+        renderBoard();
+      }
+      function bindSlots() {
+        pool.addEventListener("dragover", function (e) { e.preventDefault(); });
+        pool.addEventListener("drop", function (e) {
+          e.preventDefault();
+          const id = e.dataTransfer.getData("text/plain");
+          slotsRoot.querySelectorAll(".slot").forEach(function (s) { if (s.dataset.filled === id) s.dataset.filled = ""; });
+          renderBoard(); previewDoc(currentHtml()); saveDraft();
+        });
+        slotsRoot.querySelectorAll(".slot").forEach(function (slot) {
+          slot.addEventListener("click", function () {
+            if (slot.dataset.filled) {
+              slot.dataset.filled = ""; renderBoard(); previewDoc(currentHtml()); saveDraft();
+            }
+          });
+          slot.addEventListener("dragover", function (e) { e.preventDefault(); slot.classList.add("is-over"); });
+          slot.addEventListener("dragleave", function () { slot.classList.remove("is-over"); });
+          slot.addEventListener("drop", function (e) {
+            e.preventDefault(); slot.classList.remove("is-over");
+            const id = e.dataTransfer.getData("text/plain");
+            const block = findBlock(id);
+            if (!block || block.accept !== slot.dataset.accept) { if (block) flashSlotError(block); return; }
+            slotsRoot.querySelectorAll(".slot").forEach(function (s) { if (s.dataset.filled === id) s.dataset.filled = ""; });
+            slot.dataset.filled = id; renderBoard(); previewDoc(currentHtml()); saveDraft();
+          });
+        });
+      }
+      function stripComments(src) {
+        return String(src).replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:\\\n])\/\/[^\n]*/g, "$1");
+      }
+      function stripCommentsAndStrings(src) {
+        let s = stripComments(src);
+        s = s.replace(/`(?:\\.|[^`\\])*`/g, "''");
+        s = s.replace(/"(?:\\.|[^"\\])*"/g, "''");
+        s = s.replace(/'(?:\\.|[^'\\])*'/g, "''");
+        return s;
+      }
+      function renderResults(list, progressLabel) {
+        const passed = list.filter(function (r) { return r.ok; }).length;
+        const head = progressLabel ? '<p class="check-progress">' + progressLabel + "</p>" : "";
+        testsEl.innerHTML = head + list.map(function (r) {
+          return '<div class="tm-test ' + (r.ok ? "tm-test--ok" : "tm-test--fail") + '">' +
+            '<span class="tm-test__mark">' + (r.ok ? "✅" : "❌") + "</span>" +
+            "<div><div>" + r.name + "</div>" +
+            (r.ok ? "" : '<div class="tm-test__hint">' + r.hint + "</div>") +
+            "</div></div>";
+        }).join("");
+        lastPassed = passed;
+        scoreEl.textContent = passed + " / " + TESTS.length;
+        bar.style.width = (list.length ? (passed / TESTS.length * 100) : 0) + "%";
+        if (passed === TESTS.length && list.length === TESTS.length) finishTask();
+      }
+      function unlockEtalon() { etalonBtn.disabled = false; }
+      function finishTask() {
+        unlockEtalon();
+        honesty.textContent = "Задача сдана. Подсказок открыто: " + hintsOpen + ".";
+      }
+      function appendHint(i, countOpen) {
+        const wrap = document.createElement("div"); wrap.className = "hint";
+        const title = document.createElement("p"); title.style.margin = "0 0 8px";
+        const strong = document.createElement("strong");
+        strong.textContent = "Подсказка " + (i + 1) + ". ";
+        title.appendChild(strong);
+        if (i === 2) {
+          title.appendChild(document.createTextNode("Фрагмент:"));
+          wrap.appendChild(title);
+          const pre = document.createElement("pre"); pre.className = "tm-code"; pre.textContent = HINTS[i];
+          wrap.appendChild(pre);
+        } else {
+          title.appendChild(document.createTextNode(HINTS[i]));
+          wrap.appendChild(title);
+        }
+        hintsEl.appendChild(wrap);
+        if (countOpen) {
+          hintsOpen = i + 1;
+          honesty.textContent = "Подсказок открыто: " + hintsOpen + ".";
+          if (hintsOpen >= HINTS.length) unlockEtalon();
+          saveDraft();
+        }
+      }
+      function replayHints() {
+        hintsEl.innerHTML = "";
+        for (let i = 0; i < hintsOpen; i += 1) appendHint(i, false);
+        if (hintsOpen >= HINTS.length) unlockEtalon();
+      }
+      document.getElementById("hintBtn").addEventListener("click", function () {
+        if (hintsOpen >= HINTS.length) return;
+        appendHint(hintsOpen, true);
+      });
+      document.getElementById("etalonBtn").addEventListener("click", function () {
+        if (etalonBtn.disabled) return;
+        etalonBox.classList.remove("hide");
+        document.getElementById("solCode").textContent = ETALON;
+      });
+      document.getElementById("resetBtn").addEventListener("click", function () {
+        if (!confirm("Вернуть стартовую заготовку? Твой код будет потерян.")) return;
+        editor.value = STARTER; fillBlocks(null); hintsOpen = 0; hintsEl.innerHTML = "";
+        testsEl.innerHTML = ""; scoreEl.textContent = "0 / " + TESTS.length; bar.style.width = "0";
+        etalonBtn.disabled = true; etalonBox.classList.add("hide"); honesty.textContent = "";
+        saveDraft(); previewDoc(currentHtml());
+      });
+      document.getElementById("dlBtn").addEventListener("click", function () {
+        const blob = new Blob([currentHtml()], { type: "text/html;charset=utf-8" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+        a.download = DL_NAME; a.click(); URL.revokeObjectURL(a.href);
+      });
+      document.getElementById("themeBtn").addEventListener("click", function () {
+        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+      });
+      modeCode.addEventListener("click", function () { setMode("code"); });
+      modeBlocks.addEventListener("click", function () { setMode("blocks"); });
+      function loadDraft() {
+        let raw = null;
+        try { raw = localStorage.getItem(DRAFT_KEY); } catch (e) {}
+        if (!raw) { editor.value = STARTER; fillBlocks(null); return; }
+        try {
+          const data = JSON.parse(raw);
+          if (data && typeof data === "object" && (data.code || data.slots)) {
+            editor.value = data.code || STARTER;
+            fillBlocks(data.slots && data.slots.some(Boolean) ? data.slots : null);
+            hintsOpen = data.hintsOpen || 0; replayHints(); return;
+          }
+        } catch (e) {}
+        editor.value = raw; fillBlocks(null);
+      }
+
+      
+      function MODE_PACK(mode) { return { mode: mode, server: "ok" }; }
+      const TESTS = { length: 13 };
+      function htmlFromBlocks() {
+        const body = ["states", "load", "start"].map(part).join("\n\n    ");
+        return STARTER.replace(/\/\* твой код здесь: showLoading[\s\S]*загрузка при открытии и по кнопке \*\//, body);
+      }
+      function waitFor(check, timeout) {
+        return new Promise(function (resolve) {
+          const start = Date.now();
+          (function tick() {
+            try { if (check()) { resolve(true); return; } } catch (e) {}
+            if (Date.now() - start >= timeout) { resolve(false); return; }
+            setTimeout(tick, 50);
+          })();
+        });
+      }
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+      function setServer(doc, win, mode) {
+        const sel = doc.querySelector("#modeSelect");
+        if (!sel) return false;
+        sel.value = mode;
+        sel.dispatchEvent(new win.Event("change", { bubbles: true }));
+        return true;
+      }
+      function clickReload(doc) {
+        const btn = doc.querySelector("#reloadBtn");
+        if (!btn) return false;
+        btn.click();
+        return true;
+      }
+      function menuText(doc) {
+        const menu = doc.querySelector("#menu");
+        return menu ? menu.textContent : "";
+      }
+      function liCount(doc) {
+        const menu = doc.querySelector("#menu");
+        return menu ? menu.querySelectorAll("li").length : -1;
+      }
+      function stateText(doc) {
+        const el = doc.querySelector("#state");
+        return el ? el.textContent.trim() : "";
+      }
+
+      document.getElementById("checkBtn").addEventListener("click", function () {
+        clearTimeout(typeTimer);
+        runChecks();
+      });
+
+      async function runChecks() {
+        const html = currentHtml();
+        const results = [];
+        function show() {
+          renderResults(results, "Проверка: " + results.length + " / " + 13);
+        }
+        function add(name, hint, ok) {
+          results.push({ name: name, hint: hint, ok: !!ok });
+          show();
+        }
+        async function boot() {
+          await new Promise(function (resolve) {
+            let finished = false;
+            function go() {
+              if (finished) return;
+              finished = true;
+              preview.removeEventListener("load", go);
+              resolve();
+            }
+            preview.addEventListener("load", go);
+            preview.srcdoc = withBase(html);
+            setTimeout(function () { if (!finished) go(); }, 1200);
+          });
+          return { doc: preview.contentDocument, win: preview.contentWindow };
+        }
+        async function settle(doc, timeout) {
+          await waitFor(function () {
+            const btn = doc.querySelector("#reloadBtn");
+            if (!btn) return false;
+            if (btn.disabled) return false;
+            return liCount(doc) >= 0 && (liCount(doc) > 0 || stateText(doc) !== "");
+          }, timeout);
+        }
+
+        const T = [
+          ["Меню загружается при открытии", "Страница открылась пустой. Вызови загрузку один раз сразу после объявления функций — человек не должен нажимать кнопку, чтобы увидеть меню"],
+          ["Данные видны на странице", "Данные пришли, но на экране их нет. Мини-проект — это работающая страница, а не вывод в консоль. Вызови отрисовку"],
+          ["Ответа дожидаемся", "Без await в переменной окажется само обещание, а не данные, — и response.data даст ошибку. Поставь await там, где нужен результат"],
+          ["Функция асинхронная", "await работает только внутри функции, объявленной с async. Браузер скажет об этом прямо: await is only valid in async functions"],
+          ["Загрузка видна", "Две секунды тишины — человек решит, что кнопка не работает, и нажмёт ещё раз. Покажи текст и индикатор до запроса"],
+          ["Кнопка заблокирована", "Пока идёт запрос, кнопку надо отключить: иначе уйдёт несколько запросов и результаты наложатся. reloadBtn.disabled = true перед запросом"],
+          ["Кнопка снова доступна", "Кнопка осталась заблокированной. Разблокируй её в finally — он выполняется и при успехе, и при ошибке"],
+          ["Ошибка сервера обработана", "Сеть сработала, сервер ответил — но ответил ошибкой. Для обещания это успех, в catch ничего не попадёт. Проверь response.ok сам и брось ошибку через throw"],
+          ["Сбой сети обработан", "При отсутствии сети await бросает ошибку. Без try/catch функция оборвётся молча: индикатор зависнет, экран останется пустым"],
+          ["Запасные данные показаны", "При сбое экран пустой. Покажи данные из константы FALLBACK — приложение должно работать и без сети"],
+          ["Пользователь знает, что данные из копии", "Данные из копии показаны как сегодняшние. Это обман: человек придёт за пирогом, которого сегодня нет. Добавь пометку, что меню из сохранённой копии"],
+          ["Пустой ответ обработан", "Сервер честно ответил, что сегодня ничего нет. Это не ошибка и не повод подставлять вчерашнее меню: покажи спокойное сообщение и пустой список"],
+          ["Работает офлайн", "В коде появился настоящий сетевой запрос. Тренажёр обязан работать без интернета: школьная сеть закрывается без предупреждения. Используй выданную функцию getMenuFromServer"]
+        ];
+
+        testsEl.innerHTML = '<p class="check-progress">Проверка: 0 / 13</p>';
+
+        let ctx = await boot();
+        let doc = ctx.doc, win = ctx.win;
+        if (!doc || !doc.body) {
+          renderResults([{ ok: false, name: "Документ не разобрался", hint: "Проверь незакрытые теги и скобки в script." }]);
+          return;
+        }
+        await waitFor(function () { return liCount(doc) === 3; }, 1500);
+        add(T[0][0], T[0][1], liCount(doc) === 3);
+        add(T[1][0], T[1][1], /Шаньга|Морошков|Черничн/.test(menuText(doc)));
+        const clean = stripComments(html);
+        add(T[2][0], T[2][1], /await\s+getMenuFromServer/.test(clean));
+        add(T[3][0], T[3][1], /async\s+function\s+loadMenu|async\s*\(/.test(clean));
+
+        ctx = await boot();
+        doc = ctx.doc; win = ctx.win;
+        await settle(doc, 1500);
+        setServer(doc, win, "slow");
+        clickReload(doc);
+        await sleep(60);
+        const loadingShown = stateText(doc) !== "" && liCount(doc) === 0;
+        const btn = doc.querySelector("#reloadBtn");
+        const locked = !!(btn && btn.disabled);
+        add(T[4][0], T[4][1], loadingShown);
+        add(T[5][0], T[5][1], locked);
+        await waitFor(function () {
+          const b = doc.querySelector("#reloadBtn");
+          return b && !b.disabled;
+        }, 4000);
+        add(T[6][0], T[6][1], doc.querySelector("#reloadBtn") && !doc.querySelector("#reloadBtn").disabled);
+
+        ctx = await boot();
+        doc = ctx.doc; win = ctx.win;
+        await settle(doc, 1500);
+        function done(doc) {
+          const b = doc.querySelector("#reloadBtn");
+          return b && !b.disabled;
+        }
+        setServer(doc, win, "error500");
+        clickReload(doc);
+        await waitFor(function () { return done(doc) && liCount(doc) === 3 && stateText(doc) !== ""; }, 1500);
+        add(T[7][0], T[7][1], liCount(doc) === 3 && stateText(doc) !== "");
+
+        ctx = await boot();
+        doc = ctx.doc; win = ctx.win;
+        await settle(doc, 1500);
+        const okMsg = stateText(doc);
+        setServer(doc, win, "fail");
+        clickReload(doc);
+        await waitFor(function () { return done(doc) && liCount(doc) === 3 && stateText(doc) !== ""; }, 1500);
+        add(T[8][0], T[8][1], liCount(doc) === 3 && stateText(doc) !== "");
+        const txt = menuText(doc);
+        add(T[9][0], T[9][1], /Калитка|Рыбник|Брусничн/.test(txt) && !/Шаньга|Морошков|Черничн/.test(txt));
+        const failMsg = stateText(doc);
+        add(T[10][0], T[10][1], failMsg !== "" && failMsg !== okMsg);
+
+        ctx = await boot();
+        doc = ctx.doc; win = ctx.win;
+        await settle(doc, 1500);
+        setServer(doc, win, "empty");
+        clickReload(doc);
+        await waitFor(function () { return done(doc) && liCount(doc) === 0 && stateText(doc) !== ""; }, 1500);
+        add(T[11][0], T[11][1], liCount(doc) === 0 && stateText(doc) !== "");
+
+        const src = stripCommentsAndStrings(html);
+        add(T[12][0], T[12][1], !/fetch\s*\(/.test(src) && !/XMLHttpRequest/.test(src) && !/https?:\/\//.test(src));
+      }
+      bindSlots();
+      loadDraft();
+      setMode(loadMode());
+      scoreEl.textContent = "0 / 13";
+
+  })();
+</script>
+</body>
+</html>

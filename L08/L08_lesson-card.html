@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Занятие 8. Техкарта</title>
+  <style>
+    :root {
+      --tm-ink: #111312;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #EDF7E4;
+      --tm-bg: #FFFFFF;
+      --tm-bg-alt: #F4F6F3;
+      --tm-text: #111312;
+      --tm-muted: #6B706B;
+      --tm-border: #E3E7E1;
+      --tm-radius: 18px;
+      --tm-radius-sm: 10px;
+      --tm-radius-pill: 999px;
+      --tm-shadow: 0 8px 28px rgba(17, 19, 18, .07);
+      --tm-shadow-lift: 0 14px 40px rgba(17, 19, 18, .12);
+      --tm-font: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    html[data-theme="dark"] {
+      --tm-ink: #0F0F0F;
+      --tm-green: #7CC142;
+      --tm-green-dark: #5FA22E;
+      --tm-green-soft: #1B2415;
+      --tm-bg: #0F0F0F;
+      --tm-bg-alt: #17191A;
+      --tm-text: #F2F4F1;
+      --tm-muted: #9BA29B;
+      --tm-border: #262A26;
+      --tm-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+      --tm-shadow-lift: 0 14px 40px rgba(0, 0, 0, .55);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body {
+      margin: 0;
+      background: var(--tm-bg-alt);
+      color: var(--tm-text);
+      font-family: var(--tm-font);
+    }
+    html[data-theme="dark"] body { background: var(--tm-bg); }
+    body { font-size: 17px; line-height: 1.55; }
+    a:not(.tm-btn) { color: var(--tm-green-dark); }
+    html[data-theme="dark"] a:not(.tm-btn) { color: var(--tm-green); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--tm-bg);
+      border-bottom: 1px solid var(--tm-border);
+    }
+    html[data-theme="dark"] .topbar { background: var(--tm-bg-alt); }
+    .topbar__nav { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+    .tm-btn {
+      font: 600 15px/1 var(--tm-font);
+      padding: .7em 1.25em;
+      border-radius: var(--tm-radius-pill);
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .tm-btn--primary { background: var(--tm-green); color: #111312; }
+    .tm-btn--primary:hover { background: var(--tm-green-dark); color: #111312; }
+    .tm-btn--ghost {
+      background: transparent;
+      color: var(--tm-text);
+      border-color: var(--tm-border);
+    }
+    .tm-btn--ghost:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .tm-btn--ghost:hover { color: var(--tm-green); }
+    .tm-btn:active { transform: translateY(1px); }
+    .tm-btn:focus-visible { outline: 3px solid var(--tm-green-dark); outline-offset: 3px; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 96px; }
+    .tm-eyebrow {
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--tm-green-dark);
+      background: var(--tm-green-soft);
+      border-radius: var(--tm-radius-pill);
+      padding: .38em 1em;
+      margin: 0 0 12px;
+    }
+    html[data-theme="dark"] .tm-eyebrow { color: var(--tm-green); }
+    h1 {
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .lead {
+      margin: 0 0 20px;
+      color: var(--tm-muted);
+      font-size: 18px;
+      max-width: 52ch;
+    }
+    .jumps { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; }
+    .jump {
+      font: 600 14px/1 var(--tm-font);
+      color: var(--tm-text);
+      text-decoration: none;
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius-pill);
+      padding: .5em .95em;
+      background: var(--tm-bg);
+    }
+    .jump:hover { border-color: var(--tm-green); color: var(--tm-green-dark); }
+    html[data-theme="dark"] .jump { background: var(--tm-bg-alt); }
+    html[data-theme="dark"] .jump:hover { color: var(--tm-green); }
+    .tm-card {
+      background: var(--tm-bg);
+      border: 1px solid var(--tm-border);
+      border-radius: var(--tm-radius);
+      box-shadow: var(--tm-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    html[data-theme="dark"] .tm-card { background: var(--tm-bg-alt); }
+    .tm-card h2 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .tm-card h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tm-card p { margin: 0 0 12px; }
+    .tm-card ul, .tm-card ol { margin: 0 0 14px; padding-left: 1.25em; }
+    .tm-card li { margin: 0 0 8px; }
+    .tm-card li:last-child { margin-bottom: 0; }
+    blockquote {
+      margin: 0 0 16px;
+      padding: 14px 18px;
+      border-left: 4px solid var(--tm-green);
+      background: var(--tm-green-soft);
+      border-radius: 0 var(--tm-radius-sm) var(--tm-radius-sm) 0;
+    }
+    blockquote p { margin: 0; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+      background: var(--tm-green-soft);
+      padding: .12em .4em;
+      border-radius: 6px;
+    }
+    pre {
+      background: var(--tm-ink);
+      color: #F2F4F1;
+      padding: 16px 18px;
+      border-radius: var(--tm-radius-sm);
+      overflow-x: auto;
+      margin: 0 0 16px;
+    }
+    html[data-theme="dark"] pre { border: 1px solid var(--tm-border); }
+    pre code { background: none; color: inherit; padding: 0; font-size: 14px; }
+    .table-wrap { overflow-x: auto; margin: 0 0 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      min-width: 520px;
+    }
+    th {
+      text-align: left;
+      background: var(--tm-green-soft);
+      color: var(--tm-text);
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      vertical-align: bottom;
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--tm-border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    a.tm-btn--primary,
+    a.tm-btn--primary:hover,
+    html[data-theme="dark"] a.tm-btn--primary,
+    html[data-theme="dark"] a.tm-btn--primary:hover {
+      color: #111312;
+    }
+    a.tm-btn--ghost,
+    html[data-theme="dark"] a.tm-btn--ghost { color: var(--tm-text); }
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar__nav" aria-label="Переход по материалам">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L08_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L08_trainer_js.html">Тренажёр</a>
+    </nav>
+    <button class="tm-btn tm-btn--ghost" id="themeBtn" type="button">Тёмная тема</button>
+  </header>
+  <div class="wrap">
+    <p class="tm-eyebrow">►► Занятие 08 · техкарта</p>
+    <h1>Занятие 8. JavaScript: основы языка</h1>
+    <p class="lead">Паспорт занятия, поминутный ход урока и домашнее задание. Отсюда можно вернуться в оглавление, открыть презентацию или практику.</p>
+    <nav class="jumps" aria-label="Разделы карты">
+        <a class="jump" href="#passport">Паспорт</a>
+        <a class="jump" href="#tech">Техкарта</a>
+        <a class="jump" href="#homework">Домашнее задание</a>
+      </nav>
+    <section class="tm-card" id="passport">
+<h2>1. Паспорт занятия</h2>
+<div class="table-wrap"><table><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody><tr><td>Номер</td><td>L08</td></tr><tr><td>Тема</td><td>JavaScript: основы языка</td></tr><tr><td>Модуль</td><td>Модуль 4. JavaScript: Интерактивность и работа с API (10 ч) — первое занятие модуля</td></tr><tr><td>Часы</td><td>2 ак. ч (90 мин)</td></tr><tr><td>Место в сквозном продукте</td><td>Любая цифра, которую твой Dashboard считает сам — сумма заказа, длина серии дней, процент побед, — считается функцией на JavaScript. Сегодня ты пишешь первую такую функцию</td></tr><tr><td>Артефакт на выходе</td><td>Счётчик заказа на странице буфета: выбрал пирог и количество — увидел сумму. Считает JavaScript</td></tr><tr><td>Тип практики</td><td>Код + блоки (два режима)</td></tr><tr><td>Файл тренажёра</td><td><code>L08_trainer_js.html</code></td></tr><tr><td>Ключи localStorage</td><td><code>wdc-l08-js-v1</code>, <code>wdc-l08-mode-v1</code></td></tr><tr><td>Контрольная точка</td><td>Нет. Начало самого тяжёлого модуля программы</td></tr><tr><td>Опора</td><td>L03: форма, поля, <code>id</code>. L01: три слоя страницы, консоль в DevTools. L07: кнопка как компонент</td></tr><tr><td>Сюжет</td><td>«Северный пирог»: заказ на подсчёт суммы. <code>pie.svg</code> в папке занятия</td></tr></tbody></table></div>
+<blockquote><p><strong>Про разметку и «проводку».</strong> Сегодня ты пишешь <strong>логику</strong>, а не работу с DOM. Разметка выдана готовой, три строки связи страницы со скриптом (<code>querySelector</code> и <code>addEventListener</code>) даны в заготовке и объясняются одной фразой. Подробно DOM и события разбираются на занятии 10. Такой порядок выбран специально: методические рекомендации к программе требуют, чтобы в модуле 4 ученик тратил время на изучаемую тему, а не на восстановление уже пройденного.</p></blockquote>
+</section>
+<section class="tm-card" id="tech">
+<h2>14. Техкарта педагога</h2>
+<div class="table-wrap"><table><thead><tr><th>Время</th><th>Этап</th><th>Что делает педагог</th><th>Что делают ученики</th><th>Точка контроля</th></tr></thead><tbody><tr><td>0–4</td><td>Вход</td><td>Слайды 1–2. Открывает готовый счётчик прошлогодней группы: вводит число, показывает пересчёт</td><td>Смотрят</td><td>Понятно, что делается сегодня</td></tr><tr><td>4–9</td><td>Теория 5.1</td><td>Слайд 3. Подключение скрипта. <strong>Демонстрация шагов 1–3: ошибка в <code>head</code> и её исправление</strong></td><td>Смотрят, читают сообщение вслух</td><td><strong>Точка контроля:</strong> группа прочитала текст ошибки и назвала номер строки</td></tr><tr><td>9–15</td><td>Теория 5.2</td><td>Слайд 4. <code>const</code>, <code>let</code>, запрет <code>var</code>, имена</td><td>Слушают, повторяют у себя</td><td>У всех в файле появился <code>&lt;script&gt;</code> с константой</td></tr><tr><td>15–17</td><td>Пауза в теории</td><td>Слайд 5, тёмный разделитель</td><td>Переключаются</td><td>—</td></tr><tr><td>17–26</td><td><strong>Теория 5.3 — ядро занятия</strong></td><td>Слайды 6–7. Типы, <code>typeof</code>, строка из поля. <strong>Демонстрация шага 6: сложение даёт склейку</strong></td><td>Смотрят, повторяют у себя, выводят <code>typeof</code> в консоль</td><td><strong>Точка контроля:</strong> каждый вывел <code>typeof input.value</code> и увидел <code>"string"</code></td></tr><tr><td>26–28</td><td><strong>Вопрос классу</strong></td><td>Слайд 8. «Итого: NaN. Что случилось?» Пауза 10 секунд</td><td>Думают, отвечают трое</td><td>Прозвучало «в поле было не число»</td></tr><tr><td>28–34</td><td>Теория 5.5</td><td>Слайды 9–10. Функция, параметры, <code>return</code>, отличие от <code>console.log</code></td><td>Слушают</td><td>Группа объясняет, откуда берётся «undefined» на странице</td></tr><tr><td>34–35</td><td>Теория 5.4, кратко</td><td>Слайд 13. Шаблонная строка</td><td>Слушают</td><td>—</td></tr><tr><td>35–45</td><td><strong>Динамическая пауза</strong></td><td>Гимнастика для глаз, разминка</td><td>Встают</td><td>Все встали. Не сокращать</td></tr><tr><td>45–52</td><td>Теория 5.6</td><td>Слайды 11–12. Условие, порядок веток, <code>===</code>, ошибка с одинарным <code>=</code></td><td>Слушают</td><td>Двое объясняют, почему порядок веток важен</td></tr><tr><td>52–56</td><td>Теория 5.7</td><td>Слайд 14. Консоль как инструмент, чтение ошибок, три частых сообщения</td><td>Слушают, записывают три сообщения</td><td>Таблица трёх ошибок записана</td></tr><tr><td>56–68</td><td><strong>Демонстрация</strong></td><td>Десять шагов раздела 6 целиком. Обе намеренные ошибки обязательны</td><td>Смотрят, повторяют у себя с шага 4</td><td><strong>Точка контроля:</strong> к 65-й минуте у всех работает вывод суммы в консоль</td></tr><tr><td>68–80</td><td>Практика: тренажёр</td><td>Открывает <code>L08_trainer_js.html</code>. Помогает точечно</td><td>Проходят тренажёр</td><td><strong>Точка контроля:</strong> к 77-й минуте у большинства 8/11 и выше. Кто застрял на тесте 6 — разобрать на весь класс</td></tr><tr><td>80–90</td><td>Практика: свой файл</td><td>Обходит ряды. <strong>Проверка одна: просит вызвать функцию в консоли с тремя разными числами</strong></td><td>Пишут счётчик в <code>index.html</code></td><td><strong>Точка контроля:</strong> у каждого функция даёт три разных результата при 1, 3 и 5</td></tr><tr><td>90–95</td><td>Работа с ИИ</td><td>Слайд 16. Разбирает один ответ модели на проекторе, ищет расхождение с пониманием</td><td>Запускают промпт на своей функции, сравнивают</td><td>Хотя бы двое нашли расхождение и сформулировали его</td></tr><tr><td>95–100</td><td><strong>Мини-демо и фиксация</strong></td><td>Спрашивает троих: покажи счётчик и объясни, зачем в коде <code>Number()</code>. Сохранение</td><td>Показывают, объясняют, сохраняют</td><td>Файл сохранён. Правило про строку из поля произнесено вслух</td></tr></tbody></table></div>
+<h3>Что подготовить до занятия</h3>
+<ul><li><strong>Подготовить стартовые заготовки с готовой разметкой для всех.</strong> Это требование методических рекомендаций начиная с модуля 4: отстающий должен тратить время на логику, а не на восстановление вёрстки. Заготовка кладётся в личную папку каждого до занятия.</li><li>Открыть готовый счётчик прошлогодней группы или собрать демонстрационный — нужен на минуте 0 как образ результата.</li><li>Проверить, что консоль DevTools открывается на всех ученических машинах и не заблокирована политиками.</li><li>Заранее подготовить файл с ошибкой в <code>head</code> — для шагов 2–3 демонстрации. Набирать при всех дольше, чем открыть готовый.</li><li>Подготовить файл поддержки: проводка и <code>calcDiscount</code> написаны, три пропуска в <code>calcTotal</code> и обработчике. Плюс чек-лист на парту: получил → преобразовал → посчитал → вывел.</li><li>Подготовить задание «плюс» заранее: пересчёт по событию <code>input</code>, проверка функции на шести наборах данных, константа <code>MAX_COUNT</code>.</li><li>Пройти тренажёр самому. Норматив — 15–20 минут; это первое занятие модуля, темп ниже обычного. Отдельно проверить, что тест 6 ловит именно поведение, а не наличие слова <code>Number</code> в коде.</li><li>Проверить доступ к ИИ-сервису. При недоступности — сохранить два ответа заранее: один корректный разбор, один с ошибочным утверждением про тип значения из поля.</li><li><strong>Заложить время на расслоение группы.</strong> Методические рекомендации предупреждают: с модуля 4 разрыв в темпе становится заметным. Задания «плюс» и «поддержка» должны лежать готовыми, а не придумываться на ходу.</li></ul>
+<h3>Что вывести на экран</h3>
+<ol><li>Презентация <code>L08_presentation.html</code> — слайды 1–16.</li><li>Редактор кода с <code>index.html</code> — для живого кодинга с минуты 56.</li><li>Браузер с тем же файлом и <strong>открытой консолью</strong>: она нужна с четвёртой минуты и до конца занятия.</li><li>Файл с ошибкой в <code>head</code> — открыть на минуте 5.</li><li>Тренажёр <code>L08_trainer_js.html</code> — открыть на минуте 68.</li></ol>
+<h3>Где группа обычно застревает</h3>
+<p><strong>1. «Ничего не работает» — и ученик смотрит в код, не открыв консоль.</strong><br>Действие педагога: не смотреть в код самому. Первый вопрос всегда один: «что написано в консоли?» Если консоль не открыта — открыть и прочитать вслух. Эту последовательность надо провести с первыми тремя обратившимися на весь класс: дальше половина группы начнёт открывать консоль сама. Это главная привычка, которую надо поставить на этом занятии.</p>
+<p><strong>2. Сумма считается неправильно, ученик переписывает формулу наугад.</strong><br>Действие педагога: одна строка вместо объяснения — <code>console.log(count, typeof count)</code>. Ученик увидит <code>string</code> и поймёт сам. Не подсказывать ответ, дать инструмент.</p>
+<p><strong>3. Расслоение: часть группы закончила за двадцать минут, часть не начала.</strong><br>Действие педагога: заранее приготовленные задания «плюс» выдавать молча, по мере готовности. Отстающим — файл поддержки с тремя пропусками вместо чистого листа. Методические рекомендации прямо предупреждают: занятия 8–9 нельзя проходить ускоренно, даже если часть группы скучает, — массивы и объекты фундамент для модуля 9, и пробел здесь всплывёт на занятии 21.</p>
+</section>
+<section class="tm-card" id="homework">
+<h2>15. Домашнее задание и связь с проектом</h2>
+<h3>Домашнее задание (20–30 минут)</h3>
+<ol><li><strong>Проверь свою функцию на шести наборах данных</strong> прямо в консоли: 0, 1, 2, 3, 5, 100 штук. Запиши результаты в столбик. Найди хотя бы один набор, где результат выглядит странно, и объясни одной строкой почему. Исправлять не обязательно — важно заметить.</li><li><strong>Собери коллекцию ошибок.</strong> Намеренно сломай свой код тремя способами: убери <code>Number()</code>, замени <code>return</code> на <code>console.log</code>, поставь одинарное <code>=</code> в условии. После каждой поломки запиши, что появилось на странице и что в консоли. Верни как было. Это займёт десять минут и сэкономит часы на занятиях 9–12.</li><li><strong>Объясни свой код вслух</strong> кому-нибудь дома или самому себе под запись. Не читай построчно — расскажи, что происходит, когда человек нажимает кнопку. Если где-то запнулся — там ты не понял, и это место надо разобрать.</li></ol>
+<p>Второй пункт важнее остальных: узнавать ошибку в лицо гораздо быстрее, чем расследовать её впервые.</p>
+<h3>Связь с итоговым проектом</h3>
+<p><strong>Пункт ТЗ (Приложение 1 программы):</strong> «JavaScript: манипуляции с DOM, работа с формами (валидация), использование <code>fetch</code>… сохранение данных в <code>localStorage</code>».</p>
+<p>Ни один из этих пунктов сегодня не закрыт целиком — и это нормально: занятие 8 закладывает язык, на котором всё перечисленное будет написано. Без переменных, типов и функций не будет ни валидации, ни работы с данными.</p>
+<p>Практически: <strong>любая цифра, которую твой Dashboard считает сам, — это функция вроде сегодняшней.</strong> Длина серии дней в P01, число дней до срока в P02, процент побед в P04, часы волонтёра в P06. Все они устроены одинаково: взять данные, преобразовать, посчитать, вернуть, показать.</p>
+<p>И отдельно про ловушку с типами: она вернётся на занятии 22, когда данные начнут читаться из <code>localStorage</code>. Там <strong>всё</strong> хранится строками — вообще всё, включая числа. Кто разобрался сегодня, там не потеряет полчаса.</p>
+<p><strong>Критерий из 30 баллов:</strong> <strong>«Соответствие ТЗ» (10 баллов)</strong> — основание для всей части про JavaScript.</p>
+</section>
+    <div class="foot">
+      <a class="tm-btn tm-btn--ghost" href="../index.html">►► Оглавление</a>
+      <a class="tm-btn tm-btn--ghost" href="L08_presentation.html">Урок</a>
+      <a class="tm-btn tm-btn--primary" href="L08_trainer_js.html">Тренажёр</a>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var KEY = "wdc-catalog-theme-v1";
+      var btn = document.getElementById("themeBtn");
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        btn.textContent = theme === "dark" ? "Светлая тема" : "Тёмная тема";
+        try { localStorage.setItem(KEY, theme); } catch (e) {}
+      }
+      var saved = "light";
+      try { saved = localStorage.getItem(KEY) || "light"; } catch (e) {}
+      if (saved === "dark" || saved === "light") apply(saved);
+      btn.addEventListener("click", function () {
+        apply(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      });
+    })();
+  </script>
+</body>
+</html>
